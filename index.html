@@ -8,7 +8,7 @@ html
 
     <!-- PWA Manifest & Meta Tags -->
     <link rel="icon" type="image/png" href="icon.png">
-    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="apple-touch-ico" href="icon.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1877f2">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -124,14 +124,14 @@ html
             position: relative;
         }
         
-        /* New: Gradient ring for existing logic or seen stories */
+        /* Gradient ring for seen stories */
         .story-ring.seen-gradient {
             background: linear-gradient(var(--bg-color), var(--bg-color)) padding-box,
                         linear-gradient(45deg, #bbb, #ddd) border-box;
             border: 2px solid transparent;
         }
 
-        /* New: Active Blue Ring for Unseen Stories */
+        /* Active Blue Ring for Unseen Stories */
         .story-ring.active {
             border: 3px solid #1877f2;
             box-shadow: 0 0 8px rgba(24, 119, 242, 0.4);
@@ -164,7 +164,7 @@ html
         /* Admin Actions in Post */
         .admin-actions {
             position: absolute; top: 10px; right: 10px; z-index: 5;
-            display: none; /* Hidden by default */
+            display: none; 
         }
         .admin-mode .admin-actions { display: block; }
         .admin-btn-del {
@@ -184,7 +184,7 @@ html
         .app-logo-text { font-family: 'Galada', cursive; font-size: 22px; color: var(--primary-color); margin-left: 10px; }
         .icon-btn { cursor: pointer; font-size: 18px; background: none; border: none; color: var(--text-color); position: relative; padding: 8px; transition: transform 0.2s; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
         .icon-btn:active { background: rgba(0,0,0,0.05); }
-        .badge { position: absolute; top: 5px; right: 5px; background: #e74c3c; color: white; border-radius: 50%; width: 14px; height: 14px; font-size: 9px; display: none; justify-content: center; align-items: center; font-weight: bold; border: 2px solid var(--bg-color); }
+        .badge { position: absolute; top: 5px; right: 5px; background: #e74c3c; color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 9px; display: none; justify-content: center; align-items: center; font-weight: bold; border: 2px solid var(--bg-color); z-index: 2; }
         .badge.active { display: flex; }
 
         /* Search & Filter */
@@ -331,7 +331,6 @@ html
         .profile-name { font-size: 22px; font-weight: 700; margin: 0; color: var(--text-color); }
         .profile-bio { font-size: 14px; color: var(--secondary-text); margin: 5px 0 0; max-width: 400px; margin: 5px auto; }
         
-        /* Follow Button Style */
         .follow-container { margin: 10px 0 15px 0; }
         .btn-follow {
             padding: 8px 25px; border-radius: 20px; font-size: 14px; font-weight: 600; cursor: pointer;
@@ -481,6 +480,31 @@ html
         .sk-line.short { width: 60%; }
 
         .loading-spinner-area { text-align:center; padding:20px; color:var(--secondary-text); font-size:12px; display:none; }
+
+        /* UPDATE 2 & 3: Styles for Notifications and Nested Comments */
+        .reply-btn {
+            font-size: 11px; color: var(--primary-color); cursor: pointer;
+            margin-top: 2px; border: none; background: none; font-weight: 600; padding: 0;
+        }
+        .nested-reply {
+            margin-left: 30px; border-left: 2px solid var(--border-color);
+            padding-left: 10px; margin-top: 8px;
+            background: rgba(0,0,0,0.02); border-radius: 0 8px 8px 0; padding: 8px;
+        }
+        .notif-item {
+            display: flex; gap: 10px; padding: 12px;
+            border-bottom: 1px solid var(--border-color); cursor: pointer; align-items: center;
+        }
+        .notif-item:hover { background: rgba(0,0,0,0.02); }
+        .notif-item.unread {
+            background: rgba(24, 119, 242, 0.05);
+            border-left: 3px solid var(--primary-color);
+        }
+        .notif-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .notif-text { font-size: 14px; flex: 1; }
+        .notif-time { font-size: 10px; color: var(--secondary-text); }
+        .cancel-reply { font-size: 18px; color: #e74c3c; cursor: pointer; display: none; margin-left: 5px; align-self: center; }
+
     </style>
 </head>
 <body>
@@ -503,6 +527,7 @@ html
         <div style="display:flex; gap:5px;">
             <button class="icon-btn" onclick="toggleFont()" title="ফন্ট পরিবর্তন"><i class="fas fa-font"></i></button>
             <button class="icon-btn" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
+            <!-- UPDATE 2: Notifications -->
             <button class="icon-btn" onclick="showNotifications()">
                 <i class="fas fa-bell"></i>
                 <span id="notifBadge" class="badge">0</span>
@@ -683,19 +708,24 @@ html
         <button class="nav-item" onclick="navTo('saved', this)">
             <i class="fas fa-bookmark"></i>সংরক্ষিত
         </button>
+        <!-- UPDATE 1: Nav Fix Logic -->
         <button class="nav-item" onclick="navTo('profile', this)">
             <i class="fas fa-user"></i>প্রোফাইল
         </button>
     </nav>
 
-    <!-- Generic Bottom Sheet -->
+    <!-- Generic Bottom Sheet (Reused for Comments & Notifications) -->
     <div id="universalBottomSheet" class="bottom-sheet-overlay" onclick="closeBottomSheet(event)">
         <div class="sheet-content" onclick="event.stopPropagation()">
             <div class="sheet-drag-handle"></div>
             <h3 id="sheetTitle" style="text-align:center; margin:10px 0; font-size:16px;">Title</h3>
             <div id="sheetBody" class="sheet-body"></div>
+            
+            <!-- Footer with Input (Used for Comments) -->
             <div id="sheetFooter" style="padding:10px 15px; border-top:1px solid var(--border-color); display:none; gap:10px;">
                 <input type="text" id="sheetInput" placeholder="মন্তব্য লিখুন...">
+                <!-- UPDATE 3: Cancel Reply Button -->
+                <i id="cancelReplyBtn" class="fas fa-times cancel-reply" onclick="cancelReply()"></i>
                 <button id="sheetSendBtn" style="background:var(--primary-color); color:white; border:none; border-radius:8px; width:40px;"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
@@ -861,6 +891,9 @@ html
         
         // Follow Variables
         let currentlyViewingUid = null;
+        
+        // UPDATE 3: Reply Variables
+        let replyingToCommentId = null;
 
         // --- FONT CHANGER ---
         const fontFamilies = ["'Hind Siliguri', sans-serif", "'Noto Serif Bengali', serif", "'Galada', cursive"];
@@ -889,6 +922,9 @@ html
             if(user) {
                 syncUserProfile(user);
                 document.getElementById('loginModal').style.display = 'none';
+                // UPDATE 2: Listen for Notifications
+                initNotificationListener(user.uid);
+                
                 // Reload profile if currently on profile view and looking at self
                 if(document.getElementById('profileView').style.display === 'block') {
                     const params = new URLSearchParams(window.location.search);
@@ -896,6 +932,7 @@ html
                 }
             } else {
                 localStorage.removeItem('IS_ADMIN');
+                document.getElementById('notifBadge').classList.remove('active'); // Hide badge
             }
         });
 
@@ -919,6 +956,97 @@ html
                 document.getElementById('submitBtn').disabled = false;
             }
         }
+
+        // --- UPDATE 2: NOTIFICATIONS LOGIC ---
+        function initNotificationListener(uid) {
+            onValue(ref(db, `notifications/${uid}`), (snapshot) => {
+                const data = snapshot.val();
+                let count = 0;
+                if(data) {
+                    count = Object.values(data).filter(n => !n.read).length;
+                }
+                const badge = document.getElementById('notifBadge');
+                if(count > 0) {
+                    badge.innerText = count > 9 ? '9+' : count;
+                    badge.classList.add('active');
+                } else {
+                    badge.classList.remove('active');
+                }
+            });
+        }
+
+        // Send Notification Helper
+        function sendNotification(targetUid, type, postId) {
+            if(!window.currentUser || targetUid === window.currentUser.uid) return;
+            const notifData = {
+                type: type,
+                postId: postId,
+                sender: window.currentUser.displayName,
+                senderImg: window.currentUser.photoURL,
+                read: false,
+                timestamp: Date.now()
+            };
+            push(ref(db, `notifications/${targetUid}`), notifData);
+        }
+
+        window.showNotifications = function() {
+            if(!checkAuth()) return;
+            document.getElementById('sheetTitle').innerText = 'নোটিফিকেশন';
+            document.getElementById('sheetFooter').style.display = 'none';
+            document.getElementById('universalBottomSheet').classList.add('active');
+            
+            const listRef = ref(db, `notifications/${window.currentUser.uid}`);
+            
+            get(query(listRef, limitToLast(20))).then(snap => {
+                const data = snap.val();
+                if(!data) {
+                    document.getElementById('sheetBody').innerHTML = '<div style="text-align:center; color:#888; padding:20px;">কোনো নোটিফিকেশন নেই</div>';
+                    return;
+                }
+                const notifs = Object.entries(data).map(([k,v]) => ({key:k, ...v})).reverse(); // Newest first
+                
+                const html = notifs.map(n => {
+                    let text = '';
+                    if(n.type === 'like') text = `আপনার পোস্টে লাইক দিয়েছেন ❤️`;
+                    else if(n.type === 'comment') text = `আপনার পোস্টে মন্তব্য করেছেন 💬`;
+                    
+                    return `
+                    <div class="notif-item ${!n.read ? 'unread' : ''}" onclick="handleNotifClick('${n.key}', '${n.postId}')">
+                        <img src="${n.senderImg}" class="notif-avatar">
+                        <div class="notif-text">
+                            <strong>${n.sender}</strong> ${text}
+                            <div class="notif-time">${new Date(n.timestamp).toLocaleDateString()}</div>
+                        </div>
+                    </div>`;
+                }).join('');
+                document.getElementById('sheetBody').innerHTML = html;
+            });
+        };
+
+        window.handleNotifClick = function(notifKey, postId) {
+            // Mark as read
+            update(ref(db, `notifications/${window.currentUser.uid}/${notifKey}`), { read: true });
+            
+            // Close sheet and open post
+            document.getElementById('universalBottomSheet').classList.remove('active');
+            
+            // Check if post is already loaded
+            const post = window.allPosts.find(p => p.key === postId);
+            if(post) {
+                openDetailView(postId);
+            } else {
+                // Fetch specific post if not in feed
+                get(ref(db, `posts/${postId}`)).then(s => {
+                    if(s.exists()) {
+                        const p = s.val(); p.key = postId;
+                        window.allPosts.push(p); // Temp add
+                        openDetailView(postId);
+                    } else {
+                        showToast('পোস্টটি পাওয়া যায়নি');
+                    }
+                });
+            }
+        };
 
         // --- GATEKEEPER CHECK ---
         window.checkAuth = function() {
@@ -1018,7 +1146,7 @@ html
                    renderFeed(window.allPosts);
                 }
 
-                // Initial Story Load Attempt (will prioritize Follow Feed if logged in)
+                // Initial Story Load Attempt
                 loadStoryFeed();
                 updateGreeting();
                 isLoadingPosts = false;
@@ -1048,7 +1176,7 @@ html
             if(document.getElementById('pendingListContainer').style.display === 'block') renderPendingList();
         });
 
-        // --- GREETING & STORIES (Modified for Feature 2) ---
+        // --- GREETING & STORIES ---
         function updateGreeting() {
             const hr = new Date().getHours();
             let greet = `<i class="fas fa-moon"></i> শুভ রাত্রি`;
@@ -1062,25 +1190,19 @@ html
             document.getElementById('dateText').innerText = new Date().toLocaleDateString('bn-BD', options);
         }
 
-        // FEATURE 2: STORY FEED LOGIC
         window.loadStoryFeed = function() {
-            // Case 1: Not logged in - Show Top Writers from fetched posts
             if (!window.currentUser) {
                 renderDefaultStories();
                 return;
             }
 
-            // Case 2: Logged in - Fetch 'following' list
             get(ref(db, 'following/' + window.currentUser.uid)).then(snap => {
                 const followingMap = snap.val();
-                
-                // Case 2a: Following no one - Show Top Writers
                 if (!followingMap) {
                     renderDefaultStories();
                     return;
                 }
 
-                // Case 2b: Fetch details for followed users
                 const uids = Object.keys(followingMap);
                 const promises = uids.map(uid => get(ref(db, 'users/' + uid)));
 
@@ -1092,8 +1214,6 @@ html
                             const uid = userSnap.key;
                             const lastViewed = followingMap[uid].timestamp || 0;
                             const lastPost = uData.lastPostTimestamp || 0;
-                            
-                            // Determine if active (Blue Ring)
                             const isNew = lastPost > lastViewed;
 
                             storyData.push({
@@ -1106,7 +1226,6 @@ html
                         }
                     });
 
-                    // Sort: Blue Rings (Active) first, then by lastPost timestamp desc
                     storyData.sort((a, b) => {
                         if (a.isNew && !b.isNew) return -1;
                         if (!a.isNew && b.isNew) return 1;
@@ -1119,7 +1238,6 @@ html
         };
 
         function renderDefaultStories() {
-            // Existing Logic: Scrape window.allPosts
             const authors = {};
             window.allPosts.forEach(p => { if(p.author && p.userImg && !authors[p.author]) authors[p.author] = {img: p.userImg, uid: p.uid}; });
             const top = Object.entries(authors).slice(0, 10);
@@ -1145,14 +1263,11 @@ html
         }
 
         window.handleStoryClick = function(targetUid) {
-            // 1. Update timestamp in DB to mark as seen
             if (window.currentUser) {
                 update(ref(db, `following/${window.currentUser.uid}/${targetUid}`), { timestamp: Date.now() });
             }
-            // 2. Navigate
             viewUserProfile(targetUid);
-            // 3. Optimistic UI update (remove blue ring immediately)
-            loadStoryFeed(); // Rerender
+            loadStoryFeed(); 
         };
 
         // --- LONG PRESS LOGIC ---
@@ -1306,6 +1421,8 @@ html
             if(!checkAuth()) return;
             const alreadyLiked = localStorage.getItem('LIKED_'+key);
             let newCount = count || 0;
+            const post = window.allPosts.find(p => p.key === key);
+            
             if (alreadyLiked) {
                 newCount = Math.max(0, newCount - 1);
                 update(ref(db, 'posts/'+key), {likes: newCount});
@@ -1315,6 +1432,11 @@ html
                 update(ref(db, 'posts/'+key), {likes: newCount});
                 localStorage.setItem('LIKED_'+key, true);
                 showToast("লাইক দিয়েছেন ❤️");
+                
+                // UPDATE 2: Send Notification
+                if(post && post.uid && post.uid !== window.currentUser.uid) {
+                    sendNotification(post.uid, 'like', key);
+                }
             }
             if (btn && btn.id === 'detailLikeBtn') {
                 btn.querySelector('span').innerText = newCount; updateLikeVisual(btn, key);
@@ -1324,27 +1446,96 @@ html
             }
         };
 
+        // --- UPDATE 3: NESTED COMMENTS LOGIC ---
         window.openCommentsSheet = (key) => {
             if(!checkAuth()) return;
             document.getElementById('sheetTitle').innerText = 'মন্তব্য';
             document.getElementById('sheetBody').innerHTML = '<p style="text-align:center;">লোড হচ্ছে...</p>';
             document.getElementById('sheetFooter').style.display = 'flex';
             document.getElementById('universalBottomSheet').classList.add('active');
+            
+            // Reset reply state
+            cancelReply(); 
+
+            // Listener for this specific post
             onValue(ref(db, 'comments/'+key), snap => {
                 const data = snap.val();
-                const html = data ? Object.values(data).map(c => `
-                    <div style="margin-bottom:10px; border-bottom:1px solid var(--border-color); padding-bottom:5px;">
-                        <div style="font-weight:bold; font-size:12px;">${c.author}</div>
-                        <div style="font-size:14px;">${c.text}</div>
-                    </div>`).join('') : '<p style="text-align:center; color:var(--secondary-text);">কোনো মন্তব্য নেই</p>';
+                if(!data) {
+                     document.getElementById('sheetBody').innerHTML = '<p style="text-align:center; color:var(--secondary-text);">কোনো মন্তব্য নেই</p>';
+                     return;
+                }
+
+                const allComments = Object.entries(data).map(([k,v]) => ({key:k, ...v}));
+                const parents = allComments.filter(c => !c.parentId);
+                const children = allComments.filter(c => c.parentId);
+
+                let html = '';
+                parents.forEach(p => {
+                    // Render Parent
+                    html += renderCommentHTML(p, false);
+                    // Render Children
+                    const replies = children.filter(c => c.parentId === p.key);
+                    replies.forEach(r => {
+                        html += renderCommentHTML(r, true);
+                    });
+                });
+                
                 document.getElementById('sheetBody').innerHTML = html;
             });
-            document.getElementById('sheetSendBtn').onclick = () => {
+
+            // Submit Handler
+            const sendBtn = document.getElementById('sheetSendBtn');
+            sendBtn.onclick = () => {
                 const txt = document.getElementById('sheetInput').value;
                 if(!txt) return;
-                push(ref(db, 'comments/'+key), { text: txt, author: window.currentUser.displayName, timestamp: Date.now() });
+                
+                const commentData = { 
+                    text: txt, 
+                    author: window.currentUser.displayName, 
+                    timestamp: Date.now(),
+                    parentId: replyingToCommentId // Will be null if main comment
+                };
+
+                push(ref(db, 'comments/'+key), commentData);
                 document.getElementById('sheetInput').value = '';
+                
+                // UPDATE 2: Notify Author
+                const post = window.allPosts.find(p => p.key === key);
+                if(post && post.uid && post.uid !== window.currentUser.uid) {
+                    sendNotification(post.uid, 'comment', key);
+                }
+                
+                // Reset reply mode
+                cancelReply();
             };
+        };
+
+        function renderCommentHTML(c, isReply) {
+            const indentClass = isReply ? 'nested-reply' : '';
+            // Only show reply button for main comments
+            const replyBtn = !isReply ? `<button class="reply-btn" onclick="startReply('${c.key}', '${c.author}')">উত্তর দিন</button>` : '';
+            
+            return `
+            <div class="${indentClass}" style="margin-bottom:10px; border-bottom:1px solid var(--border-color); padding-bottom:5px;">
+                <div style="font-weight:bold; font-size:12px;">${c.author}</div>
+                <div style="font-size:14px;">${c.text}</div>
+                ${replyBtn}
+            </div>`;
+        }
+
+        window.startReply = function(commentId, authorName) {
+            replyingToCommentId = commentId;
+            const input = document.getElementById('sheetInput');
+            input.placeholder = `Replying to ${authorName}...`;
+            input.focus();
+            document.getElementById('cancelReplyBtn').style.display = 'block';
+        };
+
+        window.cancelReply = function() {
+            replyingToCommentId = null;
+            const input = document.getElementById('sheetInput');
+            input.placeholder = "মন্তব্য লিখুন...";
+            document.getElementById('cancelReplyBtn').style.display = 'none';
         };
 
         // --- ADMIN & WRITE LOGIC ---
@@ -1451,7 +1642,7 @@ html
                 postData.voice = document.getElementById('voiceUrl').value;
                 postData.isPinned = document.getElementById('isPinned').checked;
                 push(ref(db, 'posts'), postData).then(() => {
-                    // FEATURE 2: Update User Timestamp on New Post
+                    // Update User Timestamp on New Post
                     if(window.currentUser) {
                         update(ref(db, 'users/' + window.currentUser.uid), { lastPostTimestamp: Date.now() });
                     }
@@ -1544,14 +1735,13 @@ html
             document.getElementById('profileEditBtn').style.display = isMe ? 'flex' : 'none';
             document.getElementById('logoutBtn').style.display = isMe ? 'block' : 'none';
 
-            // FEATURE 1: Follow Button Logic
+            // Follow Button Logic
             const followBtn = document.getElementById('profileFollowBtn');
             if (isMe) {
                 followBtn.style.display = 'none';
             } else {
                 followBtn.style.display = 'block';
                 if (window.currentUser) {
-                    // Check if already following
                     get(ref(db, `followers/${uid}/${window.currentUser.uid}`)).then(snap => {
                         if (snap.exists()) {
                             followBtn.classList.add('following');
@@ -1597,7 +1787,7 @@ html
                 if(data.instaLink) socialHtml += `<a href="${data.instaLink}" target="_blank" class="social-link-btn"><i class="fab fa-instagram"></i></a>`;
                 socialContainer.innerHTML = socialHtml;
 
-                // Stats & Posts (Client side filtering of loaded posts - limitation of NoSQL without indexing)
+                // Stats & Posts
                 get(query(ref(db, 'posts'), orderByChild('uid'), equalTo(uid), limitToLast(20))).then(postSnap => {
                      const userPosts = postSnap.val() ? Object.values(postSnap.val()) : [];
                      document.getElementById('statPosts').innerText = userPosts.length;
@@ -1619,7 +1809,6 @@ html
             });
         };
 
-        // FEATURE 1: Toggle Follow Function
         window.toggleFollow = function() {
             if (!checkAuth()) return;
             const targetUid = currentlyViewingUid;
@@ -1637,16 +1826,13 @@ html
                 followersStat.innerText = Math.max(0, parseInt(followersStat.innerText) - 1);
             } else {
                 // FOLLOW
-                // Feature 2 requires specific structure for 'following': { timestamp: 0 }
                 update(ref(db, `followers/${targetUid}`), { [myUid]: true });
-                update(ref(db, `following/${myUid}`), { [targetUid]: { timestamp: Date.now() } }); // Mark as seen initially so no blue ring immediately
+                update(ref(db, `following/${myUid}`), { [targetUid]: { timestamp: Date.now() } }); 
                 
                 btn.classList.add('following');
-                btn.innerText = 'Follow'; // CSS handles "ing"
+                btn.innerText = 'Follow';
                 followersStat.innerText = parseInt(followersStat.innerText) + 1;
             }
-            
-            // Refresh stories to reflect change
             setTimeout(loadStoryFeed, 1000);
         };
 
@@ -1698,15 +1884,23 @@ html
             .then(() => {
                 document.getElementById('editProfileSheet').classList.remove('active');
                 showToast('প্রোফাইল আপডেট হয়েছে ✅');
-                loadProfile(); // Refresh view
+                loadProfile(); 
             });
         });
 
         // --- NAVIGATION & ADMIN TAP ---
         window.navTo = function(page, btn) {
-            if (page === 'profile' && !window.currentUser) {
-                performLogin();
-                return;
+            // UPDATE 1: Profile Navigation Fix Logic
+            if (page === 'profile') {
+                if(!window.currentUser) {
+                    performLogin();
+                    return;
+                }
+                // Clear URL params to reset view to self
+                const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                window.history.pushState({path:newurl},'',newurl);
+                currentlyViewingUid = window.currentUser.uid;
+                loadProfile(window.currentUser.uid);
             }
 
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
@@ -1718,18 +1912,16 @@ html
 
             if(page === 'home') {
                 feedView.style.display = 'block'; 
-                // Reset URL params to remove uid
                  if(history.pushState) {
                     const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname;
                     window.history.pushState({path:newurl},'',newurl);
                 }
                 filterCategory('সব', document.querySelector('.cat-btn'));
-                // Refresh stories when returning home
                 loadStoryFeed();
             } else if(page === 'saved') {
                 feedView.style.display = 'block'; filterCategory('সংরক্ষিত');
             } else if(page === 'profile') {
-                profileView.style.display = 'block'; loadProfile();
+                profileView.style.display = 'block'; 
             }
         };
 
@@ -1760,18 +1952,13 @@ html
         window.filterCategory = function(cat, btn) {
             if(btn) { document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
             document.getElementById('searchBar').value = '';
-
             activeCategoryFilter = cat;
-
-            // Trigger Smart Load for this category
             loadPostsChunk(true);
         };
 
         window.filterPosts = function(q) {
-            // Client side filter of loaded posts (Search)
             q = q.toLowerCase();
             document.getElementById('searchClearBtn').style.display = q ? 'block' : 'none';
-            // Only filter what is in memory
             renderFeed(window.allPosts.filter(p => p.title.toLowerCase().includes(q) || p.author.toLowerCase().includes(q)));
         };
         window.clearSearch = function() { document.getElementById('searchBar').value = ''; filterPosts(''); };
