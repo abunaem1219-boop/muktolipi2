@@ -176,10 +176,10 @@
         /* Post Card Details */
         .pinned-badge { position: absolute; top: 15px; right: 15px; color: #e74c3c; font-size: 16px; transform: rotate(45deg); z-index: 2; }
         
-        .author-info { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .author-info { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; cursor: pointer; }
         .avatar-circle { width: 34px; height: 34px; background: #e4e6eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; border: 1px solid var(--border-color);}
-        .avatar-circle img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
-        .author-text h4 { margin: 0; font-size: 14px; font-weight: 700; cursor: pointer; }
+        .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+        .author-text h4 { margin: 0; font-size: 14px; font-weight: 700; }
         .post-meta { font-size: 11px; color: var(--secondary-text); display: flex; align-items: center; gap: 5px; }
 
         .post-title { font-size: 17px; margin: 0 0 8px 0; font-weight: 700; line-height: 1.35; color: var(--text-color); }
@@ -319,30 +319,10 @@
         }
         .p-tab-btn.active { background: var(--sheet-bg); color: var(--primary-color); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
 
-        /* Social Links */
-        .social-links {
-            display: flex; justify-content: center; gap: 15px; margin-top: 10px;
-        }
-        .social-icon {
-            color: var(--secondary-text); font-size: 18px; cursor: pointer;
-            transition: color 0.3s, transform 0.3s;
-        }
-        .social-icon:hover {
-            color: var(--primary-color); transform: translateY(-2px);
-        }
-        .profile-edit-buttons {
-            display: flex; gap: 10px; justify-content: center; margin-top: 20px;
-        }
-        .btn-edit-profile {
-            background: var(--gradient-primary); color: white; border: none;
-            padding: 8px 20px; border-radius: 20px; cursor: pointer;
-            font-size: 14px; font-weight: 600;
-        }
-        .btn-logout {
-            background: rgba(231, 76, 60, 0.1); color: #e74c3c; border: none;
-            padding: 8px 20px; border-radius: 20px; cursor: pointer;
-            font-size: 14px; font-weight: 600;
-        }
+        .social-links { margin-top: 10px; display: flex; justify-content: center; gap: 15px; }
+        .social-link-btn { font-size: 20px; color: var(--secondary-text); transition: 0.2s; }
+        .social-link-btn:hover { color: var(--primary-color); transform: scale(1.1); }
+        .fa-facebook { color: #1877f2; } .fa-instagram { color: #e1306c; }
 
         /* Bottom Sheet & Modals */
         .bottom-sheet-overlay {
@@ -464,20 +444,7 @@
         .sk-line { width: 100%; height: 12px; margin-bottom: 6px; }
         .sk-line.short { width: 60%; }
 
-        /* Infinite Scroll Loading */
-        .loading-spinner {
-            text-align: center; padding: 20px; color: var(--secondary-text);
-        }
-        .spinner-small {
-            width: 30px; height: 30px; border: 3px solid var(--border-color);
-            border-top: 3px solid var(--primary-color); border-radius: 50%;
-            animation: spin 1s linear infinite; margin: 0 auto 10px;
-        }
-        .end-of-feed {
-            text-align: center; padding: 20px; color: var(--secondary-text);
-            font-size: 14px; border-top: 1px solid var(--border-color);
-            margin-top: 20px;
-        }
+        .loading-spinner-area { text-align:center; padding:20px; color:var(--secondary-text); font-size:12px; display:none; }
     </style>
 </head>
 <body>
@@ -591,13 +558,7 @@
 
             <!-- Masonry Feed -->
             <div id="feed" class="masonry-feed"></div>
-            <div id="loadingIndicator" class="loading-spinner" style="display:none;">
-                <div class="spinner-small"></div>
-                <div>লোড হচ্ছে...</div>
-            </div>
-            <div id="endOfFeed" class="end-of-feed" style="display:none;">
-                সব লেখা দেখে ফেলেছেন! 🎉
-            </div>
+            <div id="loadingSpinner" class="loading-spinner-area"><i class="fas fa-spinner fa-spin"></i> লোড হচ্ছে...</div>
         </div>
 
         <!-- Profile View -->
@@ -605,7 +566,7 @@
             <div class="profile-cover" id="profileCover">
                 <div class="profile-pic-wrapper">
                     <img id="profilePic" src="" class="profile-pic-large" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
-                    <div class="edit-fab" id="profileEditFab" onclick="openEditProfileSheet()">
+                    <div class="edit-fab" id="profileEditBtn" onclick="openEditProfileSheet()">
                         <i class="fas fa-pen"></i>
                     </div>
                 </div>
@@ -614,9 +575,7 @@
             <div class="profile-info">
                 <h2 id="profileNameDisplay" class="profile-name">Name</h2>
                 <div id="profileBioDisplay" class="profile-bio">Bio...</div>
-                <div id="socialLinks" class="social-links">
-                    <!-- Social icons injected via JS -->
-                </div>
+                <div id="profileSocialLinks" class="social-links"></div>
             </div>
 
             <div class="profile-stats-grid">
@@ -630,11 +589,6 @@
                 </div>
             </div>
 
-            <!-- Profile Edit Buttons (Only shown for own profile) -->
-            <div id="profileEditButtons" class="profile-edit-buttons">
-                <!-- Injected via JS -->
-            </div>
-
             <!-- Profile Tabs -->
             <div class="profile-tabs">
                 <button class="p-tab-btn active" onclick="switchProfileTab('posts', this)">লেখা</button>
@@ -645,6 +599,8 @@
             <div id="profileContentFeed" class="masonry-feed">
                 <!-- Content injected here -->
             </div>
+            
+            <button id="logoutBtn" class="btn" onclick="logoutFunc()" style="background:rgba(231, 76, 60, 0.1); color:#e74c3c; margin-top:30px;">লগআউট</button>
         </div>
 
     </div>
@@ -706,18 +662,7 @@
             <div class="sheet-body" style="padding-top:10px;">
                 <h3 style="margin-top:0; text-align:center;">প্রোফাইল এডিট</h3>
                 
-                <!-- Cover Photo Preview -->
-                <div style="position:relative; width:100%; height:100px; border-radius:10px; overflow:hidden; margin-bottom:15px; background:var(--border-color);">
-                    <img id="editCoverPreview" src="" style="width:100%; height:100%; object-fit:cover; display:none;">
-                    <div id="coverLoader" class="upload-overlay" style="border-radius:10px;">
-                        <div class="spinner"></div>
-                        <span id="coverLoadText">0%</span>
-                    </div>
-                </div>
-                <button onclick="document.getElementById('coverInput').click()" class="btn" style="background:rgba(0,0,0,0.05); color:var(--text-color); margin-bottom:15px; font-size:13px;">কভার ছবি পরিবর্তন</button>
-                <input type="file" id="coverInput" hidden accept="image/*">
-                
-                <!-- Profile Picture -->
+                <label style="font-size:12px; font-weight:bold; color:var(--secondary-text);">প্রোফাইল ছবি</label>
                 <div style="display:flex; justify-content:center; margin-bottom:15px; position:relative; width:80px; height:80px; margin:0 auto 15px auto;">
                     <img id="editProfileImgPreview" src="" style="width:100%; height:100%; border-radius:50%; object-fit:cover;" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
                     <div id="profileLoader" class="upload-overlay">
@@ -725,22 +670,26 @@
                         <span id="profileLoadText">0%</span>
                     </div>
                 </div>
-                
-                <button onclick="document.getElementById('profileImgInput').click()" class="btn" style="background:rgba(0,0,0,0.05); color:var(--text-color); margin-bottom:15px; font-size:13px;">প্রোফাইল ছবি পরিবর্তন</button>
+                <button onclick="document.getElementById('profileImgInput').click()" class="btn" style="background:rgba(0,0,0,0.05); color:var(--text-color); margin-bottom:15px; font-size:13px;">ছবি পরিবর্তন</button>
                 <input type="file" id="profileImgInput" hidden accept="image/*">
+
+                <label style="font-size:12px; font-weight:bold; color:var(--secondary-text);">কভার ফটো</label>
+                <div style="margin-bottom:10px;">
+                   <button onclick="document.getElementById('coverImgInput').click()" class="btn" style="background:rgba(0,0,0,0.05); color:var(--text-color); font-size:13px;">কভার ফটো আপলোড</button>
+                   <input type="file" id="coverImgInput" hidden accept="image/*">
+                   <input type="hidden" id="editCoverPhotoUrl">
+                </div>
                 
                 <label style="font-size:12px; font-weight:bold; color:var(--secondary-text);">আপনার নাম</label>
                 <input type="text" id="editDisplayName" placeholder="আপনার নাম" style="margin-bottom:10px;">
                 
                 <label style="font-size:12px; font-weight:bold; color:var(--secondary-text);">বায়ো</label>
-                <textarea id="editBio" placeholder="আপনার সম্পর্কে..." style="height:80px;"></textarea>
+                <textarea id="editBio" placeholder="আপনার সম্পর্কে..." style="height:60px;"></textarea>
                 
-                <label style="font-size:12px; font-weight:bold; color:var(--secondary-text); margin-top:15px;">ফেসবুক লিংক</label>
-                <input type="url" id="editFacebook" placeholder="https://facebook.com/username" style="margin-bottom:10px;">
-                
-                <label style="font-size:12px; font-weight:bold; color:var(--secondary-text);">ইনস্টাগ্রাম লিংক</label>
-                <input type="url" id="editInstagram" placeholder="https://instagram.com/username">
-                
+                <label style="font-size:12px; font-weight:bold; color:var(--secondary-text);">সোশ্যাল লিংক (অপশনাল)</label>
+                <input type="text" id="editFbLink" placeholder="ফেইসবুক লিংক" style="margin-bottom:5px;">
+                <input type="text" id="editInstaLink" placeholder="ইন্সটাগ্রাম লিংক" style="margin-bottom:10px;">
+
                 <button class="btn btn-primary" id="saveProfileBtn">সংরক্ষণ করুন</button>
                 <div style="height:20px;"></div>
             </div>
@@ -829,7 +778,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, push, set, onValue, update, remove, get, query, orderByChild, limitToLast, startAfter, endBefore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, push, set, onValue, update, remove, get, query, orderByKey, limitToLast, endBefore, equalTo, orderByChild } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         // IMPORTANT: Replace this with your actual Firebase User UID from the Firebase Console!
@@ -850,16 +799,7 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        // ========== UPDATE 1: PAGINATION VARIABLES ==========
-        window.allPosts = [];
-        window.loadedPosts = []; // Posts currently loaded for pagination
-        window.lastLoadedKey = null;
-        window.isLoadingMore = false;
-        window.hasMorePosts = true;
-        window.currentFilter = 'সব';
-        window.currentSearch = '';
-        // ====================================================
-
+        window.allPosts = []; // Stores loaded posts
         window.allComments = {}; 
         window.pendingPosts = [];
         window.db = db; window.ref = ref; window.push = push; window.set = set; window.update = update; window.remove = remove;
@@ -867,11 +807,12 @@
         const DEVICE_ID = localStorage.getItem('USER_DEVICE_ID') || 'u_' + Date.now();
         localStorage.setItem('USER_DEVICE_ID', DEVICE_ID);
 
-        // ========== UPDATE 2: PROFILE VISITING VARIABLES ==========
-        let viewingProfileUid = null;
-        let viewingProfileData = null;
-        // =========================================================
-
+        // Pagination Variables
+        let lastLoadedKey = null;
+        let isLoadingPosts = false;
+        let reachedEnd = false;
+        let activeCategoryFilter = 'সব';
+        
         // --- FONT CHANGER ---
         const fontFamilies = ["'Hind Siliguri', sans-serif", "'Noto Serif Bengali', serif", "'Galada', cursive"];
         window.toggleFont = function() {
@@ -895,50 +836,28 @@
             if(user) {
                 syncUserProfile(user);
                 document.getElementById('loginModal').style.display = 'none';
+                // Reload profile if currently on profile view and looking at self
                 if(document.getElementById('profileView').style.display === 'block') {
-                    checkUrlForProfileUid();
-                    loadProfile();
+                    const params = new URLSearchParams(window.location.search);
+                    if(!params.get('uid') || params.get('uid') === user.uid) loadProfile();
                 }
             } else {
-                localStorage.removeItem('IS_ADMIN'); // Clear admin status on logout
+                localStorage.removeItem('IS_ADMIN');
             }
-            // Load initial posts after auth state is known
-            loadInitialPosts();
         });
 
         window.performLogin = () => signInWithPopup(auth, provider).catch(console.error);
 
-        // ========== UPDATE 2: ENHANCED USER PROFILE SYNC ==========
         function syncUserProfile(user) {
             const userRef = ref(db, 'users/' + user.uid);
             get(userRef).then(snapshot => {
                 if(!snapshot.exists()) {
-                    set(userRef, { 
-                        displayName: user.displayName, 
-                        email: user.email, 
-                        photoURL: user.photoURL, 
-                        bio: "আমি মুক্তলিপি ব্যবহার করছি।", 
-                        coverPhoto: "",
-                        facebook: "",
-                        instagram: "",
-                        joinDate: Date.now(),
-                        uid: user.uid
-                    });
-                } else {
-                    // Update existing user with uid if missing
-                    const data = snapshot.val();
-                    if(!data.uid) {
-                        update(userRef, { uid: user.uid });
-                    }
+                    set(userRef, { displayName: user.displayName, email: user.email, photoURL: user.photoURL, bio: "আমি মুক্তলিপি ব্যবহার করছি।", joinDate: Date.now() });
                 }
             });
         }
-        // =========================================================
         
-        window.logoutFunc = () => signOut(auth).then(() => { 
-            showToast("লগআউট হয়েছে"); 
-            navTo('home', document.querySelector('.nav-item')); 
-        });
+        window.logoutFunc = () => signOut(auth).then(() => { showToast("লগআউট হয়েছে"); window.location.href = window.location.origin; });
 
         function updateAuthUI(user) {
             if(user) {
@@ -958,17 +877,13 @@
         // --- GLOBAL COMMENTS LISTENER ---
         onValue(ref(db, 'comments'), (snapshot) => {
             window.allComments = snapshot.val() || {};
-            if(window.loadedPosts.length > 0) {
-                const activeCat = document.querySelector('.cat-btn.active')?.innerText.trim() || 'সব';
-                filterCategory(activeCat);
-            }
         });
 
         // --- SKELETON LOADING ---
         window.renderSkeletons = function() {
             const feed = document.getElementById('feed');
             let html = '';
-            for(let i=0; i<6; i++) {
+            for(let i=0; i<4; i++) {
                 html += `
                 <div class="skeleton-card">
                     <div class="sk-header">
@@ -987,137 +902,106 @@
             }
             feed.innerHTML = html;
         };
-        // Trigger skeletons on load
+        // Trigger skeletons initially
         window.renderSkeletons();
 
-        // ========== UPDATE 1: PAGINATION FUNCTIONS ==========
-        async function loadInitialPosts() {
-            renderSkeletons();
-            window.allPosts = [];
-            window.loadedPosts = [];
-            window.lastLoadedKey = null;
-            window.hasMorePosts = true;
-            
-            // Load first 10 posts
-            await loadPosts();
-        }
+        // --- SMART FEED LOGIC (Pagination) ---
+        window.loadPostsChunk = function(reset = false) {
+            if (isLoadingPosts || (reachedEnd && !reset)) return;
+            isLoadingPosts = true;
+            const spinner = document.getElementById('loadingSpinner');
+            spinner.style.display = 'block';
 
-        async function loadPosts() {
-            if (window.isLoadingMore || !window.hasMorePosts) return;
-            
-            window.isLoadingMore = true;
-            document.getElementById('loadingIndicator').style.display = 'block';
-            document.getElementById('endOfFeed').style.display = 'none';
-
-            try {
-                let postsQuery;
-                const postsRef = ref(db, 'posts');
-                
-                if (window.lastLoadedKey) {
-                    // Load next 10 posts after the last loaded key
-                    postsQuery = query(
-                        postsRef,
-                        orderByChild('timestamp'),
-                        endBefore(window.lastLoadedKey), // Changed to endBefore for descending order
-                        limitToLast(10)
-                    );
-                } else {
-                    // Load first 10 posts
-                    postsQuery = query(
-                        postsRef,
-                        orderByChild('timestamp'),
-                        limitToLast(10)
-                    );
-                }
-
-                const snapshot = await get(postsQuery);
-                if (snapshot.exists()) {
-                    const postsData = snapshot.val();
-                    const postsArr = Object.entries(postsData).map(([key, val]) => ({ key, ...val }));
-                    
-                    // Sort by timestamp descending (newest first)
-                    postsArr.sort((a, b) => b.timestamp - a.timestamp);
-                    
-                    // Remove the first item if it's the same as lastLoadedKey (edge case)
-                    if (postsArr.length > 0 && postsArr[0].key === window.lastLoadedKey) {
-                        postsArr.shift();
-                    }
-                    
-                    if (postsArr.length > 0) {
-                        // Update last loaded key
-                        window.lastLoadedKey = postsArr[postsArr.length - 1].key;
-                        
-                        // Add to all posts
-                        window.allPosts = [...window.allPosts, ...postsArr];
-                        window.loadedPosts = [...window.loadedPosts, ...postsArr];
-                        
-                        // Process and render
-                        processLoadedData();
-                        
-                        if (postsArr.length < 10) {
-                            window.hasMorePosts = false;
-                            document.getElementById('endOfFeed').style.display = 'block';
-                        }
-                    } else {
-                        window.hasMorePosts = false;
-                        document.getElementById('endOfFeed').style.display = 'block';
-                    }
-                } else {
-                    window.hasMorePosts = false;
-                    document.getElementById('endOfFeed').style.display = 'block';
-                }
-            } catch (error) {
-                console.error("Error loading posts:", error);
-                showToast("পোস্ট লোড করতে সমস্যা হয়েছে");
-            } finally {
-                window.isLoadingMore = false;
-                document.getElementById('loadingIndicator').style.display = 'none';
+            if (reset) {
+                window.allPosts = [];
+                lastLoadedKey = null;
+                reachedEnd = false;
+                document.getElementById('feed').innerHTML = ''; // Clear feed
+                renderSkeletons();
             }
-        }
 
-        function processLoadedData() {
-            // Sort by pinned first, then timestamp
-            const sortedPosts = [...window.loadedPosts].sort((a, b) => {
-                if (a.isPinned && !b.isPinned) return -1;
-                if (!a.isPinned && b.isPinned) return 1;
-                return b.timestamp - a.timestamp;
-            });
+            // Logic: Load last 10 posts, ending before the last loaded key
+            let postsRef = ref(db, 'posts');
+            let postsQuery;
 
-            renderStories(sortedPosts);
-            
-            // Apply current filter
-            if (window.currentFilter === 'সব') {
-                renderFeed(sortedPosts);
-            } else if (window.currentFilter === 'জনপ্রিয়') {
-                const popular = sortedPosts.sort((a, b) => (b.likes || 0) - (a.likes || 0));
-                renderFeed(popular);
+            if (activeCategoryFilter !== 'সব' && activeCategoryFilter !== 'সংরক্ষিত') {
+                // Category Filter Mode (Limited to last 50 for simplicity in this architecture)
+                // Note: For full pagination with category, complex indexing is needed. 
+                // Here we fetch a batch and filter client-side or use orderByChild if index exists.
+                // Simpler approach compatible with constraints: Fetch recent posts of category.
+                postsQuery = query(postsRef, orderByChild('category'), equalTo(activeCategoryFilter), limitToLast(20));
             } else {
-                const filtered = sortedPosts.filter(p => p.category === window.currentFilter);
-                renderFeed(filtered);
+                // Default Feed & Infinite Scroll
+                if (lastLoadedKey) {
+                    postsQuery = query(postsRef, orderByKey(), limitToLast(10), endBefore(lastLoadedKey));
+                } else {
+                    postsQuery = query(postsRef, orderByKey(), limitToLast(10));
+                }
             }
-            
-            // Apply search if active
-            if (window.currentSearch) {
-                filterPosts(window.currentSearch);
-            }
-            
-            updateGreeting();
-        }
 
-        // Infinite scroll listener
-        window.addEventListener('scroll', function() {
-            if (window.isLoadingMore || !window.hasMorePosts) return;
-            
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            const scrollHeight = document.documentElement.scrollHeight;
-            const clientHeight = document.documentElement.clientHeight;
-            
-            // Load more when 100px from bottom
-            if (scrollTop + clientHeight >= scrollHeight - 100) {
-                loadPosts();
+            get(postsQuery).then((snapshot) => {
+                spinner.style.display = 'none';
+                const data = snapshot.val();
+                
+                if (!data) {
+                    reachedEnd = true;
+                    if(window.allPosts.length === 0) document.getElementById('feed').innerHTML = '<div style="text-align:center; padding:30px;">কোনো পোস্ট নেই</div>';
+                    isLoadingPosts = false;
+                    return;
+                }
+
+                const newPosts = Object.entries(data).map(([key, val]) => ({ key, ...val }));
+                // Reverse because limitToLast gives ascending order (oldest to newest in the chunk)
+                newPosts.sort((a, b) => b.timestamp - a.timestamp);
+
+                if (newPosts.length < 10) reachedEnd = true;
+                
+                // Update cursor
+                // Since we sorted desc, the last item in this array is the oldest of the chunk
+                // However, limitToLast returns keys sorted ascending. The "first" key in snapshot is the oldest.
+                const keys = Object.keys(data).sort();
+                lastLoadedKey = keys[0]; 
+
+                window.allPosts = [...window.allPosts, ...newPosts];
+                
+                // If filter is saved, filter manually (as we can't query saved + pagination easily)
+                if (activeCategoryFilter === 'সংরক্ষিত') {
+                   const savedKeys = JSON.parse(localStorage.getItem('SAVED_POSTS') || '[]');
+                   const savedPosts = window.allPosts.filter(p => savedKeys.includes(p.key));
+                   renderFeed(savedPosts);
+                } else {
+                   renderFeed(window.allPosts);
+                }
+
+                // Update Stories based on loaded authors
+                renderStories(window.allPosts);
+                updateGreeting();
+                isLoadingPosts = false;
+            }).catch(err => {
+                console.error(err);
+                spinner.style.display = 'none';
+                isLoadingPosts = false;
+            });
+        };
+
+        // Initial Load
+        loadPostsChunk(true);
+
+        // Infinite Scroll Listener
+        window.addEventListener('scroll', () => {
+            if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
+                if (document.getElementById('feedView').style.display !== 'none' && activeCategoryFilter === 'সব') {
+                    loadPostsChunk();
+                }
             }
         });
-        // ===================================================
+
+        // --- PENDING POSTS ---
+        onValue(ref(db, 'pending_posts'), (snapshot) => {
+            const data = snapshot.val();
+            window.pendingPosts = data ? Object.entries(data).map(([key, val]) => ({ key, ...val })) : [];
+            if(document.getElementById('pendingListContainer').style.display === 'block') renderPendingList();
+        });
 
         // --- GREETING & STORIES ---
         function updateGreeting() {
@@ -1135,16 +1019,12 @@
 
         function renderStories(posts) {
             const authors = {};
-            posts.forEach(p => { 
-                if(p.author && p.userImg && p.uid && !authors[p.uid]) {
-                    authors[p.uid] = { name: p.author, img: p.userImg };
-                }
-            });
+            posts.forEach(p => { if(p.author && p.userImg && !authors[p.author]) authors[p.author] = {img: p.userImg, uid: p.uid}; });
             const top = Object.entries(authors).slice(0, 10);
-            const html = top.map(([uid, data]) => `
-                <div class="story-item" onclick="visitUserProfile('${uid}')">
+            const html = top.map(([name, data]) => `
+                <div class="story-item" onclick="viewUserProfile('${data.uid}')">
                     <div class="story-ring"><img src="${data.img}" class="story-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"></div>
-                    <span class="story-name">${data.name.split(' ')[0]}</span>
+                    <span class="story-name">${name.split(' ')[0]}</span>
                 </div>
             `).join('');
             document.getElementById('storiesBar').innerHTML = html;
@@ -1153,7 +1033,7 @@
         // --- LONG PRESS LOGIC ---
         let pressTimer;
         window.startLongPress = function(e, key, likes, el) {
-            if(!checkAuth()) return; // Gatekeeper
+            if(!checkAuth()) return;
             e.stopPropagation();
             pressTimer = setTimeout(() => { showReactions(key, el); }, 600);
         };
@@ -1196,24 +1076,10 @@
             return map[type] || {icon: 'fas fa-heart', color: '#e74c3c'};
         }
 
-        // ========== UPDATE 2: AUTHOR CLICK HANDLER ==========
-        window.visitUserProfile = function(uid) {
-            // Set URL parameter
-            const url = new URL(window.location);
-            url.searchParams.set('uid', uid);
-            window.history.pushState({}, '', url);
-            
-            // Navigate to profile view
-            navTo('profile', document.querySelector('.nav-item[onclick*="profile"]'));
-        };
-        // ====================================================
-
         // --- RENDER FEED & ADMIN BUTTONS ---
         window.renderFeed = function(posts, targetId = 'feed') {
             const feed = document.getElementById(targetId);
-            if(!posts || posts.length === 0) {
-                return feed.innerHTML = '<div style="text-align:center; padding:30px; width:100%;">কোনো পোস্ট নেই</div>';
-            }
+            if(!posts || !posts.length) return feed.innerHTML = '<div style="text-align:center; padding:30px; width:100%;">কোনো পোস্ট নেই</div>';
             
             const isAdmin = localStorage.getItem('IS_ADMIN') === 'true';
             
@@ -1245,11 +1111,9 @@
                          <button class="admin-btn-del" onclick="event.stopPropagation(); deletePost('${post.key}')"><i class="fas fa-trash"></i></button>
                     </div>
 
-                    <div class="author-info">
-                        <div class="avatar-circle" onclick="event.stopPropagation(); visitUserProfile('${post.uid || ''}')">
-                            <img src="${authorImg}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
-                        </div>
-                        <div class="author-text" onclick="event.stopPropagation(); visitUserProfile('${post.uid || ''}')">
+                    <div class="author-info" onclick="event.stopPropagation(); viewUserProfile('${post.uid}')">
+                        <div class="avatar-circle"><img src="${authorImg}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"></div>
+                        <div class="author-text">
                             <h4>${post.author}</h4>
                             <div class="post-meta"><i class="far fa-clock"></i> ${post.date}</div>
                         </div>
@@ -1408,12 +1272,11 @@
         window.approvePost = function(key) {
             const post = window.pendingPosts.find(p => p.key === key);
             if(!post) return;
-            // Move to 'posts'
-            const { key: _, ...postData } = post; // remove key
+            const { key: _, ...postData } = post; 
             push(ref(db, 'posts'), postData).then(() => {
                 remove(ref(db, 'pending_posts/'+key));
                 showToast("পোস্ট অনুমোদিত হয়েছে ✅");
-                renderPendingList(); // auto refresh happens via onValue but good to be safe
+                renderPendingList();
             });
         };
 
@@ -1422,11 +1285,9 @@
         };
 
         window.deletePost = function(key) {
-            // SECURITY CHECK: Verify UID before deleting
             if (!window.currentUser || window.currentUser.uid !== ADMIN_UID) {
-                return showToast("Permission Denied: You are not an admin 🚫");
+                return showToast("Permission Denied 🚫");
             }
-
             Swal.fire({
                 title: 'ডিলিট করবেন?', text: "এটি ফিরে পাওয়া যাবে না!", icon: 'warning',
                 showCancelButton: true, confirmButtonText: 'হ্যাঁ, ডিলিট'
@@ -1497,17 +1358,14 @@
             }).catch(() => { loader.style.display = 'none'; showToast("আপলোড ব্যর্থ"); });
         });
 
-        // ========== UPDATE 2: COVER PHOTO UPLOAD ==========
-        document.getElementById('coverInput').addEventListener('change', function() {
-            if(!this.files[0]) return;
-            const loader = document.getElementById('coverLoader');
-            loader.style.display = 'flex';
-            uploadImageXHR(this.files[0], (p)=>document.getElementById('coverLoadText').innerText=p+'%')
-            .then(url => {
-                document.getElementById('editCoverPreview').src = url;
-                document.getElementById('editCoverPreview').style.display = 'block';
-                loader.style.display = 'none';
-            }).catch(() => { loader.style.display = 'none'; showToast("আপলোড ব্যর্থ"); });
+        // Cover Photo Upload Listener
+        document.getElementById('coverImgInput').addEventListener('change', function() {
+             if(!this.files[0]) return;
+             showToast("কভার ফটো আপলোড হচ্ছে...");
+             uploadImageXHR(this.files[0]).then(url => {
+                 document.getElementById('editCoverPhotoUrl').value = url;
+                 showToast("কভার ফটো আপলোড সফল ✅");
+             }).catch(() => showToast("আপলোড ব্যর্থ ❌"));
         });
 
         function uploadImageXHR(file, onProgress) {
@@ -1521,135 +1379,107 @@
                 xhr.send(formData);
             });
         }
-        // ==================================================
 
-        // ========== UPDATE 2: ENHANCED PROFILE SYSTEM ==========
-        function checkUrlForProfileUid() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const uid = urlParams.get('uid');
-            
-            if (uid && uid !== 'null' && uid !== 'undefined') {
-                viewingProfileUid = uid;
-                viewingProfileData = null;
-                return true;
-            } else {
-                viewingProfileUid = null;
-                viewingProfileData = null;
-                return false;
-            }
-        }
+        // --- PROFILE LOGIC (View & Customization) ---
+        window.viewUserProfile = function(uid) {
+            if (!uid || uid === 'undefined') return;
+            // Update URL to support deep linking if we were doing routing, for now just load
+            navTo('profile');
+            loadProfile(uid);
+        };
 
-        window.loadProfile = function() {
-            // Check URL for profile UID
-            const hasUrlUid = checkUrlForProfileUid();
-            
-            // Determine which profile to load
-            const targetUid = viewingProfileUid || (window.currentUser ? window.currentUser.uid : null);
-            
-            if (!targetUid) {
+        window.loadProfile = function(targetUid) {
+            // Determine UID: Passed UID -> URL Param -> Current Logged In User
+            const params = new URLSearchParams(window.location.search);
+            const urlUid = params.get('uid');
+            const uid = targetUid || urlUid || (window.currentUser ? window.currentUser.uid : null);
+
+            if(!uid) {
                 document.getElementById('profileNameDisplay').innerText = "অতিথি";
-                document.getElementById('profileEditButtons').innerHTML = '';
-                document.getElementById('profileEditFab').style.display = 'none';
                 return;
             }
+
+            // Update URL search param for shareability without reloading
+            if(history.pushState) {
+                const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?uid=' + uid;
+                window.history.pushState({path:newurl},'',newurl);
+            }
+
+            const isMe = window.currentUser && window.currentUser.uid === uid;
             
-            // Fetch user data
-            get(ref(db, 'users/' + targetUid)).then(snap => {
+            // Toggle Edit/Logout Buttons
+            document.getElementById('profileEditBtn').style.display = isMe ? 'flex' : 'none';
+            document.getElementById('logoutBtn').style.display = isMe ? 'block' : 'none';
+
+            get(ref(db, 'users/' + uid)).then(snap => {
                 const data = snap.val() || {};
-                viewingProfileData = data;
-                
-                // Update profile display
                 const pPic = data.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+                
+                // Set UI
                 document.getElementById('profilePic').src = pPic;
-                document.getElementById('editProfileImgPreview').src = pPic;
-                document.getElementById('profileNameDisplay').innerText = data.displayName || "বেনামী ব্যবহারকারী";
-                document.getElementById('profileBioDisplay').innerText = data.bio || "কোনো বায়ো নেই।";
+                document.getElementById('profileNameDisplay').innerText = data.displayName || "Unknown";
+                document.getElementById('profileBioDisplay').innerText = data.bio || "";
                 
-                // Update cover photo
-                const coverEl = document.getElementById('profileCover');
+                // Cover Photo
+                const coverUrl = data.coverPhoto || 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)';
                 if (data.coverPhoto) {
-                    coverEl.style.backgroundImage = `url('${data.coverPhoto}')`;
-                    document.getElementById('editCoverPreview').src = data.coverPhoto;
-                    document.getElementById('editCoverPreview').style.display = 'block';
+                    document.getElementById('profileCover').style.background = `url(${data.coverPhoto}) center/cover no-repeat`;
                 } else {
-                    coverEl.style.backgroundImage = '';
-                    coverEl.style.background = 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)';
-                    document.getElementById('editCoverPreview').style.display = 'none';
+                    document.getElementById('profileCover').style.background = coverUrl;
                 }
-                
-                // Update social links
-                const socialLinks = document.getElementById('socialLinks');
+
+                // Social Links
+                const socialContainer = document.getElementById('profileSocialLinks');
                 let socialHtml = '';
-                if (data.facebook) {
-                    socialHtml += `<a href="${data.facebook}" target="_blank" class="social-icon"><i class="fab fa-facebook"></i></a>`;
+                if(data.fbLink) socialHtml += `<a href="${data.fbLink}" target="_blank" class="social-link-btn"><i class="fab fa-facebook"></i></a>`;
+                if(data.instaLink) socialHtml += `<a href="${data.instaLink}" target="_blank" class="social-link-btn"><i class="fab fa-instagram"></i></a>`;
+                socialContainer.innerHTML = socialHtml;
+
+                // Stats & Posts (Client side filtering of loaded posts - limitation of NoSQL without indexing)
+                // Note: For other users, we might need a separate query to fetch THEIR posts if they aren't in the loaded feed.
+                // For this demo, we will query their last 20 posts specifically.
+                get(query(ref(db, 'posts'), orderByChild('uid'), equalTo(uid), limitToLast(20))).then(postSnap => {
+                     const userPosts = postSnap.val() ? Object.values(postSnap.val()) : [];
+                     document.getElementById('statPosts').innerText = userPosts.length;
+                     document.getElementById('statLikes').innerText = userPosts.reduce((s, p) => s + (p.likes||0), 0);
+                     
+                     // Store specifically fetched user posts in a temp variable for the profile feed render
+                     window.currentUserProfilePosts = Object.entries(postSnap.val() || {}).map(([k,v]) => ({key:k, ...v})).reverse();
+                     switchProfileTab('posts', document.querySelector('.p-tab-btn.active'));
+                });
+
+                // Prepare Edit Form (Only if Me)
+                if(isMe) {
+                    document.getElementById('editProfileImgPreview').src = pPic;
+                    document.getElementById('editDisplayName').value = data.displayName || "";
+                    document.getElementById('editBio').value = data.bio || "";
+                    document.getElementById('editFbLink').value = data.fbLink || "";
+                    document.getElementById('editInstaLink').value = data.instaLink || "";
+                    document.getElementById('editCoverPhotoUrl').value = data.coverPhoto || "";
                 }
-                if (data.instagram) {
-                    socialHtml += `<a href="${data.instagram}" target="_blank" class="social-icon"><i class="fab fa-instagram"></i></a>`;
-                }
-                socialLinks.innerHTML = socialHtml;
-                
-                // Update edit form fields
-                document.getElementById('editDisplayName').value = data.displayName || '';
-                document.getElementById('editBio').value = data.bio || '';
-                document.getElementById('editFacebook').value = data.facebook || '';
-                document.getElementById('editInstagram').value = data.instagram || '';
-                
-                // Calculate stats
-                const userPosts = window.allPosts.filter(p => p.uid === targetUid);
-                document.getElementById('statPosts').innerText = userPosts.length;
-                document.getElementById('statLikes').innerText = userPosts.reduce((s, p) => s + (p.likes||0), 0);
-                
-                // Show/hide edit buttons based on who's viewing
-                const isOwnProfile = window.currentUser && window.currentUser.uid === targetUid;
-                const editButtons = document.getElementById('profileEditButtons');
-                const editFab = document.getElementById('profileEditFab');
-                
-                if (isOwnProfile) {
-                    editButtons.innerHTML = `
-                        <button class="btn-edit-profile" onclick="openEditProfileSheet()">
-                            <i class="fas fa-pen"></i> এডিট প্রোফাইল
-                        </button>
-                        <button class="btn-logout" onclick="logoutFunc()">
-                            <i class="fas fa-sign-out-alt"></i> লগআউট
-                        </button>
-                    `;
-                    editFab.style.display = 'flex';
-                } else {
-                    editButtons.innerHTML = '';
-                    editFab.style.display = 'none';
-                }
-                
-                // Load appropriate content
-                if (isOwnProfile) {
-                    switchProfileTab('posts', document.querySelector('.p-tab-btn.active'));
-                } else {
-                    // For others' profiles, only show their posts
-                    renderFeed(userPosts, 'profileContentFeed');
-                }
-            }).catch(error => {
-                console.error("Error loading profile:", error);
-                showToast("প্রোফাইল লোড করতে সমস্যা হয়েছে");
             });
         };
 
         window.switchProfileTab = function(tab, btn) {
-            // Only allow tab switching for own profile
-            const isOwnProfile = window.currentUser && viewingProfileUid === window.currentUser.uid;
-            if (!isOwnProfile && viewingProfileUid) return;
-            
             document.querySelectorAll('.p-tab-btn').forEach(b => b.classList.remove('active'));
             if(btn) btn.classList.add('active');
             const feed = document.getElementById('profileContentFeed');
             
             if(tab === 'posts') {
-                const targetUid = viewingProfileUid || (window.currentUser ? window.currentUser.uid : null);
-                const myPosts = window.allPosts.filter(p => p.uid === targetUid);
-                renderFeed(myPosts, 'profileContentFeed');
+                // Use the specifically fetched posts for this user
+                renderFeed(window.currentUserProfilePosts || [], 'profileContentFeed');
             } else if(tab === 'drafts') {
+                if(document.getElementById('profileEditBtn').style.display === 'none') {
+                    feed.innerHTML = '<div style="text-align:center; color:#888;">গোপন তথ্য</div>'; return;
+                }
                 const drafts = JSON.parse(localStorage.getItem('MUKTOLIPI_DRAFTS_V2') || '[]');
                 feed.innerHTML = drafts.length ? drafts.map(d => `<div class="glass-panel" style="padding:15px; margin-bottom:10px; border-radius:12px;"><div style="font-weight:bold;">${d.title}</div><div style="font-size:12px;">${d.date}</div></div>`).join('') : '<div style="text-align:center;">কোনো ড্রাফট নেই</div>';
             } else if(tab === 'saved') {
+                if(document.getElementById('profileEditBtn').style.display === 'none') {
+                     feed.innerHTML = '<div style="text-align:center; color:#888;">গোপন তথ্য</div>'; return;
+                }
                 const savedKeys = JSON.parse(localStorage.getItem('SAVED_POSTS') || '[]');
+                // Note: This only shows saved posts that are currently loaded in memory
                 renderFeed(window.allPosts.filter(p => savedKeys.includes(p.key)), 'profileContentFeed');
             }
         };
@@ -1662,72 +1492,30 @@
             const newName = document.getElementById('editDisplayName').value;
             const newBio = document.getElementById('editBio').value;
             const newImg = document.getElementById('editProfileImgPreview').src;
-            const newCover = document.getElementById('editCoverPreview').src || "";
-            const facebook = document.getElementById('editFacebook').value;
-            const instagram = document.getElementById('editInstagram').value;
+            const newCover = document.getElementById('editCoverPhotoUrl').value;
+            const fb = document.getElementById('editFbLink').value;
+            const insta = document.getElementById('editInstaLink').value;
             
-            // Prepare update data
-            const updateData = {
-                displayName: newName,
-                bio: newBio,
-                photoURL: newImg,
-                coverPhoto: newCover,
-                facebook: facebook,
-                instagram: instagram
-            };
-            
-            // Wait for Auth update, then DB update, then UI refresh
             updateProfile(auth.currentUser, { displayName: newName, photoURL: newImg })
             .then(() => {
-                return update(ref(db, 'users/' + window.currentUser.uid), updateData);
+                return update(ref(db, 'users/' + window.currentUser.uid), { 
+                    displayName: newName, 
+                    bio: newBio, 
+                    photoURL: newImg,
+                    coverPhoto: newCover,
+                    fbLink: fb,
+                    instaLink: insta
+                });
             })
             .then(() => {
                 document.getElementById('editProfileSheet').classList.remove('active');
                 showToast('প্রোফাইল আপডেট হয়েছে ✅');
-                // Immediate Visual Update
-                document.getElementById('profilePic').src = newImg;
-                document.getElementById('profileNameDisplay').innerText = newName;
-                document.getElementById('profileBioDisplay').innerText = newBio;
-                
-                // Update cover photo
-                const coverEl = document.getElementById('profileCover');
-                if (newCover) {
-                    coverEl.style.backgroundImage = `url('${newCover}')`;
-                } else {
-                    coverEl.style.backgroundImage = '';
-                    coverEl.style.background = 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)';
-                }
-                
-                // Update social links
-                const socialLinks = document.getElementById('socialLinks');
-                let socialHtml = '';
-                if (facebook) {
-                    socialHtml += `<a href="${facebook}" target="_blank" class="social-icon"><i class="fab fa-facebook"></i></a>`;
-                }
-                if (instagram) {
-                    socialHtml += `<a href="${instagram}" target="_blank" class="social-icon"><i class="fab fa-instagram"></i></a>`;
-                }
-                socialLinks.innerHTML = socialHtml;
-                
-                // Update posts with new author name and image
-                const userPosts = window.allPosts.filter(p => p.uid === window.currentUser.uid);
-                userPosts.forEach(post => {
-                    update(ref(db, 'posts/' + post.key), {
-                        author: newName,
-                        userImg: newImg
-                    });
-                });
-            })
-            .catch(error => {
-                console.error("Error updating profile:", error);
-                showToast("প্রোফাইল আপডেটে সমস্যা হয়েছে");
+                loadProfile(); // Refresh view
             });
         });
-        // ==================================================
 
         // --- NAVIGATION & ADMIN TAP ---
         window.navTo = function(page, btn) {
-            // Smart Profile Login Logic
             if (page === 'profile' && !window.currentUser) {
                 performLogin();
                 return;
@@ -1742,30 +1530,20 @@
 
             if(page === 'home') {
                 feedView.style.display = 'block'; 
+                // Reset URL params to remove uid
+                 if(history.pushState) {
+                    const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                    window.history.pushState({path:newurl},'',newurl);
+                }
                 filterCategory('সব', document.querySelector('.cat-btn'));
-                // Clear profile viewing state
-                viewingProfileUid = null;
-                // Update URL
-                const url = new URL(window.location);
-                url.searchParams.delete('uid');
-                window.history.pushState({}, '', url);
             } else if(page === 'saved') {
-                feedView.style.display = 'block'; 
-                filterCategory('সংরক্ষিত');
-                // Clear profile viewing state
-                viewingProfileUid = null;
-                // Update URL
-                const url = new URL(window.location);
-                url.searchParams.delete('uid');
-                window.history.pushState({}, '', url);
+                feedView.style.display = 'block'; filterCategory('সংরক্ষিত');
             } else if(page === 'profile') {
-                profileView.style.display = 'block'; 
-                loadProfile();
+                profileView.style.display = 'block'; loadProfile();
             }
         };
 
         let tapCount = 0, tapTimer;
-        // SECURITY UPGRADE: Logic changed to verify UID instead of hardcoded password
         window.handleSecretTap = function() {
             tapCount++; clearTimeout(tapTimer);
             tapTimer = setTimeout(() => { tapCount = 0; }, 2000);
@@ -1773,19 +1551,14 @@
             if(tapCount === 5) {
                 if(navigator.vibrate) navigator.vibrate(200);
                 tapCount = 0;
-
-                // 1. Check if user is logged in
                 if (!window.currentUser) {
                     showToast("লগিন করা নেই! ❌");
                     return performLogin();
                 }
-
-                // 2. Check if UID matches Admin UID
                 if (window.currentUser.uid === ADMIN_UID) {
                     localStorage.setItem('IS_ADMIN', 'true'); 
                     showToast("অ্যাডমিন মোড চালু হয়েছে ✅");
-                    // Refresh Feed to show Admin Buttons immediately
-                    renderFeed(window.loadedPosts);
+                    renderFeed(window.allPosts);
                     openWriteModal(); 
                 } else {
                     showToast("Access Denied: You are not an Admin 🚫");
@@ -1793,61 +1566,28 @@
             }
         };
 
-        // ========== UPDATE 1: ENHANCED FILTER FUNCTIONS ==========
+        // --- MISC UTILS & CATEGORY FILTER ---
         window.filterCategory = function(cat, btn) {
-            if(btn) { 
-                document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active')); 
-                btn.classList.add('active'); 
-            }
-            
+            if(btn) { document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
             document.getElementById('searchBar').value = '';
-            window.currentFilter = cat;
-            window.currentSearch = '';
             
-            // Reset feed for new filter
-            window.loadedPosts = [...window.allPosts];
+            activeCategoryFilter = cat;
             
-            if(cat === 'সব') {
-                renderFeed(window.loadedPosts);
-            } else if(cat === 'জনপ্রিয়') {
-                const popular = [...window.loadedPosts].sort((a,b) => (b.likes||0) - (a.likes||0));
-                renderFeed(popular);
-            } else if(cat === 'সংরক্ষিত') {
-                const s = JSON.parse(localStorage.getItem('SAVED_POSTS') || '[]');
-                renderFeed(window.loadedPosts.filter(p => s.includes(p.key)));
-            } else {
-                renderFeed(window.loadedPosts.filter(p => p.category === cat));
-            }
+            // Trigger Smart Load for this category
+            loadPostsChunk(true);
         };
 
         window.filterPosts = function(q) {
+            // Client side filter of loaded posts (Search)
             q = q.toLowerCase();
-            window.currentSearch = q;
             document.getElementById('searchClearBtn').style.display = q ? 'block' : 'none';
-            
-            if (!q) {
-                // If search is cleared, revert to current filter
-                filterCategory(window.currentFilter);
-                return;
-            }
-            
-            const filtered = window.loadedPosts.filter(p => 
-                p.title.toLowerCase().includes(q) || 
-                p.author.toLowerCase().includes(q) ||
-                (p.content && p.content.toLowerCase().includes(q))
-            );
-            renderFeed(filtered);
+            // Only filter what is in memory
+            renderFeed(window.allPosts.filter(p => p.title.toLowerCase().includes(q) || p.author.toLowerCase().includes(q)));
         };
-        
-        window.clearSearch = function() { 
-            document.getElementById('searchBar').value = ''; 
-            window.currentSearch = '';
-            filterCategory(window.currentFilter); 
-        };
-        // ==================================================
+        window.clearSearch = function() { document.getElementById('searchBar').value = ''; filterPosts(''); };
 
         window.openDetailView = function(key) {
-            const post = window.allPosts.find(p => p.key === key) || window.loadedPosts.find(p => p.key === key);
+            const post = window.allPosts.find(p => p.key === key);
             if(!post) return;
             document.getElementById('detailTitle').innerText = post.title;
             document.getElementById('detailDate').innerText = post.date;
@@ -1889,7 +1629,7 @@
         };
 
         window.openShareSheet = function(key) {
-            const post = window.allPosts.find(p => p.key === key) || window.loadedPosts.find(p => p.key === key);
+            const post = window.allPosts.find(p => p.key === key);
             document.getElementById('sheetTitle').innerText = 'শেয়ার করুন';
             document.getElementById('sheetFooter').style.display = 'none';
             document.getElementById('sheetBody').innerHTML = `
@@ -1906,7 +1646,7 @@
             else copyPostLink(key);
         };
         window.downloadPostImage = (key) => {
-            const post = window.allPosts.find(p => p.key === key) || window.loadedPosts.find(p => p.key === key);
+            const post = window.allPosts.find(p => p.key === key);
             const captureArea = document.getElementById('quote-capture-area');
             captureArea.style.backgroundImage = post.image ? `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${post.image})` : 'linear-gradient(135deg, #1877f2 0%, #00c6ff 100%)';
             document.getElementById('q-text').innerText = post.title; document.getElementById('q-author').innerText = '- ' + post.author;
@@ -1938,14 +1678,6 @@
             else document.querySelector('.bottom-nav').classList.remove('nav-hidden');
             lastScrollTop = scrollTop;
             document.getElementById("readingProgress").style.width = (scrollTop / (document.documentElement.scrollHeight - document.documentElement.clientHeight)) * 100 + "%";
-        });
-
-        // Handle browser back/forward buttons for profile viewing
-        window.addEventListener('popstate', function() {
-            if (document.getElementById('profileView').style.display === 'block') {
-                checkUrlForProfileUid();
-                loadProfile();
-            }
         });
     </script>
 </body>
