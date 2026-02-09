@@ -8,7 +8,6 @@
     <!-- PWA Manifest & Meta Tags -->
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="apple-touch-ico" href="icon.png">
-    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1877f2">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="description" content="মনের কথা, মুক্ত ভাষায় - মুক্তলিপি ডায়েরি">
@@ -22,17 +21,6 @@
     <!-- Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
-    <!-- PWA Service Worker Registration -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('SW Registered!', reg.scope))
-                    .catch(err => console.log('SW Failed', err));
-            });
-        }
-    </script>
 
     <style>
         :root { 
@@ -104,7 +92,7 @@
         /* --- Header Banner --- */
         .header-banner-container {
             width: 100%; height: 120px; border-radius: 15px; overflow: hidden; margin-bottom: 15px;
-            position: relative; box-shadow: var(--shadow-soft);
+            position: relative; box-shadow: var(--shadow-soft); background-color: #ddd;
         }
         .header-banner { width: 100%; height: 100%; object-fit: cover; }
         .banner-text {
@@ -452,7 +440,7 @@
             </div>
             
             <div class="header-banner-container">
-                <img src="my_banner.jpg" class="header-banner">
+                <img src="https://images.unsplash.com/photo-1518655048521-f130df041f66?q=80&w=2070&auto=format&fit=crop" class="header-banner">
                 <div class="banner-text">মনের কথা, মুক্ত ভাষায়</div>
             </div>
 
@@ -778,8 +766,172 @@
         window.replyingToChat = null; // Chat reply
         window.replyingToCommentId = null; // Comment reply
         let reportingPostId = null;
-        
-        // --- AUTH ---
+        let msgListener = null;
+
+        // --- 1. UTILITY FUNCTIONS ATTACHED TO WINDOW (Fixing Scope) ---
+        window.showToast = (msg) => { 
+            const t = document.getElementById('toast'); 
+            document.getElementById('toastMsg').innerText = msg; 
+            t.classList.add('show'); 
+            setTimeout(() => t.classList.remove('show'), 2000); 
+        };
+
+        window.toggleTheme = () => document.body.classList.toggle('dark-theme');
+        window.closeBottomSheet = (e) => { if(!e || e.target===e.currentTarget) document.getElementById('universalBottomSheet').classList.remove('active'); };
+        window.openEditProfileSheet = () => document.getElementById('editProfileSheet').classList.add('active');
+        window.closeEditProfileSheet = (e) => { if(!e || e.target===e.currentTarget) document.getElementById('editProfileSheet').classList.remove('active'); };
+        window.execCmd = (cmd) => document.execCommand(cmd, false, null);
+        window.checkAuth = () => { if (window.currentUser) return true; document.getElementById('loginModal').style.display = 'flex'; return false; };
+
+        // --- 2. RESTORED MISSING FUNCTIONS ---
+
+        // Font Toggling
+        const fontList = ['Hind Siliguri', 'Noto Serif Bengali', 'Galada'];
+        let fontIndex = 0;
+        window.toggleFont = function() {
+            fontIndex = (fontIndex + 1) % fontList.length;
+            document.documentElement.style.setProperty('--current-font', fontList[fontIndex]);
+            window.showToast(`ফন্ট: ${fontList[fontIndex]}`);
+        };
+
+        // Audio Player Logic
+        window.toggleAudio = function() {
+            const audio = document.getElementById('globalAudio');
+            const icon = document.getElementById('playIcon');
+            if(audio.paused) {
+                audio.play();
+                icon.className = 'fas fa-pause';
+            } else {
+                audio.pause();
+                icon.className = 'fas fa-play';
+            }
+        };
+
+        window.closePlayer = function() {
+            const audio = document.getElementById('globalAudio');
+            audio.pause();
+            document.getElementById('stickyPlayer').classList.remove('active');
+        };
+
+        window.audioEnded = function() {
+             document.getElementById('playIcon').className = 'fas fa-play';
+        };
+
+        // Detail View
+        window.closeDetailView = function() {
+            document.getElementById('detailView').style.display = 'none';
+            // Show main header back if needed, though structure suggests it's fine
+        };
+
+        window.openDetailView = function(key) {
+            const post = window.allPosts.find(p => p.key === key);
+            if(!post) return;
+            
+            document.getElementById('detailView').style.display = 'flex';
+            document.getElementById('detailTitle').innerText = post.title;
+            document.getElementById('detailAuthorName').innerText = post.author;
+            document.getElementById('detailAuthorImg').src = post.userImg;
+            document.getElementById('detailDate').innerText = post.date;
+            document.getElementById('detailBody').innerHTML = post.content;
+            
+            const img = document.getElementById('detailMainImg');
+            if(post.image) {
+                img.src = post.image;
+                img.style.display = 'block';
+            } else {
+                img.style.display = 'none';
+            }
+
+            // Bind audio
+            if(post.voiceUrl) {
+                const p = document.getElementById('stickyPlayer');
+                p.classList.add('active');
+                document.getElementById('playerTitle').innerText = post.title;
+                document.getElementById('playerAuthor').innerText = post.author;
+                document.getElementById('globalAudio').src = post.voiceUrl;
+            }
+
+            // Bind interactions for the detail view
+            const likeBtn = document.getElementById('detailLikeBtn');
+            const liked = localStorage.getItem('LIKED_' + key);
+            document.getElementById('detailLikeCount').innerText = post.likes || 0;
+            if(liked) { likeBtn.style.color = '#e74c3c'; } else { likeBtn.style.color = 'var(--secondary-text)'; }
+            
+            likeBtn.onclick = () => {
+                window.handleLike(key, post.likes, { 
+                    classList: { add: ()=>{}, remove: ()=>{} }, 
+                    querySelector: ()=>({ className:'' }),
+                    innerHTML: '' // Dummy object for reuse
+                });
+                // Re-fetch to update UI (simplified)
+                const newCount = localStorage.getItem('LIKED_'+key) ? (post.likes+1) : Math.max(0, post.likes);
+                document.getElementById('detailLikeCount').innerText = newCount;
+                likeBtn.style.color = localStorage.getItem('LIKED_'+key) ? '#e74c3c' : 'var(--secondary-text)';
+            };
+
+            document.getElementById('detailCommentBtn').onclick = () => window.openCommentsSheet(key);
+            document.getElementById('detailShareBtn').onclick = () => window.openShareSheet(key);
+        };
+
+        // Search & Filter
+        window.clearSearch = function() {
+            document.getElementById('searchBar').value = '';
+            document.getElementById('searchClearBtn').style.display = 'none';
+            window.renderFeed(window.allPosts);
+        };
+
+        window.filterPosts = function(val) {
+            const clearBtn = document.getElementById('searchClearBtn');
+            clearBtn.style.display = val ? 'block' : 'none';
+            const term = val.toLowerCase();
+            const filtered = window.allPosts.filter(p => 
+                p.title.toLowerCase().includes(term) || 
+                p.author.toLowerCase().includes(term) ||
+                (p.category && p.category.toLowerCase().includes(term))
+            );
+            window.renderFeed(filtered);
+        };
+
+        window.filterCategory = function(cat, btn) {
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            if(btn) btn.classList.add('active');
+            
+            if(cat === 'সব') {
+                window.renderFeed(window.allPosts);
+            } else if (cat === 'জনপ্রিয়') {
+                const pop = [...window.allPosts].sort((a,b) => (b.likes||0) - (a.likes||0));
+                window.renderFeed(pop);
+            } else {
+                const filtered = window.allPosts.filter(p => p.category === cat);
+                window.renderFeed(filtered);
+            }
+        };
+
+        // Save Draft
+        window.saveDraft = function() {
+            const title = document.getElementById('postTitle').value;
+            const content = document.getElementById('richEditor').innerHTML;
+            localStorage.setItem('draft_title', title);
+            localStorage.setItem('draft_content', content);
+            window.showToast('ড্রাফট সেভ হয়েছে');
+        };
+
+        // Secret Tap
+        let secretCount = 0;
+        window.handleSecretTap = function() {
+            secretCount++;
+            if(secretCount === 5) {
+                window.showToast("Admin Mode Activated? (Login required)");
+                secretCount = 0;
+            }
+        };
+
+        // Library Toast
+        window.showLibraryToast = function() {
+            window.showToast("লাইব্রেরি শীঘ্রই আসছে...");
+        };
+
+        // --- 3. AUTH LOGIC ---
         onAuthStateChanged(auth, (user) => {
             window.currentUser = user;
             if(user) {
@@ -789,17 +941,22 @@
                 document.getElementById('userName').innerText = user.displayName;
                 
                 initNotificationListener(user.uid);
-                initChatListener(); // New Chat Listener
+                initChatListener(); 
                 
                 if(user.uid === ADMIN_UID) {
                     localStorage.setItem('IS_ADMIN', 'true');
                     document.getElementById('adminShield').style.display = 'inline-block';
                 }
+                // Check if draft exists
+                if(localStorage.getItem('draft_title')) {
+                    document.getElementById('postTitle').value = localStorage.getItem('draft_title');
+                    document.getElementById('richEditor').innerHTML = localStorage.getItem('draft_content');
+                }
             } else {
                 localStorage.removeItem('IS_ADMIN');
                 document.getElementById('adminShield').style.display = 'none';
             }
-            loadStoryFeed();
+            window.loadStoryFeed();
         });
 
         window.performLogin = () => signInWithPopup(auth, provider).catch(console.error);
@@ -808,20 +965,26 @@
         function syncUserProfile(user) {
             update(ref(db, 'users/' + user.uid), { displayName: user.displayName, photoURL: user.photoURL, lastActive: Date.now() });
         }
-        window.checkAuth = () => { if (window.currentUser) return true; document.getElementById('loginModal').style.display = 'flex'; return false; };
 
-        // --- FEED & POSTS ---
+        // --- 4. FEED & POSTS ---
         window.loadPostsChunk = function() {
             document.getElementById('loadingSpinner').style.display = 'block';
-            get(query(ref(db, 'posts'), limitToLast(20))).then((snapshot) => {
-                document.getElementById('loadingSpinner').style.display = 'none';
-                const data = snapshot.val();
-                if (!data) return document.getElementById('feed').innerHTML = '<div style="text-align:center; padding:30px;">কোনো পোস্ট নেই</div>';
-                
-                window.allPosts = Object.entries(data).map(([key, val]) => ({ key, ...val })).reverse();
-                renderFeed(window.allPosts);
-                loadStoryFeed();
-            });
+            try {
+                get(query(ref(db, 'posts'), limitToLast(50))).then((snapshot) => {
+                    document.getElementById('loadingSpinner').style.display = 'none';
+                    const data = snapshot.val();
+                    if (!data) return document.getElementById('feed').innerHTML = '<div style="text-align:center; padding:30px;">কোনো পোস্ট নেই</div>';
+                    
+                    window.allPosts = Object.entries(data).map(([key, val]) => ({ key, ...val })).reverse();
+                    window.renderFeed(window.allPosts);
+                    window.loadStoryFeed();
+                }).catch(err => {
+                    console.error(err);
+                    document.getElementById('loadingSpinner').style.display = 'none';
+                });
+            } catch (e) {
+                console.error("Sync Error", e);
+            }
         };
         // Initial Load
         loadPostsChunk();
@@ -834,7 +997,7 @@
                 let cleanText = content.replace(/<[^>]*>/g, '');
                 let shortText = cleanText.length > 120 ? cleanText.substring(0, 120) + '...' : cleanText;
                 
-                // Report Button Logic (Not own post)
+                // Report Button Logic
                 let reportHtml = '';
                 if(window.currentUser && window.currentUser.uid !== post.uid) {
                     reportHtml = `<div class="report-btn" onclick="event.stopPropagation(); openReportModal('${post.key}')"><i class="fas fa-flag"></i></div>`;
@@ -879,7 +1042,7 @@
             }).join('');
         };
 
-        // --- CHAT SYSTEM LOGIC ---
+        // --- 5. CHAT SYSTEM LOGIC ---
         window.initChatListener = () => {
             // Inbox
             onValue(ref(db, `user_chats/${window.currentUser.uid}`), snap => {
@@ -931,7 +1094,7 @@
             const req = document.getElementById('requestList');
             if(tab === 'requests') {
                 inbox.style.display = 'none'; req.style.display = 'block';
-                loadRequests();
+                window.loadRequests();
             } else {
                 inbox.style.display = 'block'; req.style.display = 'none';
             }
@@ -955,9 +1118,8 @@
             });
         };
 
-        let msgListener = null;
         window.openChatRoom = (targetUid, name, img, isRequest = false) => {
-            activeChatUid = targetUid;
+            window.activeChatUid = targetUid;
             document.getElementById('chatRoomView').style.display = 'flex';
             document.getElementById('chatRoomName').innerText = name;
             document.getElementById('chatRoomImg').src = img;
@@ -997,15 +1159,15 @@
             const text = input.innerText.trim();
             const fileInput = document.getElementById('chatImgInput');
             
-            if((!text && !fileInput.files[0]) || !activeChatUid) return;
+            if((!text && !fileInput.files[0]) || !window.activeChatUid) return;
 
             let imgUrl = null;
             if(fileInput.files[0]) {
-                const blob = await compressImage(fileInput.files[0]);
-                imgUrl = await uploadImageXHR(blob);
+                const blob = await window.compressImage(fileInput.files[0]);
+                imgUrl = await window.uploadImageXHR(blob);
             }
 
-            const chatId = window.currentUser.uid < activeChatUid ? `${window.currentUser.uid}_${activeChatUid}` : `${activeChatUid}_${window.currentUser.uid}`;
+            const chatId = window.currentUser.uid < window.activeChatUid ? `${window.currentUser.uid}_${window.activeChatUid}` : `${window.activeChatUid}_${window.currentUser.uid}`;
             const msgData = {
                 sender: window.currentUser.uid,
                 text: text,
@@ -1016,9 +1178,9 @@
 
             push(ref(db, `chats/${chatId}/messages`), msgData);
 
-            const followSnap = await get(ref(db, `followers/${activeChatUid}/${window.currentUser.uid}`));
+            const followSnap = await get(ref(db, `followers/${window.activeChatUid}/${window.currentUser.uid}`));
             const isFollower = followSnap.exists();
-            const hasChat = (await get(ref(db, `user_chats/${activeChatUid}/${window.currentUser.uid}`))).exists();
+            const hasChat = (await get(ref(db, `user_chats/${window.activeChatUid}/${window.currentUser.uid}`))).exists();
             
             const meta = {
                 lastMessage: imgUrl ? 'Sent a photo' : text,
@@ -1029,20 +1191,20 @@
             };
 
             const myMeta = { ...meta, seen: true, userInfo: { name: document.getElementById('chatRoomName').innerText, img: document.getElementById('chatRoomImg').src } };
-            update(ref(db, `user_chats/${window.currentUser.uid}/${activeChatUid}`), myMeta);
+            update(ref(db, `user_chats/${window.currentUser.uid}/${window.activeChatUid}`), myMeta);
 
-            const targetPath = isFollower || hasChat ? `user_chats/${activeChatUid}/${window.currentUser.uid}` : `message_requests/${activeChatUid}/${window.currentUser.uid}`;
+            const targetPath = isFollower || hasChat ? `user_chats/${window.activeChatUid}/${window.currentUser.uid}` : `message_requests/${window.activeChatUid}/${window.currentUser.uid}`;
             update(ref(db, targetPath), meta);
 
             input.innerText = '';
             fileInput.value = '';
-            cancelReply();
+            window.cancelReply();
         };
 
         window.closeChatRoom = () => {
             document.getElementById('chatRoomView').style.display = 'none';
-            activeChatUid = null;
-            if(msgListener) msgListener();
+            window.activeChatUid = null;
+            if(msgListener) msgListener(); // Unsubscribe
         };
 
         window.cancelReply = () => {
@@ -1068,9 +1230,9 @@
             });
         };
 
-        // --- ADMIN & REPORTING ---
+        // --- 6. ADMIN & REPORTING ---
         window.openReportModal = (key) => {
-            if(!checkAuth()) return;
+            if(!window.checkAuth()) return;
             reportingPostId = key;
             document.getElementById('reportModal').classList.add('active');
         };
@@ -1083,7 +1245,7 @@
                 timestamp: Date.now()
             }).then(() => {
                 document.getElementById('reportModal').classList.remove('active');
-                showToast("রিপোর্ট জমা হয়েছে। ধন্যবাদ 🛡️");
+                window.showToast("রিপোর্ট জমা হয়েছে। ধন্যবাদ 🛡️");
             });
         };
 
@@ -1108,14 +1270,12 @@
             });
         };
 
-        window.dismissReport = (key) => { remove(ref(db, `reports/${key}`)); openAdminDashboard(); };
+        window.dismissReport = (key) => { remove(ref(db, `reports/${key}`)); window.openAdminDashboard(); };
 
         window.deleteReportedPost = (postId, reportId) => {
-            // Fetch post to notify author
             get(ref(db, `posts/${postId}`)).then(snap => {
                 if(snap.exists()) {
                     const post = snap.val();
-                    // Notify Author
                     push(ref(db, `notifications/${post.uid}`), {
                         type: 'system',
                         sender: 'Admin',
@@ -1127,33 +1287,36 @@
                 }
                 remove(ref(db, `posts/${postId}`));
                 remove(ref(db, `reports/${reportId}`));
-                showToast("Post Deleted & User Notified");
-                openAdminDashboard();
+                window.showToast("Post Deleted & User Notified");
+                window.openAdminDashboard();
             });
         };
 
-        // --- NAVIGATION ---
+        // --- 7. NAVIGATION ---
         window.navTo = function(page, btn) {
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active-view'));
             if(btn) btn.classList.add('active');
-            closeDetailView();
+            window.closeDetailView();
 
             if(page === 'home') document.getElementById('feedView').classList.add('active-view');
             else if(page === 'chat') {
-                if(!checkAuth()) return;
+                if(!window.checkAuth()) return;
                 document.getElementById('chatView').classList.add('active-view');
             }
             else if(page === 'profile') {
-                if(!checkAuth()) return;
+                if(!window.checkAuth()) return;
                 document.getElementById('profileView').classList.add('active-view');
-                loadProfile();
+                window.loadProfile();
+            } else if(page === 'saved') {
+                // Not fully impl but stub
+                window.showToast("Saved posts coming soon");
             }
         };
 
-        // --- OTHER UTILS (Comments, Likes, Uploads) ---
+        // --- 8. OTHER UTILS (Comments, Likes, Uploads) ---
         window.handleLike = (key, count, btn) => {
-            if(!checkAuth()) return;
+            if(!window.checkAuth()) return;
             const alreadyLiked = localStorage.getItem('LIKED_'+key);
             let newCount = count || 0;
             if (alreadyLiked) {
@@ -1166,7 +1329,6 @@
                 update(ref(db, 'posts/'+key), {likes: newCount});
                 localStorage.setItem('LIKED_'+key, true);
                 btn.classList.add('liked'); btn.querySelector('i').className='fas fa-heart';
-                // Notify
                 const post = window.allPosts.find(p => p.key === key);
                 if(post && post.uid !== window.currentUser.uid) {
                     push(ref(db, `notifications/${post.uid}`), { type:'like', sender:window.currentUser.displayName, senderImg:window.currentUser.photoURL, read:false, timestamp:Date.now() });
@@ -1176,7 +1338,7 @@
         };
 
         window.openCommentsSheet = (key) => {
-            if(!checkAuth()) return;
+            if(!window.checkAuth()) return;
             document.getElementById('sheetTitle').innerText = 'মন্তব্য';
             document.getElementById('sheetFooter').style.display = 'flex';
             document.getElementById('universalBottomSheet').classList.add('active');
@@ -1207,8 +1369,17 @@
                 if(!txt) return;
                 push(ref(db, 'comments/'+key), { text: txt, author: window.currentUser.displayName, timestamp: Date.now(), parentId: window.replyingToCommentId });
                 document.getElementById('sheetInput').value = '';
-                cancelCommentReply();
+                window.cancelCommentReply();
             };
+        };
+        
+        window.openShareSheet = (key) => {
+             // Simple share mock
+             if(navigator.share) {
+                 navigator.share({ title: 'Muktolipi', text: 'Check this post!', url: window.location.href });
+             } else {
+                 window.showToast("Link Copied (Mock)");
+             }
         };
 
         window.startCommentReply = (id, name) => {
@@ -1224,11 +1395,11 @@
             document.getElementById('cancelReplyBtn').style.display='none';
         };
 
-        // --- PROFILE & EDIT ---
+        // --- 9. PROFILE & EDIT ---
         window.viewUserProfile = (uid) => {
             if(!uid) return;
-            navTo('profile');
-            loadProfile(uid);
+            window.navTo('profile');
+            window.loadProfile(uid);
         };
 
         window.loadProfile = (targetUid) => {
@@ -1241,12 +1412,19 @@
             document.getElementById('profileFollowBtn').style.display = isMe ? 'none' : 'block';
             document.getElementById('profileSavedViewBtn').style.display = isMe ? 'flex' : 'none';
             document.getElementById('profileChatBtn').style.display = isMe ? 'none' : 'flex';
-            document.getElementById('profileChatBtn').setAttribute('onclick', `openChatRoom('${uid}', document.getElementById('profileNameDisplay').innerText, document.getElementById('profilePic').src)`);
+            
+            // Fix Chat Btn click
+            const chatBtn = document.getElementById('profileChatBtn');
+            chatBtn.onclick = () => window.openChatRoom(uid, document.getElementById('profileNameDisplay').innerText, document.getElementById('profilePic').src);
 
             get(ref(db, 'users/'+uid)).then(snap => {
                 const data = snap.val() || {};
                 document.getElementById('profilePic').src = data.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-                document.getElementById('profileNameDisplay').childNodes[0].nodeValue = data.displayName; // Keep icon
+                // Handle Name + Admin Shield
+                document.getElementById('profileNameDisplay').innerHTML = `${data.displayName} <i id="adminShield" class="fas fa-shield-alt admin-shield" onclick="openAdminDashboard()" title="Admin Dashboard"></i>`;
+                if(localStorage.getItem('IS_ADMIN') === 'true' && isMe) document.getElementById('adminShield').style.display = 'inline-block';
+                else document.getElementById('adminShield').style.display = 'none';
+
                 document.getElementById('profileBioDisplay').innerText = data.bio || '';
                 document.getElementById('profileCover').style.background = data.coverPhoto ? `url(${data.coverPhoto}) center/cover` : 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)';
                 
@@ -1261,16 +1439,17 @@
             get(query(ref(db, 'posts'), orderByChild('uid'), equalTo(uid))).then(s => {
                 const p = s.val() ? Object.values(s.val()) : [];
                 document.getElementById('statPosts').innerText = p.length;
-                renderFeed(p.reverse(), 'profileContentFeed');
+                window.renderFeed(p.reverse(), 'profileContentFeed');
             });
         };
+
         window.startChatFromProfile = () => {
-             // Logic handled by setting onclick in loadProfile
+             // Logic handled by loadProfile binding
         };
 
-        // --- SUBMISSION LOGIC ---
+        // --- 10. SUBMISSION LOGIC ---
         window.openWriteModal = () => {
-            if(!checkAuth()) return;
+            if(!window.checkAuth()) return;
             document.getElementById('adminModalWrapper').style.display = 'flex';
             const isAdmin = localStorage.getItem('IS_ADMIN') === 'true';
             document.getElementById('adminFields').style.display = isAdmin ? 'block' : 'none';
@@ -1281,7 +1460,7 @@
         window.handleSubmission = () => {
             const title = document.getElementById('postTitle').value;
             const content = document.getElementById('richEditor').innerHTML;
-            if(!title || !document.getElementById('richEditor').innerText.trim()) return showToast('❌ শিরোনাম ও লেখা প্রয়োজন');
+            if(!title || !document.getElementById('richEditor').innerText.trim()) return window.showToast('❌ শিরোনাম ও লেখা প্রয়োজন');
 
             const postData = {
                 title, content, 
@@ -1292,18 +1471,23 @@
                 userImg: window.currentUser.photoURL,
                 uid: window.currentUser.uid,
                 image: document.getElementById('postImage').value || null,
-                likes: 0
+                voiceUrl: document.getElementById('voiceUrl') ? document.getElementById('voiceUrl').value : null,
+                likes: 0,
+                isPinned: document.getElementById('isPinned') ? document.getElementById('isPinned').checked : false
             };
 
             const isAdmin = localStorage.getItem('IS_ADMIN') === 'true';
             if (isAdmin) {
-                 push(ref(db, 'posts'), postData).then(() => { showToast("পাবলিশ হয়েছে ✅"); closeAdminModal(); });
+                 push(ref(db, 'posts'), postData).then(() => { window.showToast("পাবলিশ হয়েছে ✅"); window.closeAdminModal(); });
             } else {
-                 push(ref(db, 'pending_posts'), postData).then(() => { showToast("জমা হয়েছে! অনুমোদনের অপেক্ষা করুন।"); closeAdminModal(); });
+                 push(ref(db, 'pending_posts'), postData).then(() => { window.showToast("জমা হয়েছে! অনুমোদনের অপেক্ষা করুন।"); window.closeAdminModal(); });
             }
+            // Clear drafts
+            localStorage.removeItem('draft_title');
+            localStorage.removeItem('draft_content');
         };
 
-        // --- COMMON UTILS ---
+        // --- 11. IMAGE UTILS ---
         window.compressImage = (file) => {
             return new Promise((resolve) => {
                 const reader = new FileReader(); reader.readAsDataURL(file);
@@ -1330,16 +1514,20 @@
             });
         };
         document.getElementById('imgInput').addEventListener('change', function() {
-            if(this.files[0]) compressImage(this.files[0]).then(b=>uploadImageXHR(b).then(u=>{ document.getElementById('postImage').value=u; showToast("ছবি যুক্ত হয়েছে ✅"); }));
+            if(this.files[0]) window.compressImage(this.files[0]).then(b=>window.uploadImageXHR(b).then(u=>{ document.getElementById('postImage').value=u; window.showToast("ছবি যুক্ত হয়েছে ✅"); }));
         });
 
-        // Basic Helpers
-        window.showToast = (msg) => { const t=document.getElementById('toast'); document.getElementById('toastMsg').innerText=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2000); };
-        window.toggleTheme = () => document.body.classList.toggle('dark-theme');
-        window.closeBottomSheet = (e) => { if(!e || e.target===e.currentTarget) document.getElementById('universalBottomSheet').classList.remove('active'); };
-        window.openEditProfileSheet = () => document.getElementById('editProfileSheet').classList.add('active');
-        window.closeEditProfileSheet = (e) => { if(!e || e.target===e.currentTarget) document.getElementById('editProfileSheet').classList.remove('active'); };
-        window.loadStoryFeed = () => { /* Story logic from index4 preserved implicitly via structure, fill with fetch logic if needed */ };
+        // --- 12. INITIALIZATION EXTRAS ---
+        window.loadStoryFeed = () => { 
+             // Stub for story logic from prev version, just empty to prevent error
+             const bar = document.getElementById('storiesBar');
+             // Just show a dummy add button
+             bar.innerHTML = `
+             <div class="story-item" onclick="window.showToast('Story Feature coming')">
+                <div class="story-ring"><img src="${window.currentUser ? window.currentUser.photoURL : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="story-img"></div>
+                <span class="story-name">Add</span>
+             </div>`;
+        };
         window.initNotificationListener = (uid) => {
              onValue(ref(db, `notifications/${uid}`), snap => {
                  const cnt = snap.val() ? Object.values(snap.val()).filter(n=>!n.read).length : 0;
@@ -1348,7 +1536,7 @@
              });
         };
         window.showNotifications = () => {
-             if(!checkAuth()) return;
+             if(!window.checkAuth()) return;
              document.getElementById('sheetTitle').innerText='নোটিফিকেশন';
              document.getElementById('sheetFooter').style.display='none';
              document.getElementById('universalBottomSheet').classList.add('active');
@@ -1361,12 +1549,30 @@
              });
         };
         
-        // --- ADMIN DELETE ---
         window.deletePost = (key) => {
             if(localStorage.getItem('IS_ADMIN')!=='true') return;
-            remove(ref(db, 'posts/'+key)).then(()=>showToast("Deleted"));
+            remove(ref(db, 'posts/'+key)).then(()=>window.showToast("Deleted"));
         };
-        window.execCmd = (cmd) => document.execCommand(cmd, false, null);
+
+        // Fallback for switchAdminTab (implied by HTML)
+        window.switchAdminTab = (tab) => {
+             // Logic to toggle views in admin modal if implemented
+             if(tab === 'pending') window.showToast("Pending List Logic Here");
+        };
+
+        // Profile Tab Switcher
+        window.switchProfileTab = (tab, btn) => {
+             document.querySelectorAll('.p-tab-btn').forEach(b => b.classList.remove('active'));
+             btn.classList.add('active');
+             if(tab === 'posts') window.renderFeed(window.allPosts.filter(p=>p.uid === window.currentUser.uid), 'profileContentFeed');
+             else if(tab === 'saved') window.showToast("Saved Logic Here");
+        };
+        
+        window.toggleFollow = () => {
+            // Mock follow
+            const btn = document.getElementById('profileFollowBtn');
+            btn.classList.toggle('following');
+        };
 
     </script>
 </body>
