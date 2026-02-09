@@ -17,7 +17,7 @@ html
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/cs2?family=Galda&family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Serif+Bengali:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Galada&family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Serif+Bengali:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Libraries -->
@@ -30,7 +30,7 @@ html
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')
                     .then(reg => console.log('SW Registered!', reg.scope))
-                    .catch(err => console.log('SW Failed', err));
+                    .catch(err => console.log('SW Failed', err);
             });
         }
     </script>
@@ -162,12 +162,11 @@ html
             transform-origin: center center;
             box-sizing: border-box; cursor: pointer;
         }
-        .admin-actions { position: absolute; top: 10px; right: 10px; z-index: 5; display: none; }
-        .admin-mode .admin-actions { display: block; }
-        .admin-btn-del {
-            background: rgba(231, 76, 60, 0.9); color: white; border: none;
-            width: 25px; height: 25px; border-radius: 50%; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; font-size: 12px;
+        /* REPLACED ADMIN ACTIONS WITH GENERIC OPTION MENU */
+        .post-options-btn {
+            position: absolute; top: 15px; right: 15px; z-index: 5;
+            background: none; border: none; color: var(--secondary-text);
+            font-size: 16px; cursor: pointer; padding: 5px;
         }
 
         .header-title-block { padding: 5px; cursor: pointer; display: block; }
@@ -184,6 +183,9 @@ html
         .badge { position: absolute; top: 5px; right: 5px; background: #e74c3c; color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 9px; display: none; justify-content: center; align-items: center; font-weight: bold; border: 2px solid var(--bg-color); z-index: 2; }
         .badge.active { display: flex; }
 
+        /* Verified Badge */
+        .verified-badge { color: #1877f2; margin-left: 4px; font-size: 13px; vertical-align: middle; display: inline-block; }
+
         /* Search & Filter */
         .search-wrapper { position: relative; margin-bottom: 15px; }
         #searchBar { width: 100%; padding: 12px 40px 12px 20px; border-radius: 30px; border: 1px solid var(--border-color); background: var(--glass-bg); color: var(--text-color); outline: none; box-sizing: border-box; font-size: 15px; box-shadow: var(--shadow-soft); transition: 0.3s; }
@@ -198,10 +200,10 @@ html
         /* Post Card Details */
         .pinned-badge { position: absolute; top: 15px; right: 15px; color: #e74c3c; font-size: 16px; transform: rotate(45deg); z-index: 2; }
 
-        .author-info { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; cursor: pointer; }
+        .author-info { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; cursor: pointer; padding-right: 25px; /* space for menu */ }
         .avatar-circle { width: 34px; height: 34px; background: #e4e6eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; border: 1px solid var(--border-color);}
         .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
-        .author-text h4 { margin: 0; font-size: 14px; font-weight: 700; }
+        .author-text h4 { margin: 0; font-size: 14px; font-weight: 700; display:flex; align-items:center; }
         .post-meta { font-size: 11px; color: var(--secondary-text); display: flex; align-items: center; gap: 5px; }
 
         .post-title { font-size: 17px; margin: 0 0 8px 0; font-weight: 700; line-height: 1.35; color: var(--text-color); }
@@ -289,7 +291,7 @@ html
             border: 2px solid var(--bg-color); cursor: pointer; font-size: 12px;
         }
         .profile-info { text-align: center; padding: 0 20px; margin-bottom: 10px; }
-        .profile-name { font-size: 22px; font-weight: 700; margin: 0; color: var(--text-color); }
+        .profile-name { font-size: 22px; font-weight: 700; margin: 0; color: var(--text-color); display: flex; align-items: center; justify-content: center; }
         .profile-bio { font-size: 14px; color: var(--secondary-text); margin: 5px 0 0; max-width: 400px; margin: 5px auto; }
         .follow-container { margin: 10px 0 15px 0; display:flex; justify-content:center; gap:10px; }
         .btn-follow, .btn-profile-action {
@@ -332,6 +334,12 @@ html
         .bottom-sheet-overlay.active .sheet-content { transform: translateY(0); }
         .sheet-drag-handle { width: 40px; height: 4px; background: rgba(0,0,0,0.1); border-radius: 10px; margin: 12px auto; flex-shrink: 0; }
         .sheet-body { overflow-y: auto; padding: 0 20px 20px 20px; flex: 1; }
+
+        /* Menu Options */
+        .menu-option { padding: 15px 0; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid var(--border-color); cursor: pointer; color: var(--text-color); font-size: 15px; }
+        .menu-option:last-child { border-bottom: none; }
+        .menu-option i { width: 20px; text-align: center; }
+        .menu-option.danger { color: #e74c3c; }
 
         /* Share & Loaders */
         .share-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 20px 0; }
@@ -412,7 +420,7 @@ html
         .online-dot { position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; background: #2ecc71; border-radius: 50%; border: 2px solid var(--sheet-bg); display: none; }
         .online-dot.active { display: block; }
         .chat-info { flex: 1; overflow: hidden; }
-        .chat-name { font-weight: 700; font-size: 15px; margin-bottom: 2px; }
+        .chat-name { font-weight: 700; font-size: 15px; margin-bottom: 2px; display: flex; align-items: center; }
         .chat-preview { font-size: 13px; color: var(--secondary-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .chat-meta { font-size: 10px; color: var(--secondary-text); text-align: right; min-width: 50px; }
         
@@ -482,7 +490,7 @@ html
             <button onclick="closeDetailView()" style="background:none; border:none; font-size:20px; color:var(--text-color); cursor:pointer;"><i class="fas fa-arrow-left"></i></button>
             <div style="display:flex; align-items:center; gap:10px;">
                 <div class="avatar-circle" style="width:30px; height:30px;"><img id="detailAuthorImg" src="" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"></div>
-                <div style="font-size:14px; font-weight:700;" id="detailAuthorName">Author</div>
+                <div style="font-size:14px; font-weight:700; display:flex; align-items:center;" id="detailAuthorName">Author</div>
             </div>
         </div>
 
@@ -515,7 +523,7 @@ html
             <button onclick="document.getElementById('chatRoomView').style.display='none'" style="background:none; border:none; font-size:20px; color:var(--text-color); cursor:pointer;"><i class="fas fa-arrow-left"></i></button>
             <div class="avatar-circle" style="width:35px; height:35px;"><img id="chatRoomImg" src="" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"></div>
             <div style="flex:1;">
-                <div style="font-size:15px; font-weight:700;" id="chatRoomName">User</div>
+                <div style="font-size:15px; font-weight:700; display:flex; align-items:center;" id="chatRoomName">User</div>
                 <div style="font-size:11px; color:var(--secondary-text);" id="chatRoomStatus">Offline</div>
             </div>
         </div>
@@ -681,7 +689,7 @@ html
         </button>
     </nav>
 
-    <!-- Generic Bottom Sheet (Reused for Comments & Notifications) -->
+    <!-- Generic Bottom Sheet (Reused for Comments, Notifications, Menu) -->
     <div id="universalBottomSheet" class="bottom-sheet-overlay" onclick="closeBottomSheet(event)">
         <div class="sheet-content" onclick="event.stopPropagation()">
             <div class="sheet-drag-handle"></div>
@@ -845,6 +853,9 @@ html
         window.pendingPosts = [];
         window.db = db; window.ref = ref; window.push = push; window.set = set; window.update = update; window.remove = remove;
         window.currentUser = null;
+        window.blockedUsers = []; // Stores UIDs of users blocked by me
+        window.userVerificationCache = {}; // Stores UID: isVerified mapping
+
         const DEVICE_ID = localStorage.getItem('USER_DEVICE_ID') || 'u_' + Date.now();
         localStorage.setItem('USER_DEVICE_ID', DEVICE_ID);
 
@@ -891,18 +902,35 @@ html
             });
         };
 
+        // --- HELPER: Verified Badge ---
+        window.getVerifiedBadge = function(isVerified) {
+            return isVerified ? `<i class="fas fa-check-circle verified-badge" title="Verified"></i>` : '';
+        };
+
+        // --- HELPER: Block List ---
+        window.fetchBlockedUsers = function(uid) {
+            return get(ref(db, `users/${uid}/blockedUsers`)).then(snap => {
+                if(snap.exists()) {
+                    window.blockedUsers = Object.keys(snap.val());
+                } else {
+                    window.blockedUsers = [];
+                }
+            });
+        };
+
         // --- AUTH & INIT ---
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             window.currentUser = user;
-            updateAuthUI(user);
-            loadStoryFeed();
+            
+            // If logged in, fetch blocked users first
             if(user) {
+                await fetchBlockedUsers(user.uid);
                 syncUserProfile(user);
                 document.getElementById('loginModal').style.display = 'none';
                 initNotificationListener(user.uid);
-                initChatListener(user.uid); // Start inbox listener
+                initChatListener(user.uid); 
                 
-                // Presence System
+                // Presence
                 const connectedRef = ref(db, '.info/connected');
                 const myStatusRef = ref(db, 'status/' + user.uid);
                 onValue(connectedRef, (snap) => {
@@ -917,10 +945,14 @@ html
                     if(!params.get('uid') || params.get('uid') === user.uid) loadProfile();
                 }
             } else {
+                window.blockedUsers = [];
                 localStorage.removeItem('IS_ADMIN');
                 document.getElementById('notifBadge').classList.remove('active');
                 document.getElementById('msgBadge').classList.remove('active');
             }
+
+            updateAuthUI(user);
+            loadStoryFeed();
         });
 
         window.performLogin = () => signInWithPopup(auth, provider).catch(console.error);
@@ -929,7 +961,7 @@ html
             const userRef = ref(db, 'users/' + user.uid);
             get(userRef).then(snapshot => {
                 if(!snapshot.exists()) {
-                    set(userRef, { displayName: user.displayName, email: user.email, photoURL: user.photoURL, bio: "আমি মুক্তলিপি ব্যবহার করছি।", joinDate: Date.now() });
+                    set(userRef, { displayName: user.displayName, email: user.email, photoURL: user.photoURL, bio: "আমি মুক্তলিপি ব্যবহার করছি।", joinDate: Date.now(), isVerified: false });
                 }
             });
         }
@@ -993,7 +1025,6 @@ html
         // --- REAL-TIME CHAT SYSTEM ---
         function getChatId(uid1, uid2) { return uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`; }
 
-        // Inbox Listener
         function initChatListener(uid) {
             onValue(ref(db, `user_chats/${uid}`), (snap) => {
                 const data = snap.val();
@@ -1013,7 +1044,6 @@ html
                 if(totalUnread > 0) { badge.innerText = totalUnread > 9 ? '9+' : totalUnread; badge.classList.add('active'); }
                 else badge.classList.remove('active');
 
-                // Render Chat List if view is active
                 if(document.getElementById('chatListView').style.display === 'block') {
                     renderChatList(chats.sort((a,b) => b.timestamp - a.timestamp));
                 }
@@ -1024,12 +1054,11 @@ html
             const container = document.getElementById('chatListContainer');
             let html = '';
             for(const chat of chats) {
-                // Fetch user info for each chat
                 const userSnap = await get(ref(db, `users/${chat.targetUid}`));
-                const user = userSnap.val() || { displayName: 'User', photoURL: 'https://cdn-icons-png.flaticon.com/512/149/149071.png' };
-                // Check online status
+                const user = userSnap.val() || { displayName: 'User', photoURL: 'https://cdn-icons-png.flaticon.com/512/149/149071.png', isVerified: false };
                 const statusSnap = await get(ref(db, `status/${chat.targetUid}`));
                 const isOnline = statusSnap.exists();
+                const badgeHtml = getVerifiedBadge(user.isVerified);
 
                 html += `
                 <div class="chat-list-item ${chat.unseenCount > 0 ? 'unread' : ''}" onclick="openChatRoom('${chat.targetUid}')">
@@ -1038,7 +1067,7 @@ html
                         <div class="online-dot ${isOnline ? 'active' : ''}"></div>
                     </div>
                     <div class="chat-info">
-                        <div class="chat-name">${user.displayName}</div>
+                        <div class="chat-name">${user.displayName} ${badgeHtml}</div>
                         <div class="chat-preview" style="${chat.unseenCount>0?'font-weight:bold; color:var(--text-color);':''}">${chat.lastMsg || 'Sent a photo'}</div>
                     </div>
                     <div class="chat-meta">
@@ -1056,24 +1085,33 @@ html
             const myUid = window.currentUser.uid;
             activeChatId = getChatId(myUid, targetUid);
             
-            // Set Header
             const userSnap = await get(ref(db, `users/${targetUid}`));
-            const user = userSnap.val() || { displayName: 'User', photoURL: 'https://cdn-icons-png.flaticon.com/512/149/149071.png' };
+            const user = userSnap.val() || { displayName: 'User', photoURL: 'https://cdn-icons-png.flaticon.com/512/149/149071.png', isVerified: false };
             document.getElementById('chatRoomImg').src = user.photoURL;
-            document.getElementById('chatRoomName').innerText = user.displayName;
+            document.getElementById('chatRoomName').innerHTML = `${user.displayName} ${getVerifiedBadge(user.isVerified)}`;
             
-            // Check Online
             const statusSnap = await get(ref(db, `status/${targetUid}`));
             document.getElementById('chatRoomStatus').innerText = statusSnap.exists() ? 'Active Now' : 'Offline';
 
-            // Reset Unseen Count
             update(ref(db, `user_chats/${myUid}/${targetUid}`), { unseenCount: 0 });
 
-            // Load Messages
+            // Block Logic for Input
+            const isBlocked = window.blockedUsers.includes(targetUid);
+            const input = document.getElementById('chatInput');
+            const btn = document.getElementById('sendMsgBtn');
+            if (isBlocked) {
+                input.disabled = true;
+                input.placeholder = "You have blocked this user.";
+                btn.style.opacity = 0.5; btn.style.pointerEvents = 'none';
+            } else {
+                input.disabled = false;
+                input.placeholder = "মেসেজ লিখুন...";
+                btn.style.opacity = 1; btn.style.pointerEvents = 'auto';
+            }
+
             document.getElementById('chatMessages').innerHTML = '';
             document.getElementById('chatRoomView').style.display = 'flex';
             
-            // Listener for Messages
             const messagesRef = query(ref(db, `chats/${activeChatId}/messages`), limitToLast(50));
             onValue(messagesRef, (snap) => {
                 const data = snap.val();
@@ -1085,10 +1123,8 @@ html
                         const div = document.createElement('div');
                         div.className = `msg-bubble ${isMe ? 'msg-sent' : 'msg-received'}`;
                         div.innerHTML = `${formatPostContent(msg.text)} <div class="msg-time">${new Date(msg.timestamp).toLocaleTimeString([],{hour:'2-digit', minute:'2-digit'})}</div>`;
-                        // Long press to delete logic for own messages
                         if(isMe) {
                             div.oncontextmenu = (e) => { e.preventDefault(); confirmDeleteMessage(activeChatId, key); };
-                            // Simple long press simulation for touch
                             let pressTimer;
                             div.ontouchstart = () => { pressTimer = setTimeout(() => confirmDeleteMessage(activeChatId, key), 800); };
                             div.ontouchend = () => clearTimeout(pressTimer);
@@ -1099,7 +1135,6 @@ html
                 container.scrollTop = container.scrollHeight;
             });
 
-            // Listener for Typing
             onValue(ref(db, `chats/${activeChatId}/typing/${targetUid}`), snap => {
                 const isTyping = snap.val();
                 document.getElementById('typingInd').style.display = isTyping ? 'flex' : 'none';
@@ -1107,17 +1142,16 @@ html
             });
         };
 
-        // Send Message
         document.getElementById('sendMsgBtn').onclick = sendMessage;
         document.getElementById('chatInput').addEventListener('keypress', (e) => {
             if(e.key === 'Enter') sendMessage();
-            // Typing Indicator Logic
             update(ref(db, `chats/${activeChatId}/typing/${window.currentUser.uid}`), true);
             clearTimeout(typingTimeout);
             typingTimeout = setTimeout(() => update(ref(db, `chats/${activeChatId}/typing/${window.currentUser.uid}`), false), 2000);
         });
 
         function sendMessage() {
+            if(window.blockedUsers.includes(activeChatPartnerUid)) return;
             const input = document.getElementById('chatInput');
             const text = input.value.trim();
             if(!text) return;
@@ -1129,12 +1163,10 @@ html
                 text: text, sender: myUid, timestamp: Date.now()
             });
 
-            // Update Meta for Me
             update(ref(db, `user_chats/${myUid}/${targetUid}`), {
                 lastMsg: "You: " + text, timestamp: Date.now()
             });
 
-            // Update Meta for Them (Atomic Increment logic manual)
             const targetRef = ref(db, `user_chats/${targetUid}/${myUid}`);
             get(targetRef).then(snap => {
                 const currentUnseen = (snap.val() && snap.val().unseenCount) || 0;
@@ -1164,7 +1196,6 @@ html
             openChatRoom(targetUid);
         };
 
-        // --- GATEKEEPER ---
         window.checkAuth = function() {
             if (window.currentUser) return true;
             document.getElementById('loginModal').style.display = 'flex';
@@ -1205,7 +1236,7 @@ html
                 else postsQuery = query(postsRef, orderByKey(), limitToLast(10));
             }
 
-            get(postsQuery).then((snapshot) => {
+            get(postsQuery).then(async (snapshot) => {
                 spinner.style.display = 'none';
                 const data = snapshot.val();
                 if (!data) {
@@ -1214,19 +1245,36 @@ html
                     isLoadingPosts = false;
                     loadStoryFeed(); return;
                 }
-                const newPosts = Object.entries(data).map(([key, val]) => ({ key, ...val }));
+                
+                let newPosts = Object.entries(data).map(([key, val]) => ({ key, ...val }));
+                
+                // Filter Blocked Users
+                newPosts = newPosts.filter(p => !window.blockedUsers.includes(p.uid));
+
                 newPosts.sort((a, b) => b.timestamp - a.timestamp);
                 if (newPosts.length < 10) reachedEnd = true;
                 const keys = Object.keys(data).sort();
                 lastLoadedKey = keys[0]; 
                 window.allPosts = [...window.allPosts, ...newPosts];
+
+                // Fetch Verification Status for new authors
+                const uniqueUids = [...new Set(newPosts.map(p => p.uid).filter(uid => uid && !window.userVerificationCache.hasOwnProperty(uid)))];
+                if(uniqueUids.length > 0) {
+                    await Promise.all(uniqueUids.map(uid => 
+                        get(ref(db, `users/${uid}/isVerified`)).then(snap => {
+                            window.userVerificationCache[uid] = snap.val() === true;
+                        })
+                    ));
+                }
+
                 if (activeCategoryFilter === 'সংরক্ষিত') {
                    const savedKeys = JSON.parse(localStorage.getItem('SAVED_POSTS') || '[]');
                    const savedPosts = window.allPosts.filter(p => savedKeys.includes(p.key));
                    renderFeed(savedPosts);
                 } else { renderFeed(window.allPosts); }
+                
                 loadStoryFeed(); updateGreeting(); isLoadingPosts = false;
-            }).catch(err => { spinner.style.display = 'none'; isLoadingPosts = false; });
+            }).catch(err => { spinner.style.display = 'none'; isLoadingPosts = false; console.error(err); });
         };
         loadPostsChunk(true);
 
@@ -1261,7 +1309,10 @@ html
                 const followingMap = snap.val();
                 if (!followingMap) { renderDefaultStories(); return; }
                 const uids = Object.keys(followingMap);
-                const promises = uids.map(uid => get(ref(db, 'users/' + uid)));
+                // Filter blocked from stories too
+                const safeUids = uids.filter(uid => !window.blockedUsers.includes(uid));
+
+                const promises = safeUids.map(uid => get(ref(db, 'users/' + uid)));
                 Promise.all(promises).then(snapshots => {
                     const storyData = [];
                     snapshots.forEach(userSnap => {
@@ -1271,7 +1322,7 @@ html
                             const lastViewed = followingMap[uid].timestamp || 0;
                             const lastPost = uData.lastPostTimestamp || 0;
                             const isNew = lastPost > lastViewed;
-                            storyData.push({ uid: uid, name: uData.displayName, img: uData.photoURL, isNew: isNew, lastPost: lastPost });
+                            storyData.push({ uid: uid, name: uData.displayName, img: uData.photoURL, isNew: isNew, lastPost: lastPost, isVerified: uData.isVerified });
                         }
                     });
                     storyData.sort((a, b) => { if (a.isNew && !b.isNew) return -1; if (!a.isNew && b.isNew) return 1; return b.lastPost - a.lastPost; });
@@ -1282,14 +1333,14 @@ html
 
         function renderDefaultStories() {
             const authors = {};
-            window.allPosts.forEach(p => { if(p.author && p.userImg && !authors[p.author]) authors[p.author] = {img: p.userImg, uid: p.uid}; });
+            window.allPosts.forEach(p => { if(p.author && p.userImg && !authors[p.author] && !window.blockedUsers.includes(p.uid)) authors[p.author] = {img: p.userImg, uid: p.uid, isVerified: window.userVerificationCache[p.uid]}; });
             const top = Object.entries(authors).slice(0, 10);
-            const html = top.map(([name, data]) => `<div class="story-item" onclick="viewUserProfile('${data.uid}')"><div class="story-ring seen-gradient"><img src="${data.img}" class="story-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"></div><span class="story-name">${name.split(' ')[0]}</span></div>`).join('');
+            const html = top.map(([name, data]) => `<div class="story-item" onclick="viewUserProfile('${data.uid}')"><div class="story-ring seen-gradient"><img src="${data.img}" class="story-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"></div><span class="story-name">${name.split(' ')[0]} ${getVerifiedBadge(data.isVerified)}</span></div>`).join('');
             document.getElementById('storiesBar').innerHTML = html || '<div style="padding:10px; font-size:12px; color:#999;">জনপ্রিয় লেখকদের গল্প এখানে আসবে...</div>';
         }
 
         function renderFollowStories(stories) {
-            const html = stories.map(s => { const ringClass = s.isNew ? 'story-ring active' : 'story-ring seen-gradient'; return `<div class="story-item" onclick="handleStoryClick('${s.uid}')"><div class="${ringClass}"><img src="${s.img}" class="story-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"></div><span class="story-name">${s.name.split(' ')[0]}</span></div>`}).join('');
+            const html = stories.map(s => { const ringClass = s.isNew ? 'story-ring active' : 'story-ring seen-gradient'; return `<div class="story-item" onclick="handleStoryClick('${s.uid}')"><div class="${ringClass}"><img src="${s.img}" class="story-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"></div><span class="story-name">${s.name.split(' ')[0]} ${getVerifiedBadge(s.isVerified)}</span></div>`}).join('');
             document.getElementById('storiesBar').innerHTML = html;
         }
 
@@ -1341,7 +1392,7 @@ html
         window.renderFeed = function(posts, targetId = 'feed') {
             const feed = document.getElementById(targetId);
             if(!posts || !posts.length) return feed.innerHTML = '<div style="text-align:center; padding:30px; width:100%;">কোনো পোস্ট নেই</div>';
-            const isAdmin = localStorage.getItem('IS_ADMIN') === 'true';
+            
             feed.innerHTML = posts.map(post => {
                 const liked = localStorage.getItem('LIKED_' + post.key);
                 let content = post.content || '';
@@ -1355,15 +1406,23 @@ html
                 let likeIconClass = liked ? 'fas fa-heart' : 'far fa-heart';
                 let likeColorStyle = liked ? 'color:#e74c3c' : '';
                 if(liked && reactionData) { const style = getReactionIcon(reactionData.type); likeIconClass = style.icon; likeColorStyle = `color:${style.color}`; }
-                const adminClass = isAdmin ? 'admin-mode' : '';
+                
+                // Badge Logic
+                const isVerified = window.userVerificationCache[post.uid] === true;
+                const badgeHtml = getVerifiedBadge(isVerified);
 
                 return `
-                <div class="post-card glass-panel ${adminClass}" id="post-${post.key}" onclick="openDetailView('${post.key}')">
+                <div class="post-card glass-panel" id="post-${post.key}" onclick="openDetailView('${post.key}')">
                     ${post.isPinned ? '<i class="fas fa-thumbtack pinned-badge"></i>' : ''}
-                    <div class="admin-actions"><button class="admin-btn-del" onclick="event.stopPropagation(); deletePost('${post.key}')"><i class="fas fa-trash"></i></button></div>
+                    
+                    <!-- NEW POST OPTIONS MENU -->
+                    <button class="post-options-btn" onclick="event.stopPropagation(); openPostMenu('${post.key}', '${post.uid}', '${post.author}')">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+
                     <div class="author-info" onclick="event.stopPropagation(); viewUserProfile('${post.uid}')">
                         <div class="avatar-circle"><img src="${authorImg}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"></div>
-                        <div class="author-text"><h4>${post.author}</h4><div class="post-meta"><i class="far fa-clock"></i> ${post.date}</div></div>
+                        <div class="author-text"><h4>${post.author} ${badgeHtml}</h4><div class="post-meta"><i class="far fa-clock"></i> ${post.date}</div></div>
                     </div>
                     ${post.image ? `<div class="post-img-container"><img src="${post.image}" class="post-img" loading="lazy"></div>` : ''}
                     <h2 class="post-title">${post.title}</h2>
@@ -1392,6 +1451,100 @@ html
                 </div>`;
             }).join('');
         }
+
+        // --- NEW: REPORT & BLOCK SYSTEM ---
+        window.openPostMenu = function(postKey, authorUid, authorName) {
+            document.getElementById('sheetTitle').innerText = 'অপশন';
+            document.getElementById('sheetFooter').style.display = 'none';
+            const isMe = window.currentUser && window.currentUser.uid === authorUid;
+            const isAdmin = window.currentUser && window.currentUser.uid === ADMIN_UID;
+            
+            let html = `
+                <div class="menu-option" onclick="handleReport('${postKey}', '${authorUid}')">
+                    <i class="fas fa-exclamation-triangle"></i> রিপোর্ট করুন
+                </div>
+            `;
+
+            if (!isMe) {
+                html += `
+                <div class="menu-option" onclick="handleBlock('${authorUid}', '${authorName}')">
+                    <i class="fas fa-ban"></i> ব্লক করুন (${authorName})
+                </div>`;
+            }
+
+            if (isMe || isAdmin) {
+                html += `
+                <div class="menu-option danger" onclick="handleDelete('${postKey}')">
+                    <i class="fas fa-trash"></i> পোস্ট মুছুন
+                </div>`;
+            }
+
+            document.getElementById('sheetBody').innerHTML = html;
+            document.getElementById('universalBottomSheet').classList.add('active');
+        };
+
+        window.handleReport = async function(postKey, authorUid) {
+            if(!checkAuth()) return;
+            document.getElementById('universalBottomSheet').classList.remove('active');
+            
+            const { value: reason } = await Swal.fire({
+                title: 'রিপোর্টের কারণ',
+                input: 'select',
+                inputOptions: {
+                    'spam': 'স্প্যাম',
+                    'harassment': 'হয়রানি',
+                    'nudity': 'অশ্লীলতা',
+                    'hate': 'ঘৃণাত্মক বক্তব্য',
+                    'other': 'অন্যান্য'
+                },
+                inputPlaceholder: 'কারণ নির্বাচন করুন',
+                showCancelButton: true,
+                confirmButtonText: 'জমা দিন'
+            });
+
+            if (reason) {
+                push(ref(db, 'reports'), {
+                    postId: postKey,
+                    reportedUser: authorUid,
+                    reportedBy: window.currentUser.uid,
+                    reason: reason,
+                    timestamp: Date.now(),
+                    status: "pending"
+                }).then(() => {
+                    Swal.fire('ধন্যবাদ', 'আপনার রিপোর্ট জমা হয়েছে।', 'success');
+                });
+            }
+        };
+
+        window.handleBlock = function(targetUid, name) {
+            if(!checkAuth()) return;
+            document.getElementById('universalBottomSheet').classList.remove('active');
+            
+            Swal.fire({
+                title: 'ব্লক করবেন?',
+                text: `${name}-এর পোস্ট আর দেখা যাবে না।`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e74c3c',
+                confirmButtonText: 'হ্যাঁ, ব্লক'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    update(ref(db, `users/${window.currentUser.uid}/blockedUsers`), {
+                        [targetUid]: true
+                    }).then(() => {
+                        window.blockedUsers.push(targetUid);
+                        showToast("ব্লক করা হয়েছে 🚫");
+                        loadPostsChunk(true); // Refresh feed
+                    });
+                }
+            });
+        };
+
+        window.handleDelete = function(key) {
+            document.getElementById('universalBottomSheet').classList.remove('active');
+            Swal.fire({ title: 'ডিলিট করবেন?', text: "এটি ফিরে পাওয়া যাবে না!", icon: 'warning', showCancelButton: true, confirmButtonText: 'হ্যাঁ, ডিলিট' }).then((result) => { if (result.isConfirmed) { remove(ref(db, 'posts/'+key)).then(() => showToast("ডিলিট হয়েছে")); } });
+        };
+        // ------------------------------------
 
         window.incrementShare = function(key) {
             let count = parseInt(localStorage.getItem('SHARE_COUNT_' + key) || '0');
@@ -1437,22 +1590,34 @@ html
             document.getElementById('sheetFooter').style.display = 'flex';
             document.getElementById('universalBottomSheet').classList.add('active');
             cancelReply(); 
-            onValue(ref(db, 'comments/'+key), snap => {
+            onValue(ref(db, 'comments/'+key), async snap => {
                 const data = snap.val();
                 if(!data) { document.getElementById('sheetBody').innerHTML = '<p style="text-align:center; color:var(--secondary-text);">কোনো মন্তব্য নেই</p>'; return; }
                 const allComments = Object.entries(data).map(([k,v]) => ({key:k, ...v}));
                 const parents = allComments.filter(c => !c.parentId);
                 const children = allComments.filter(c => c.parentId);
                 let html = '';
-                parents.forEach(p => { html += renderCommentHTML(p, false); const replies = children.filter(c => c.parentId === p.key); replies.forEach(r => { html += renderCommentHTML(r, true); }); });
+                // Since we need async rendering for badges, we'll do it carefully
+                for (const p of parents) {
+                    html += await renderCommentHTML(p, false);
+                    const replies = children.filter(c => c.parentId === p.key);
+                    for (const r of replies) {
+                        html += await renderCommentHTML(r, true);
+                    }
+                }
                 document.getElementById('sheetBody').innerHTML = html;
             });
             const sendBtn = document.getElementById('sheetSendBtn');
             sendBtn.onclick = () => {
                 const txt = document.getElementById('sheetInput').value;
                 if(!txt) return;
-                const commentData = { text: txt, author: window.currentUser.displayName, timestamp: Date.now(), parentId: replyingToCommentId };
-                push(ref(db, 'comments/'+key), commentData);
+                // Save isVerified flag for future efficiency
+                get(ref(db, `users/${window.currentUser.uid}/isVerified`)).then(snap => {
+                    const isVerified = snap.val() === true;
+                    const commentData = { text: txt, author: window.currentUser.displayName, timestamp: Date.now(), parentId: replyingToCommentId, isVerified: isVerified };
+                    push(ref(db, 'comments/'+key), commentData);
+                });
+                
                 document.getElementById('sheetInput').value = '';
                 const post = window.allPosts.find(p => p.key === key);
                 if(post && post.uid && post.uid !== window.currentUser.uid) { sendNotification(post.uid, 'comment', key); }
@@ -1460,10 +1625,16 @@ html
             };
         };
 
-        function renderCommentHTML(c, isReply) {
+        async function renderCommentHTML(c, isReply) {
+            // Check cache or comment object for verification
+            let isVerified = c.isVerified;
+            // If undefined (old comments), we might skip looking it up to save reads, or assume false.
+            if (isVerified === undefined) isVerified = false;
+            
+            const badgeHtml = getVerifiedBadge(isVerified);
             const indentClass = isReply ? 'nested-reply' : '';
             const replyBtn = !isReply ? `<button class="reply-btn" onclick="startReply('${c.key}', '${c.author}')">উত্তর দিন</button>` : '';
-            return `<div class="${indentClass}" style="margin-bottom:10px; border-bottom:1px solid var(--border-color); padding-bottom:5px;"><div style="font-weight:bold; font-size:12px;">${c.author}</div><div style="font-size:14px;">${c.text}</div>${replyBtn}</div>`;
+            return `<div class="${indentClass}" style="margin-bottom:10px; border-bottom:1px solid var(--border-color); padding-bottom:5px;"><div style="font-weight:bold; font-size:12px;">${c.author} ${badgeHtml}</div><div style="font-size:14px;">${c.text}</div>${replyBtn}</div>`;
         }
 
         window.startReply = function(commentId, authorName) {
@@ -1483,7 +1654,7 @@ html
         window.openWriteModal = function() {
              if(!checkAuth()) return;
              document.getElementById('adminModalWrapper').style.display = 'flex';
-             const isAdmin = localStorage.getItem('IS_ADMIN') === 'true';
+             const isAdmin = window.currentUser.uid === ADMIN_UID;
              if(isAdmin) { document.getElementById('adminFields').style.display = 'block'; document.getElementById('adminTabs').style.display = 'flex'; } 
              else { document.getElementById('adminFields').style.display = 'none'; document.getElementById('adminTabs').style.display = 'none'; }
         };
@@ -1525,7 +1696,7 @@ html
                 uid: window.currentUser ? window.currentUser.uid : null,
                 image: document.getElementById('postImage').value || null, likes: 0, views: 0
             };
-            const isAdmin = localStorage.getItem('IS_ADMIN') === 'true';
+            const isAdmin = window.currentUser.uid === ADMIN_UID;
             if (isAdmin) {
                 postData.voice = document.getElementById('voiceUrl').value;
                 postData.isPinned = document.getElementById('isPinned').checked;
@@ -1576,6 +1747,10 @@ html
         // --- PROFILE ---
         window.viewUserProfile = function(uid) {
             if (!uid || uid === 'undefined') return;
+            // Check if blocked
+            if(window.blockedUsers.includes(uid)) {
+                return showToast("You have blocked this user.");
+            }
             navTo('profile'); loadProfile(uid);
         };
         window.loadProfile = function(targetUid) {
@@ -1584,6 +1759,16 @@ html
             const uid = targetUid || urlUid || (window.currentUser ? window.currentUser.uid : null);
             currentlyViewingUid = uid;
             if(!uid) { document.getElementById('profileNameDisplay').innerText = "অতিথি"; return; }
+            
+            // Block Check
+            if(window.blockedUsers.includes(uid)) {
+                document.getElementById('profileNameDisplay').innerText = "Blocked User";
+                document.getElementById('profileBioDisplay').innerText = "You have blocked this user. Unblock them to see content.";
+                document.getElementById('profileContentFeed').innerHTML = '';
+                document.getElementById('profilePic').src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+                return;
+            }
+
             if(history.pushState) { const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?uid=' + uid; window.history.pushState({path:newurl},'',newurl); }
             const isMe = window.currentUser && window.currentUser.uid === uid;
 
@@ -1617,7 +1802,7 @@ html
             get(ref(db, 'users/' + uid)).then(snap => {
                 const data = snap.val() || {};
                 document.getElementById('profilePic').src = data.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-                document.getElementById('profileNameDisplay').innerText = data.displayName || "Unknown";
+                document.getElementById('profileNameDisplay').innerHTML = `${data.displayName || "Unknown"} ${getVerifiedBadge(data.isVerified)}`;
                 document.getElementById('profileBioDisplay').innerText = data.bio || "";
                 if (data.coverPhoto) { document.getElementById('profileCover').style.background = `url(${data.coverPhoto}) center/cover no-repeat`; }
                 else { document.getElementById('profileCover').style.background = 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'; }
@@ -1732,7 +1917,7 @@ html
             if(tapCount === 5) {
                 if(navigator.vibrate) navigator.vibrate(200); tapCount = 0;
                 if (!window.currentUser) { showToast("লগিন করা নেই! ❌"); return performLogin(); }
-                if (window.currentUser.uid === ADMIN_UID) { localStorage.setItem('IS_ADMIN', 'true'); showToast("অ্যাডমিন মোড চালু হয়েছে ✅"); renderFeed(window.allPosts); openWriteModal(); }
+                if (window.currentUser.uid === ADMIN_UID) { showToast("অ্যাডমিন মোড চালু হয়েছে ✅"); renderFeed(window.allPosts); openWriteModal(); }
                 else { showToast("Access Denied: You are not an Admin 🚫"); }
             }
         };
@@ -1741,12 +1926,16 @@ html
         window.filterPosts = function(q) { q = q.toLowerCase(); document.getElementById('searchClearBtn').style.display = q ? 'block' : 'none'; renderFeed(window.allPosts.filter(p => p.title.toLowerCase().includes(q) || p.author.toLowerCase().includes(q) || (p.content && p.content.toLowerCase().includes(q)))); };
         window.clearSearch = function() { document.getElementById('searchBar').value = ''; filterPosts(''); };
 
-        window.openDetailView = function(key) {
+        window.openDetailView = async function(key) {
             const post = window.allPosts.find(p => p.key === key); if(!post) return;
             document.getElementById('detailTitle').innerText = post.title;
             document.getElementById('detailDate').innerText = post.date;
             document.getElementById('detailBody').innerHTML = formatPostContent(post.content);
-            document.getElementById('detailAuthorName').innerText = post.author;
+            
+            // Verification Badge in Detail
+            const isVerified = window.userVerificationCache[post.uid] === true;
+            document.getElementById('detailAuthorName').innerHTML = `${post.author} ${getVerifiedBadge(isVerified)}`;
+            
             document.getElementById('detailAuthorImg').src = post.userImg || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
             const imgEl = document.getElementById('detailMainImg');
             if(post.image) { imgEl.src = post.image; imgEl.style.display = 'block'; } else imgEl.style.display = 'none';
