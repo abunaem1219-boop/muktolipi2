@@ -17,12 +17,27 @@ html
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Galada&family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Serif+Bengali:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <lik href="https://fonts.googleapis.com/css2?family=Galada&family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Serif+Bengali:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- OneSignal SDK -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(function(OneSignal) {
+        OneSignal.init({
+          appId: "d2470015-4ed1-4274-96bd-1654f86cb54a",
+          notifyButton: {
+            enable: true,
+          },
+          allowLocalhostAsSecureOrigin: true,
+        });
+      });
+    </script>
 
     <style>
         :root { 
@@ -424,12 +439,6 @@ html
         .msg-sent { background: var(--msg-sent-bg); color: var(--msg-sent-text); align-self: flex-end; border-bottom-right-radius: 4px; }
         .msg-received { background: var(--msg-rcv-bg); color: var(--msg-rcv-text); align-self: flex-start; border-bottom-left-radius: 4px; }
         .msg-time { font-size: 9px; opacity: 0.7; text-align: right; margin-top: 2px; }
-        .msg-image { width: 100%; max-width: 200px; border-radius: 12px; margin-top: 5px; cursor: pointer; display: block; }
-        .msg-audio { margin-top: 5px; width: 200px; max-width: 100%; }
-        
-        /* Recording Indicator */
-        .recording-active { color: #e74c3c !important; animation: pulse-rec 1s infinite; }
-        @keyframes pulse-rec { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
 
         .typing-indicator { align-self: flex-start; background: var(--msg-rcv-bg); padding: 8px 12px; border-radius: 18px; border-bottom-left-radius: 4px; display: none; align-items: center; gap: 3px; }
         .dot { width: 6px; height: 6px; background: #888; border-radius: 50%; animation: typing 1.4s infinite ease-in-out both; }
@@ -531,12 +540,6 @@ html
             <div class="dot"></div><div class="dot"></div><div class="dot"></div>
         </div>
         <div class="chat-input-bar">
-            <!-- New Media Buttons -->
-            <button id="chatImgBtn" class="action-btn" style="font-size:18px;" onclick="document.getElementById('chatImgInput').click()"><i class="fas fa-image"></i></button>
-            <input type="file" id="chatImgInput" hidden accept="image/*">
-            
-            <button id="chatMicBtn" class="action-btn" style="font-size:18px;" onclick="toggleRecording()"><i class="fas fa-microphone"></i></button>
-
             <input type="text" id="chatInput" placeholder="মেসেজ লিখুন..." style="margin:0; border-radius:20px;">
             <button id="sendMsgBtn" style="background:var(--primary-color); color:white; border:none; width:40px; height:40px; border-radius:50%; flex-shrink:0; cursor:pointer;"><i class="fas fa-paper-plane"></i></button>
         </div>
@@ -835,7 +838,6 @@ html
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, push, set, onValue, update, remove, get, query, orderByKey, limitToLast, endBefore, equalTo, orderByChild, onChildAdded, onDisconnect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         const ADMIN_UID = "Pg5ko76Pu8Zf4ja9MMzEJRLDMYs1"; 
 
@@ -852,7 +854,6 @@ html
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
-        const storage = getStorage(app);
         const provider = new GoogleAuthProvider();
 
         window.allPosts = []; 
@@ -861,11 +862,6 @@ html
         window.currentUser = null;
         window.blockedUsers = []; // Stores UIDs of users blocked by me
         window.userVerificationCache = {}; // Stores UID: isVerified mapping
-
-        // Persistent Dark Mode Logic - Run Immediately
-        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.body.classList.add('dark-theme');
-        }
 
         // Basic bad word filter (Client side)
         const BAD_WORDS = ["খারাপ", "গালাগালি", "অশ্লীল", "কুত্তা", "শয়তান", "ফালতু", "haram", "kharap", "gali"];
@@ -884,9 +880,6 @@ html
         let activeChatId = null;
         let activeChatPartnerUid = null;
         let typingTimeout = null;
-        let mediaRecorder = null;
-        let audioChunks = [];
-        let isRecording = false;
 
         window.formatPostContent = function(text) {
             if (!text) return '';
@@ -939,8 +932,12 @@ html
         onAuthStateChanged(auth, async (user) => {
             window.currentUser = user;
 
-            // If logged in, fetch blocked users first
             if(user) {
+                // Login to OneSignal with Firebase UID
+                window.OneSignalDeferred.push(function(OneSignal) {
+                    OneSignal.login(user.uid);
+                });
+
                 await fetchBlockedUsers(user.uid);
                 syncUserProfile(user);
                 document.getElementById('loginModal').style.display = 'none';
@@ -962,6 +959,11 @@ html
                     if(!params.get('uid') || params.get('uid') === user.uid) loadProfile();
                 }
             } else {
+                // Logout from OneSignal
+                window.OneSignalDeferred.push(function(OneSignal) {
+                    OneSignal.logout();
+                });
+
                 window.blockedUsers = [];
                 localStorage.removeItem('IS_ADMIN');
                 document.getElementById('notifBadge').classList.remove('active');
@@ -993,7 +995,7 @@ html
             }
         }
 
-        // --- NOTIFICATIONS ---
+        // --- NOTIFICATIONS (Updated with OneSignal) ---
         function initNotificationListener(uid) {
             onValue(ref(db, `notifications/${uid}`), (snapshot) => {
                 const data = snapshot.val();
@@ -1004,10 +1006,48 @@ html
                 else { badge.classList.remove('active'); }
             });
         }
+        
         function sendNotification(targetUid, type, postId) {
             if(!window.currentUser || targetUid === window.currentUser.uid) return;
+            
+            // 1. Existing Firebase Logic
             push(ref(db, `notifications/${targetUid}`), { type: type, postId: postId, sender: window.currentUser.displayName, senderImg: window.currentUser.photoURL, read: false, timestamp: Date.now() });
+
+            // 2. New OneSignal REST API Logic
+            // Construct message
+            let messageText = "আপনার প্রোফাইলে নতুন অ্যাক্টিভিটি";
+            if(type === 'like') messageText = `${window.currentUser.displayName} আপনার পোস্টে লাইক দিয়েছেন ❤️`;
+            else if(type === 'comment') messageText = `${window.currentUser.displayName} আপনার পোস্টে মন্তব্য করেছেন 💬`;
+
+            const options = {
+                method: 'POST',
+                headers: {
+                    accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    Authorization: 'Basic os_v2_app_2jdqafko2fbhjfv5czkpq3fvjiqp5yq2byzeeemgeysttodrzyklib3ykxct6c7k6tmdequnkrba5ercnk7kdn6wrsonxnywj2kna5q'
+                },
+                body: JSON.stringify({
+                    app_id: "d2470015-4ed1-4274-96bd-1654f86cb54a",
+                    include_aliases: {
+                        external_id: [targetUid]
+                    },
+                    target_channel: "push",
+                    contents: {
+                        en: messageText
+                    },
+                    headings: {
+                        en: "মুক্তলিপি ডায়েরি"
+                    },
+                    url: window.location.origin + "?post=" + postId
+                })
+            };
+
+            fetch('https://onesignal.com/api/v1/notifications', options)
+                .then(response => response.json())
+                .then(response => console.log('Push sent:', response))
+                .catch(err => console.error('Push error:', err));
         }
+
         window.showNotifications = function() {
             if(!checkAuth()) return;
             document.getElementById('sheetTitle').innerText = 'নোটিফিকেশন';
@@ -1116,19 +1156,14 @@ html
             const isBlocked = window.blockedUsers.includes(targetUid);
             const input = document.getElementById('chatInput');
             const btn = document.getElementById('sendMsgBtn');
-            const imgBtn = document.getElementById('chatImgBtn');
-            const micBtn = document.getElementById('chatMicBtn');
-
             if (isBlocked) {
                 input.disabled = true;
                 input.placeholder = "You have blocked this user.";
                 btn.style.opacity = 0.5; btn.style.pointerEvents = 'none';
-                imgBtn.style.pointerEvents = 'none'; micBtn.style.pointerEvents = 'none';
             } else {
                 input.disabled = false;
                 input.placeholder = "মেসেজ লিখুন...";
                 btn.style.opacity = 1; btn.style.pointerEvents = 'auto';
-                imgBtn.style.pointerEvents = 'auto'; micBtn.style.pointerEvents = 'auto';
             }
 
             document.getElementById('chatMessages').innerHTML = '';
@@ -1144,19 +1179,7 @@ html
                         const isMe = msg.sender === myUid;
                         const div = document.createElement('div');
                         div.className = `msg-bubble ${isMe ? 'msg-sent' : 'msg-received'}`;
-                        
-                        let contentHtml = '';
-                        if(msg.image) {
-                            contentHtml += `<img src="${msg.image}" class="msg-image" onclick="window.open('${msg.image}', '_blank')">`;
-                        }
-                        if(msg.audio) {
-                            contentHtml += `<audio controls src="${msg.audio}" class="msg-audio"></audio>`;
-                        }
-                        if(msg.text) {
-                            contentHtml += `<div>${formatPostContent(msg.text)}</div>`;
-                        }
-
-                        div.innerHTML = `${contentHtml} <div class="msg-time">${new Date(msg.timestamp).toLocaleTimeString([],{hour:'2-digit', minute:'2-digit'})}</div>`;
+                        div.innerHTML = `${formatPostContent(msg.text)} <div class="msg-time">${new Date(msg.timestamp).toLocaleTimeString([],{hour:'2-digit', minute:'2-digit'})}</div>`;
                         if(isMe) {
                             div.oncontextmenu = (e) => { e.preventDefault(); confirmDeleteMessage(activeChatId, key); };
                             let pressTimer;
@@ -1176,103 +1199,40 @@ html
             });
         };
 
-        // --- CHAT MEDIA LOGIC (Images & Voice) ---
-        
-        // Image Upload
-        document.getElementById('chatImgInput').onchange = function() {
-            if(!this.files[0] || window.blockedUsers.includes(activeChatPartnerUid)) return;
-            showToast("Sending photo...");
-            compressImage(this.files[0]).then(compressedBlob => {
-                uploadImageXHR(compressedBlob).then(url => {
-                    sendChatMessage(null, url, null);
-                }).catch(() => showToast("Failed to upload image"));
-            });
-            this.value = ''; // Reset
-        };
-
-        // Voice Recording
-        window.toggleRecording = async function() {
-            if(window.blockedUsers.includes(activeChatPartnerUid)) return;
-            const btn = document.getElementById('chatMicBtn');
-            
-            if (!isRecording) {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    mediaRecorder = new MediaRecorder(stream);
-                    audioChunks = [];
-                    mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
-                    mediaRecorder.onstop = async () => {
-                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                        const fileName = `chat-voice/${Date.now()}.webm`;
-                        const storageRef = sRef(storage, fileName);
-                        showToast("Sending audio...");
-                        try {
-                            const snapshot = await uploadBytes(storageRef, audioBlob);
-                            const url = await getDownloadURL(snapshot.ref);
-                            sendChatMessage(null, null, url);
-                        } catch(e) { console.error(e); showToast("Upload Failed"); }
-                    };
-                    mediaRecorder.start();
-                    isRecording = true;
-                    btn.classList.add('recording-active');
-                    document.getElementById('chatInput').placeholder = "Recording...";
-                } catch(e) {
-                    showToast("Microphone permission denied");
-                }
-            } else {
-                mediaRecorder.stop();
-                isRecording = false;
-                btn.classList.remove('recording-active');
-                document.getElementById('chatInput').placeholder = "মেসেজ লিখুন...";
-            }
-        };
-
-        document.getElementById('sendMsgBtn').onclick = () => {
-             const input = document.getElementById('chatInput');
-             if(input.value.trim()) sendChatMessage(input.value.trim());
-        };
-
+        document.getElementById('sendMsgBtn').onclick = sendMessage;
         document.getElementById('chatInput').addEventListener('keypress', (e) => {
-            if(e.key === 'Enter') {
-                const input = document.getElementById('chatInput');
-                if(input.value.trim()) sendChatMessage(input.value.trim());
-            }
+            if(e.key === 'Enter') sendMessage();
             update(ref(db, `chats/${activeChatId}/typing/${window.currentUser.uid}`), true);
             clearTimeout(typingTimeout);
             typingTimeout = setTimeout(() => update(ref(db, `chats/${activeChatId}/typing/${window.currentUser.uid}`), false), 2000);
         });
 
-        function sendChatMessage(text, imageUrl = null, audioUrl = null) {
+        function sendMessage() {
             if(window.blockedUsers.includes(activeChatPartnerUid)) return;
-            
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if(!text) return;
+
             const myUid = window.currentUser.uid;
             const targetUid = activeChatPartnerUid;
 
-            const msgData = {
-                sender: myUid, 
-                timestamp: Date.now()
-            };
-
-            let previewText = "Sent a message";
-            if(text) { msgData.text = text; previewText = text; }
-            if(imageUrl) { msgData.image = imageUrl; previewText = "Sent a photo"; }
-            if(audioUrl) { msgData.audio = audioUrl; previewText = "Sent a voice note"; }
-
-            push(ref(db, `chats/${activeChatId}/messages`), msgData);
+            push(ref(db, `chats/${activeChatId}/messages`), {
+                text: text, sender: myUid, timestamp: Date.now()
+            });
 
             update(ref(db, `user_chats/${myUid}/${targetUid}`), {
-                lastMsg: "You: " + previewText, timestamp: Date.now()
+                lastMsg: "You: " + text, timestamp: Date.now()
             });
 
             const targetRef = ref(db, `user_chats/${targetUid}/${myUid}`);
             get(targetRef).then(snap => {
                 const currentUnseen = (snap.val() && snap.val().unseenCount) || 0;
                 update(targetRef, {
-                    lastMsg: previewText, timestamp: Date.now(), unseenCount: currentUnseen + 1
+                    lastMsg: text, timestamp: Date.now(), unseenCount: currentUnseen + 1
                 });
             });
 
-            document.getElementById('chatInput').value = '';
+            input.value = '';
             update(ref(db, `chats/${activeChatId}/typing/${window.currentUser.uid}`), false);
         }
 
@@ -2170,13 +2130,7 @@ html
         window.showToast = (msg) => { const t = document.getElementById('toast'); document.getElementById('toastMsg').innerText = msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2000); };
         window.execCmd = (cmd) => document.execCommand(cmd, false, null);
         window.addLink = () => { const u = prompt('Link:'); if(u) document.execCommand('createLink', false, u); };
-        
-        // Updated Theme Toggle with Persistence
-        window.toggleTheme = () => {
-            document.body.classList.toggle('dark-theme');
-            localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
-        };
-        
+        window.toggleTheme = () => document.body.classList.toggle('dark-theme');
         window.saveDraft = () => {
              const title = document.getElementById('postTitle').value;
              const drafts = JSON.parse(localStorage.getItem('MUKTOLIPI_DRAFTS_V2') || '[]');
