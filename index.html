@@ -17,7 +17,7 @@ html
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Galada&family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Serif+Bengali:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/cs2?family=Galda&family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Serif+Bengali:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Libraries -->
@@ -211,6 +211,10 @@ html
         .post-img-container { width: 100%; border-radius: 12px; overflow: hidden; margin: 8px 0; line-height: 0; }
         .post-img { width: 100%; display: block; object-fit: cover; }
 
+        /* UPDATE 1: Hashtag Styling */
+        .hashtag { color: var(--primary-color); font-weight: 600; cursor: pointer; z-index:10; position:relative; }
+        .hashtag:hover { text-decoration: underline; }
+
         .content-preview { font-size: 14px; line-height: 1.6; color: var(--text-color); overflow: hidden; position: relative; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; margin-bottom: 10px; }
 
         .interaction-bar { display: flex; justify-content: space-between; border-top: 1px solid var(--border-color); padding-top: 10px; margin-top: auto; position: relative; }
@@ -331,7 +335,7 @@ html
         .profile-name { font-size: 22px; font-weight: 700; margin: 0; color: var(--text-color); }
         .profile-bio { font-size: 14px; color: var(--secondary-text); margin: 5px 0 0; max-width: 400px; margin: 5px auto; }
         
-        .follow-container { margin: 10px 0 15px 0; }
+        .follow-container { margin: 10px 0 15px 0; display:flex; justify-content:center; gap:10px; }
         .btn-follow {
             padding: 8px 25px; border-radius: 20px; font-size: 14px; font-weight: 600; cursor: pointer;
             transition: 0.2s; border: none; background: rgba(0,0,0,0.05); color: var(--text-color);
@@ -339,6 +343,14 @@ html
         .btn-follow.following { background: var(--primary-color); color: white; }
         .btn-follow.following:after { content: "ing"; }
         .btn-follow:active { transform: scale(0.95); }
+
+        /* UPDATE 3: Profile Action Button */
+        .btn-profile-action {
+            padding: 8px 25px; border-radius: 20px; font-size: 14px; font-weight: 600; cursor: pointer;
+            transition: 0.2s; border: none; background: rgba(0,0,0,0.05); color: var(--text-color);
+            display: none; align-items: center; gap: 8px;
+        }
+        .btn-profile-action:hover { background: rgba(0,0,0,0.1); }
 
         .profile-stats-grid { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; }
         .stat-card { background: var(--glass-bg); padding: 10px 20px; border-radius: 12px; text-align: center; box-shadow: var(--shadow-soft); border: var(--glass-border); min-width: 70px; }
@@ -640,6 +652,10 @@ html
                 <!-- Follow Button Container -->
                 <div class="follow-container">
                     <button id="profileFollowBtn" class="btn-follow" style="display:none;" onclick="toggleFollow()">Follow</button>
+                    <!-- UPDATE 3: Saved Button for Profile -->
+                    <button id="profileSavedViewBtn" class="btn-profile-action" onclick="navTo('saved')">
+                        <i class="fas fa-bookmark" style="color:#f39c12"></i> আমার সেভ করা পোস্ট
+                    </button>
                 </div>
 
                 <div id="profileSocialLinks" class="social-links"></div>
@@ -705,10 +721,10 @@ html
         <button class="nav-center-btn" onclick="openWriteModal()">
             <i class="fas fa-pen-nib"></i>
         </button>
-        <button class="nav-item" onclick="navTo('saved', this)">
-            <i class="fas fa-bookmark"></i>সংরক্ষিত
+        <!-- UPDATE 2: Replaced Saved with Gallery -->
+        <button class="nav-item" onclick="showToast('গ্যালারি ফিচার শীঘ্রই আসছে...')">
+            <i class="fas fa-images"></i> গ্যালারি
         </button>
-        <!-- UPDATE 1: Nav Fix Logic -->
         <button class="nav-item" onclick="navTo('profile', this)">
             <i class="fas fa-user"></i>প্রোফাইল
         </button>
@@ -894,6 +910,50 @@ html
         
         // UPDATE 3: Reply Variables
         let replyingToCommentId = null;
+
+        // --- UPDATE 1: UTILITY FOR FORMATTING ---
+        window.formatPostContent = function(text) {
+            if (!text) return '';
+            // Convert URLs to clickable links
+            let formatted = text.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" style="color:var(--primary-color); text-decoration:underline;" onclick="event.stopPropagation()">$1</a>');
+            // Convert Hashtags to clickable spans
+            formatted = formatted.replace(/#(\w+)/g, '<span class="hashtag" onclick="event.stopPropagation(); filterPosts(\'#$1\')">#$1</span>');
+            return formatted;
+        };
+
+        // --- CLIENT SIDE IMAGE OPTIMIZATION ---
+        window.compressImage = function(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 1200;
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        canvas.toBlob((blob) => {
+                            resolve(blob); 
+                        }, 'image/jpeg', 0.7); 
+                    };
+                    img.onerror = () => resolve(file); 
+                };
+                reader.onerror = () => resolve(file); 
+            });
+        };
 
         // --- FONT CHANGER ---
         const fontFamilies = ["'Hind Siliguri', sans-serif", "'Noto Serif Bengali', serif", "'Galada', cursive"];
@@ -1326,8 +1386,12 @@ html
             feed.innerHTML = posts.map(post => {
                 const liked = localStorage.getItem('LIKED_' + post.key);
                 let content = post.content || '';
+                
+                // UPDATE 1: Format Preview
                 let cleanText = content.replace(/<[^>]*>/g, '');
                 let shortText = cleanText.length > 120 ? cleanText.substring(0, 120) + '...' : cleanText;
+                const formattedPreview = formatPostContent(shortText);
+
                 const authorImg = post.userImg || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
                 const commentCount = window.allComments[post.key] ? Object.keys(window.allComments[post.key]).length : 0;
                 const shareCount = parseInt(localStorage.getItem('SHARE_COUNT_' + post.key) || '0');
@@ -1362,7 +1426,7 @@ html
                     ${post.image ? `<div class="post-img-container"><img src="${post.image}" class="post-img" loading="lazy"></div>` : ''}
 
                     <h2 class="post-title">${post.title}</h2>
-                    <div class="content-preview">${shortText}</div>
+                    <div class="content-preview">${formattedPreview}</div>
 
                     <div class="interaction-bar">
                         <div class="action-btn-wrapper">
@@ -1657,17 +1721,23 @@ html
             }
         };
 
-        // --- UPLOADERS ---
+        // --- UPLOADERS (Updated with Compression) ---
         document.getElementById('imgInput').addEventListener('change', function() {
             if(!this.files[0]) return;
             const btn = document.getElementById('uploadBtnArea');
             btn.classList.add('uploading');
-            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> আপলোড হচ্ছে...`;
-            uploadImageXHR(this.files[0]).then(url => {
-                document.getElementById('postImage').value = url;
-                btn.classList.remove('uploading'); btn.style.background = '#2ecc71'; btn.innerHTML = `<i class="fas fa-check"></i> ছবি যুক্ত হয়েছে`;
-            }).catch(() => {
-                btn.classList.remove('uploading'); btn.innerHTML = `ব্যর্থ হয়েছে`;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> প্রসেসিং...`;
+            
+            compressImage(this.files[0]).then(compressedBlob => {
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> আপলোড হচ্ছে...`;
+                uploadImageXHR(compressedBlob).then(url => {
+                    document.getElementById('postImage').value = url;
+                    btn.classList.remove('uploading'); 
+                    btn.style.background = '#2ecc71'; 
+                    btn.innerHTML = `<i class="fas fa-check"></i> ছবি যুক্ত হয়েছে`;
+                }).catch(() => {
+                    btn.classList.remove('uploading'); btn.innerHTML = `ব্যর্থ হয়েছে`;
+                });
             });
         });
 
@@ -1675,21 +1745,28 @@ html
             if(!this.files[0]) return;
             const loader = document.getElementById('profileLoader');
             loader.style.display = 'flex';
-            uploadImageXHR(this.files[0], (p)=>document.getElementById('profileLoadText').innerText=p+'%')
-            .then(url => {
-                document.getElementById('editProfileImgPreview').src = url;
-                loader.style.display = 'none';
-            }).catch(() => { loader.style.display = 'none'; showToast("আপলোড ব্যর্থ"); });
+            
+            compressImage(this.files[0]).then(compressedBlob => {
+                 uploadImageXHR(compressedBlob, (p)=>document.getElementById('profileLoadText').innerText=p+'%')
+                .then(url => {
+                    document.getElementById('editProfileImgPreview').src = url;
+                    loader.style.display = 'none';
+                }).catch(() => { loader.style.display = 'none'; showToast("আপলোড ব্যর্থ"); });
+            });
         });
 
         // Cover Photo Upload Listener
         document.getElementById('coverImgInput').addEventListener('change', function() {
              if(!this.files[0]) return;
-             showToast("কভার ফটো আপলোড হচ্ছে...");
-             uploadImageXHR(this.files[0]).then(url => {
-                 document.getElementById('editCoverPhotoUrl').value = url;
-                 showToast("কভার ফটো আপলোড সফল ✅");
-             }).catch(() => showToast("আপলোড ব্যর্থ ❌"));
+             showToast("কভার ফটো প্রসেসিং...");
+             
+             compressImage(this.files[0]).then(compressedBlob => {
+                 showToast("আপলোড হচ্ছে...");
+                 uploadImageXHR(compressedBlob).then(url => {
+                     document.getElementById('editCoverPhotoUrl').value = url;
+                     showToast("কভার ফটো আপলোড সফল ✅");
+                 }).catch(() => showToast("আপলোড ব্যর্থ ❌"));
+             });
         });
 
         function uploadImageXHR(file, onProgress) {
@@ -1737,10 +1814,17 @@ html
 
             // Follow Button Logic
             const followBtn = document.getElementById('profileFollowBtn');
+            const savedBtn = document.getElementById('profileSavedViewBtn');
+
             if (isMe) {
                 followBtn.style.display = 'none';
+                // UPDATE 3: Show Saved Button for User's Own Profile
+                if(savedBtn) savedBtn.style.display = 'flex';
             } else {
                 followBtn.style.display = 'block';
+                // Hide Saved Button for other users
+                if(savedBtn) savedBtn.style.display = 'none';
+
                 if (window.currentUser) {
                     get(ref(db, `followers/${uid}/${window.currentUser.uid}`)).then(snap => {
                         if (snap.exists()) {
@@ -1959,7 +2043,12 @@ html
         window.filterPosts = function(q) {
             q = q.toLowerCase();
             document.getElementById('searchClearBtn').style.display = q ? 'block' : 'none';
-            renderFeed(window.allPosts.filter(p => p.title.toLowerCase().includes(q) || p.author.toLowerCase().includes(q)));
+            // UPDATE 1: Filter now searches CONTENT as well (for hashtags)
+            renderFeed(window.allPosts.filter(p => 
+                p.title.toLowerCase().includes(q) || 
+                p.author.toLowerCase().includes(q) ||
+                (p.content && p.content.toLowerCase().includes(q))
+            ));
         };
         window.clearSearch = function() { document.getElementById('searchBar').value = ''; filterPosts(''); };
 
@@ -1968,7 +2057,10 @@ html
             if(!post) return;
             document.getElementById('detailTitle').innerText = post.title;
             document.getElementById('detailDate').innerText = post.date;
-            document.getElementById('detailBody').innerHTML = post.content;
+            
+            // UPDATE 1: Format Body Content
+            document.getElementById('detailBody').innerHTML = formatPostContent(post.content);
+            
             document.getElementById('detailAuthorName').innerText = post.author;
             document.getElementById('detailAuthorImg').src = post.userImg || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
             const imgEl = document.getElementById('detailMainImg');
