@@ -30,7 +30,7 @@ html
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')
                     .then(reg => console.log('SW Registered!', reg.scope))
-                    .catch(err => console.log('SW Failed', err);
+                    .catch(err => console.log('SW Failed', err));
             });
         }
     </script>
@@ -162,7 +162,6 @@ html
             transform-origin: center center;
             box-sizing: border-box; cursor: pointer;
         }
-        /* REPLACED ADMIN ACTIONS WITH GENERIC OPTION MENU */
         .post-options-btn {
             position: absolute; top: 15px; right: 15px; z-index: 5;
             background: none; border: none; color: var(--secondary-text);
@@ -386,6 +385,9 @@ html
         .pending-actions { display:flex; gap:10px; margin-top:5px; }
         .btn-approve { background: #2ecc71; color: white; flex:1; border:none; border-radius:5px; padding:5px; cursor:pointer; }
         .btn-reject { background: #e74c3c; color: white; flex:1; border:none; border-radius:5px; padding:5px; cursor:pointer; }
+        /* Report Buttons */
+        .btn-view { background: var(--primary-color); color: white; flex:1; border:none; border-radius:5px; padding:5px; cursor:pointer; }
+        .btn-dismiss { background: var(--secondary-text); color: white; flex:1; border:none; border-radius:5px; padding:5px; cursor:pointer; }
 
         .skeleton-card { background: var(--glass-bg); border: var(--glass-border); padding: 15px; margin-bottom: 15px; border-radius: 20px; break-inside: avoid; display: inline-block; width: 100%; box-sizing: border-box; }
         .skeleton { background: var(--shimmer-bg); background: linear-gradient(90deg, var(--shimmer-bg) 0%, var(--shimmer-highlight) 50%, var(--shimmer-bg) 100%); background-size: 200% 100%; animation: shimmer 1.5s infinite linear; border-radius: 4px; }
@@ -606,7 +608,7 @@ html
                 <div id="profileBioDisplay" class="profile-bio">Bio...</div>
                 
                 <!-- Follow Button Container -->
-                <div class="follow-container">
+                <div class="follow-container" id="profileActionContainer">
                     <button id="profileFollowBtn" class="btn-follow" style="display:none;" onclick="toggleFollow()">Follow</button>
                     <!-- Message Button -->
                     <button id="profileMsgBtn" class="btn-profile-action" onclick="initChatFromProfile()">
@@ -616,6 +618,7 @@ html
                     <button id="profileSavedViewBtn" class="btn-profile-action" onclick="navTo('saved')">
                         <i class="fas fa-bookmark" style="color:#f39c12"></i> আমার সেভ করা পোস্ট
                     </button>
+                    <!-- Verify Button for Admin (Injected dynamically) -->
                 </div>
 
                 <div id="profileSocialLinks" class="social-links"></div>
@@ -758,6 +761,7 @@ html
             <div id="adminTabs" style="display:none; gap:10px; margin:10px 0;">
                 <button class="btn" onclick="switchAdminTab('new')" style="padding:8px; font-size:12px; flex:1;">নতুন পোস্ট</button>
                 <button class="btn" onclick="switchAdminTab('pending')" style="padding:8px; font-size:12px; flex:1; background:var(--highlight-color); color:var(--text-color);">পেন্ডিং তালিকা</button>
+                <button class="btn" onclick="switchAdminTab('reports')" style="padding:8px; font-size:12px; flex:1; background:#e74c3c; color:white;">রিপোর্ট</button>
             </div>
 
             <div id="writeFormContainer">
@@ -811,6 +815,11 @@ html
             <!-- Pending List -->
             <div id="pendingListContainer" style="display:none; margin-top:10px; max-height:400px; overflow-y:auto;">
                 <div id="pendingFeed"></div>
+            </div>
+
+             <!-- Reports List (NEW) -->
+             <div id="reportListContainer" style="display:none; margin-top:10px; max-height:400px; overflow-y:auto;">
+                <div id="reportFeed"></div>
             </div>
         </div>
     </div>
@@ -1507,6 +1516,7 @@ html
                     postId: postKey,
                     reportedUser: authorUid,
                     reportedBy: window.currentUser.uid,
+                    reportedByName: window.currentUser.displayName || "Anonymous", // Save Name
                     reason: reason,
                     timestamp: Date.now(),
                     status: "pending"
@@ -1650,7 +1660,7 @@ html
             document.getElementById('cancelReplyBtn').style.display = 'none';
         };
 
-        // --- ADMIN MODAL ---
+        // --- ADMIN MODAL & REPORTS ---
         window.openWriteModal = function() {
              if(!checkAuth()) return;
              document.getElementById('adminModalWrapper').style.display = 'flex';
@@ -1659,10 +1669,70 @@ html
              else { document.getElementById('adminFields').style.display = 'none'; document.getElementById('adminTabs').style.display = 'none'; }
         };
         window.closeAdminModal = () => document.getElementById('adminModalWrapper').style.display = 'none';
+        
         window.switchAdminTab = function(tab) {
-            if(tab === 'new') { document.getElementById('writeFormContainer').style.display = 'block'; document.getElementById('pendingListContainer').style.display = 'none'; } 
-            else { document.getElementById('writeFormContainer').style.display = 'none'; document.getElementById('pendingListContainer').style.display = 'block'; renderPendingList(); }
+            const form = document.getElementById('writeFormContainer');
+            const pending = document.getElementById('pendingListContainer');
+            const reports = document.getElementById('reportListContainer');
+
+            // Reset
+            form.style.display = 'none';
+            pending.style.display = 'none';
+            reports.style.display = 'none';
+
+            if(tab === 'new') { 
+                form.style.display = 'block'; 
+            } else if (tab === 'pending') { 
+                pending.style.display = 'block'; 
+                renderPendingList(); 
+            } else if (tab === 'reports') {
+                reports.style.display = 'block';
+                renderReportList();
+            }
         };
+
+        // --- REPORT LIST LOGIC ---
+        window.renderReportList = function() {
+            const feed = document.getElementById('reportFeed');
+            feed.innerHTML = '<p style="text-align:center;">লোড হচ্ছে...</p>';
+            get(ref(db, 'reports')).then(snap => {
+                const data = snap.val();
+                if(!data) { feed.innerHTML = '<p style="text-align:center;">কোনো রিপোর্ট নেই</p>'; return; }
+                const reports = Object.entries(data).map(([key, val]) => ({ key, ...val })).reverse();
+                
+                feed.innerHTML = reports.map(r => {
+                    const reporter = r.reportedByName || `UID: ${r.reportedBy.substr(0,5)}...`;
+                    return `
+                    <div class="pending-item">
+                        <div style="font-weight:bold; color:#e74c3c;">${r.reason.toUpperCase()}</div>
+                        <div style="font-size:12px; color:#666;">Reported By: ${reporter}</div>
+                         <div style="font-size:11px; color:#999;">${new Date(r.timestamp).toLocaleDateString()}</div>
+                        <div class="pending-actions">
+                            <button class="btn-view" onclick="openDetailView('${r.postId}')">দেখুন</button>
+                            <button class="btn-reject" onclick="deleteReportedPost('${r.key}', '${r.postId}')">মুছুন</button>
+                            <button class="btn-dismiss" onclick="dismissReport('${r.key}')">বাতিল</button>
+                        </div>
+                    </div>`;
+                }).join('');
+            });
+        };
+
+        window.dismissReport = function(reportKey) {
+            remove(ref(db, `reports/${reportKey}`)).then(() => {
+                showToast("রিপোর্ট বাতিল হয়েছে");
+                renderReportList();
+            });
+        };
+
+        window.deleteReportedPost = function(reportKey, postKey) {
+            if(confirm("পোস্টটি ডিলিট করবেন?")) {
+                remove(ref(db, `posts/${postKey}`));
+                remove(ref(db, `reports/${reportKey}`));
+                showToast("পোস্ট ডিলিট করা হয়েছে 🗑️");
+                renderReportList();
+            }
+        };
+
         window.renderPendingList = function() {
             const feed = document.getElementById('pendingFeed');
             if(!window.pendingPosts.length) { feed.innerHTML = '<p style="text-align:center;">কোনো পেন্ডিং পোস্ট নেই</p>'; return; }
@@ -1771,6 +1841,7 @@ html
 
             if(history.pushState) { const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?uid=' + uid; window.history.pushState({path:newurl},'',newurl); }
             const isMe = window.currentUser && window.currentUser.uid === uid;
+            const isAdmin = window.currentUser && window.currentUser.uid === ADMIN_UID;
 
             document.getElementById('profileEditBtn').style.display = isMe ? 'flex' : 'none';
             document.getElementById('logoutBtn').style.display = isMe ? 'block' : 'none';
@@ -1779,6 +1850,10 @@ html
             const followBtn = document.getElementById('profileFollowBtn');
             const savedBtn = document.getElementById('profileSavedViewBtn');
             const msgBtn = document.getElementById('profileMsgBtn');
+            
+            // Remove previous verify button if exists
+            const existingVerifyBtn = document.getElementById('adminVerifyBtn');
+            if(existingVerifyBtn) existingVerifyBtn.remove();
 
             if (isMe) {
                 followBtn.style.display = 'none';
@@ -1810,6 +1885,19 @@ html
                 if(data.fbLink) socialHtml += `<a href="${data.fbLink}" target="_blank" class="social-link-btn"><i class="fab fa-facebook"></i></a>`;
                 if(data.instaLink) socialHtml += `<a href="${data.instaLink}" target="_blank" class="social-link-btn"><i class="fab fa-instagram"></i></a>`;
                 document.getElementById('profileSocialLinks').innerHTML = socialHtml;
+                
+                // ADMIN VERIFICATION BUTTON
+                if (isAdmin && !isMe) {
+                    const btn = document.createElement('button');
+                    btn.id = 'adminVerifyBtn';
+                    btn.className = 'btn-profile-action';
+                    btn.style.display = 'flex';
+                    btn.style.color = data.isVerified ? '#e74c3c' : '#1877f2';
+                    btn.innerHTML = data.isVerified ? '<i class="fas fa-times-circle"></i> আন-ভেরিফাই' : '<i class="fas fa-check-circle"></i> ভেরিফাই করুন';
+                    btn.onclick = () => toggleVerification(uid, data.isVerified);
+                    document.getElementById('profileActionContainer').appendChild(btn);
+                }
+
                 get(query(ref(db, 'posts'), orderByChild('uid'), equalTo(uid), limitToLast(20))).then(postSnap => {
                      const userPosts = postSnap.val() ? Object.values(postSnap.val()) : [];
                      document.getElementById('statPosts').innerText = userPosts.length;
@@ -1827,6 +1915,15 @@ html
                 }
             });
         };
+
+        window.toggleVerification = function(targetUid, currentStatus) {
+            const newStatus = !currentStatus;
+            update(ref(db, `users/${targetUid}`), { isVerified: newStatus }).then(() => {
+                showToast(newStatus ? "ব্যবহারকারী ভেরিফাইড হয়েছেন ✅" : "ভেরিফিকেশন বাতিল করা হয়েছে ❌");
+                loadProfile(targetUid); // Refresh UI
+            });
+        };
+
         window.toggleFollow = function() {
             if (!checkAuth()) return;
             const targetUid = currentlyViewingUid;
