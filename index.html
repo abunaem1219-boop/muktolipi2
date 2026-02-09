@@ -1,7 +1,7 @@
 html
 <!DOCTYPE html>
 <html lang="bn">
-<head
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>মুক্তলিপি ডায়েরি</title>
@@ -18,7 +18,7 @@ html
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Galada&family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Serif+Bengali:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudlare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -111,7 +111,7 @@ html
         }
         .stories-container::-webkit-scrollbar { display: none; }
         .story-item { display: flex; flex-direction: column; align-items: center; min-width: 60px; cursor: pointer; }
-        
+
         .story-ring {
             width: 55px; height: 55px; border-radius: 50%; padding: 3px;
             border: 2px solid transparent; 
@@ -414,17 +414,23 @@ html
         .chat-name { font-weight: 700; font-size: 15px; margin-bottom: 2px; display: flex; align-items: center; }
         .chat-preview { font-size: 13px; color: var(--secondary-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .chat-meta { font-size: 10px; color: var(--secondary-text); text-align: right; min-width: 50px; }
-        
+
         #chatRoomView { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 2500; display: none; flex-direction: column; }
         .chat-header { display: flex; align-items: center; gap: 10px; padding: 10px 15px; background: var(--glass-bg); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); }
         .chat-messages-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; padding-bottom: 80px; }
         .chat-input-bar { position: absolute; bottom: 0; left: 0; width: 100%; padding: 10px; background: var(--glass-bg); backdrop-filter: blur(10px); border-top: 1px solid var(--border-color); display: flex; gap: 10px; align-items: center; }
-        
+
         .msg-bubble { max-width: 75%; padding: 8px 12px; border-radius: 18px; font-size: 15px; line-height: 1.4; word-wrap: break-word; position: relative; }
         .msg-sent { background: var(--msg-sent-bg); color: var(--msg-sent-text); align-self: flex-end; border-bottom-right-radius: 4px; }
         .msg-received { background: var(--msg-rcv-bg); color: var(--msg-rcv-text); align-self: flex-start; border-bottom-left-radius: 4px; }
         .msg-time { font-size: 9px; opacity: 0.7; text-align: right; margin-top: 2px; }
+        .msg-image { width: 100%; max-width: 200px; border-radius: 12px; margin-top: 5px; cursor: pointer; display: block; }
+        .msg-audio { margin-top: 5px; width: 200px; max-width: 100%; }
         
+        /* Recording Indicator */
+        .recording-active { color: #e74c3c !important; animation: pulse-rec 1s infinite; }
+        @keyframes pulse-rec { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+
         .typing-indicator { align-self: flex-start; background: var(--msg-rcv-bg); padding: 8px 12px; border-radius: 18px; border-bottom-left-radius: 4px; display: none; align-items: center; gap: 3px; }
         .dot { width: 6px; height: 6px; background: #888; border-radius: 50%; animation: typing 1.4s infinite ease-in-out both; }
         .dot:nth-child(1) { animation-delay: -0.32s; } .dot:nth-child(2) { animation-delay: -0.16s; }
@@ -525,6 +531,12 @@ html
             <div class="dot"></div><div class="dot"></div><div class="dot"></div>
         </div>
         <div class="chat-input-bar">
+            <!-- New Media Buttons -->
+            <button id="chatImgBtn" class="action-btn" style="font-size:18px;" onclick="document.getElementById('chatImgInput').click()"><i class="fas fa-image"></i></button>
+            <input type="file" id="chatImgInput" hidden accept="image/*">
+            
+            <button id="chatMicBtn" class="action-btn" style="font-size:18px;" onclick="toggleRecording()"><i class="fas fa-microphone"></i></button>
+
             <input type="text" id="chatInput" placeholder="মেসেজ লিখুন..." style="margin:0; border-radius:20px;">
             <button id="sendMsgBtn" style="background:var(--primary-color); color:white; border:none; width:40px; height:40px; border-radius:50%; flex-shrink:0; cursor:pointer;"><i class="fas fa-paper-plane"></i></button>
         </div>
@@ -542,7 +554,7 @@ html
 
             <!-- Banner Image -->
             <div class="header-banner-container">
-                <img src="my_banner.jpg" class="header-banner">
+                <img src="my_banner2.jpg" class="header-banner">
                 <div class="banner-text">মনের কথা, মুক্ত ভাষায়</div>
             </div>
 
@@ -595,7 +607,7 @@ html
             <div class="profile-info">
                 <h2 id="profileNameDisplay" class="profile-name">Name</h2>
                 <div id="profileBioDisplay" class="profile-bio">Bio...</div>
-                
+
                 <!-- Follow Button Container -->
                 <div class="follow-container" id="profileActionContainer">
                     <button id="profileFollowBtn" class="btn-follow" style="display:none;" onclick="toggleFollow()">Follow</button>
@@ -687,7 +699,7 @@ html
             <div class="sheet-drag-handle"></div>
             <h3 id="sheetTitle" style="text-align:center; margin:10px 0; font-size:16px;">Title</h3>
             <div id="sheetBody" class="sheet-body"></div>
-            
+
             <!-- Footer with Input (Used for Comments) -->
             <div id="sheetFooter" style="padding:10px 15px; border-top:1px solid var(--border-color); display:none; gap:10px;">
                 <input type="text" id="sheetInput" placeholder="মন্তব্য লিখুন...">
@@ -823,6 +835,7 @@ html
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, push, set, onValue, update, remove, get, query, orderByKey, limitToLast, endBefore, equalTo, orderByChild, onChildAdded, onDisconnect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         const ADMIN_UID = "Pg5ko76Pu8Zf4ja9MMzEJRLDMYs1"; 
 
@@ -839,6 +852,7 @@ html
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
+        const storage = getStorage(app);
         const provider = new GoogleAuthProvider();
 
         window.allPosts = []; 
@@ -847,7 +861,12 @@ html
         window.currentUser = null;
         window.blockedUsers = []; // Stores UIDs of users blocked by me
         window.userVerificationCache = {}; // Stores UID: isVerified mapping
-        
+
+        // Persistent Dark Mode Logic - Run Immediately
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.body.classList.add('dark-theme');
+        }
+
         // Basic bad word filter (Client side)
         const BAD_WORDS = ["খারাপ", "গালাগালি", "অশ্লীল", "কুত্তা", "শয়তান", "ফালতু", "haram", "kharap", "gali"];
 
@@ -865,6 +884,9 @@ html
         let activeChatId = null;
         let activeChatPartnerUid = null;
         let typingTimeout = null;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecording = false;
 
         window.formatPostContent = function(text) {
             if (!text) return '';
@@ -916,7 +938,7 @@ html
         // --- AUTH & INIT ---
         onAuthStateChanged(auth, async (user) => {
             window.currentUser = user;
-            
+
             // If logged in, fetch blocked users first
             if(user) {
                 await fetchBlockedUsers(user.uid);
@@ -924,7 +946,7 @@ html
                 document.getElementById('loginModal').style.display = 'none';
                 initNotificationListener(user.uid);
                 initChatListener(user.uid); 
-                
+
                 // Presence
                 const connectedRef = ref(db, '.info/connected');
                 const myStatusRef = ref(db, 'status/' + user.uid);
@@ -1028,13 +1050,13 @@ html
                      document.getElementById('msgBadge').classList.remove('active');
                      return;
                 }
-                
+
                 let totalUnread = 0;
                 const chats = Object.entries(data).map(([targetUid, info]) => {
                     if(info.unseenCount) totalUnread += info.unseenCount;
                     return { targetUid, ...info };
                 });
-                
+
                 const badge = document.getElementById('msgBadge');
                 if(totalUnread > 0) { badge.innerText = totalUnread > 9 ? '9+' : totalUnread; badge.classList.add('active'); }
                 else badge.classList.remove('active');
@@ -1079,12 +1101,12 @@ html
             activeChatPartnerUid = targetUid;
             const myUid = window.currentUser.uid;
             activeChatId = getChatId(myUid, targetUid);
-            
+
             const userSnap = await get(ref(db, `users/${targetUid}`));
             const user = userSnap.val() || { displayName: 'User', photoURL: 'https://cdn-icons-png.flaticon.com/512/149/149071.png', isVerified: false };
             document.getElementById('chatRoomImg').src = user.photoURL;
             document.getElementById('chatRoomName').innerHTML = `${user.displayName} ${getVerifiedBadge(user.isVerified)}`;
-            
+
             const statusSnap = await get(ref(db, `status/${targetUid}`));
             document.getElementById('chatRoomStatus').innerText = statusSnap.exists() ? 'Active Now' : 'Offline';
 
@@ -1094,19 +1116,24 @@ html
             const isBlocked = window.blockedUsers.includes(targetUid);
             const input = document.getElementById('chatInput');
             const btn = document.getElementById('sendMsgBtn');
+            const imgBtn = document.getElementById('chatImgBtn');
+            const micBtn = document.getElementById('chatMicBtn');
+
             if (isBlocked) {
                 input.disabled = true;
                 input.placeholder = "You have blocked this user.";
                 btn.style.opacity = 0.5; btn.style.pointerEvents = 'none';
+                imgBtn.style.pointerEvents = 'none'; micBtn.style.pointerEvents = 'none';
             } else {
                 input.disabled = false;
                 input.placeholder = "মেসেজ লিখুন...";
                 btn.style.opacity = 1; btn.style.pointerEvents = 'auto';
+                imgBtn.style.pointerEvents = 'auto'; micBtn.style.pointerEvents = 'auto';
             }
 
             document.getElementById('chatMessages').innerHTML = '';
             document.getElementById('chatRoomView').style.display = 'flex';
-            
+
             const messagesRef = query(ref(db, `chats/${activeChatId}/messages`), limitToLast(50));
             onValue(messagesRef, (snap) => {
                 const data = snap.val();
@@ -1117,7 +1144,19 @@ html
                         const isMe = msg.sender === myUid;
                         const div = document.createElement('div');
                         div.className = `msg-bubble ${isMe ? 'msg-sent' : 'msg-received'}`;
-                        div.innerHTML = `${formatPostContent(msg.text)} <div class="msg-time">${new Date(msg.timestamp).toLocaleTimeString([],{hour:'2-digit', minute:'2-digit'})}</div>`;
+                        
+                        let contentHtml = '';
+                        if(msg.image) {
+                            contentHtml += `<img src="${msg.image}" class="msg-image" onclick="window.open('${msg.image}', '_blank')">`;
+                        }
+                        if(msg.audio) {
+                            contentHtml += `<audio controls src="${msg.audio}" class="msg-audio"></audio>`;
+                        }
+                        if(msg.text) {
+                            contentHtml += `<div>${formatPostContent(msg.text)}</div>`;
+                        }
+
+                        div.innerHTML = `${contentHtml} <div class="msg-time">${new Date(msg.timestamp).toLocaleTimeString([],{hour:'2-digit', minute:'2-digit'})}</div>`;
                         if(isMe) {
                             div.oncontextmenu = (e) => { e.preventDefault(); confirmDeleteMessage(activeChatId, key); };
                             let pressTimer;
@@ -1137,40 +1176,103 @@ html
             });
         };
 
-        document.getElementById('sendMsgBtn').onclick = sendMessage;
+        // --- CHAT MEDIA LOGIC (Images & Voice) ---
+        
+        // Image Upload
+        document.getElementById('chatImgInput').onchange = function() {
+            if(!this.files[0] || window.blockedUsers.includes(activeChatPartnerUid)) return;
+            showToast("Sending photo...");
+            compressImage(this.files[0]).then(compressedBlob => {
+                uploadImageXHR(compressedBlob).then(url => {
+                    sendChatMessage(null, url, null);
+                }).catch(() => showToast("Failed to upload image"));
+            });
+            this.value = ''; // Reset
+        };
+
+        // Voice Recording
+        window.toggleRecording = async function() {
+            if(window.blockedUsers.includes(activeChatPartnerUid)) return;
+            const btn = document.getElementById('chatMicBtn');
+            
+            if (!isRecording) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+                    mediaRecorder.onstop = async () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        const fileName = `chat-voice/${Date.now()}.webm`;
+                        const storageRef = sRef(storage, fileName);
+                        showToast("Sending audio...");
+                        try {
+                            const snapshot = await uploadBytes(storageRef, audioBlob);
+                            const url = await getDownloadURL(snapshot.ref);
+                            sendChatMessage(null, null, url);
+                        } catch(e) { console.error(e); showToast("Upload Failed"); }
+                    };
+                    mediaRecorder.start();
+                    isRecording = true;
+                    btn.classList.add('recording-active');
+                    document.getElementById('chatInput').placeholder = "Recording...";
+                } catch(e) {
+                    showToast("Microphone permission denied");
+                }
+            } else {
+                mediaRecorder.stop();
+                isRecording = false;
+                btn.classList.remove('recording-active');
+                document.getElementById('chatInput').placeholder = "মেসেজ লিখুন...";
+            }
+        };
+
+        document.getElementById('sendMsgBtn').onclick = () => {
+             const input = document.getElementById('chatInput');
+             if(input.value.trim()) sendChatMessage(input.value.trim());
+        };
+
         document.getElementById('chatInput').addEventListener('keypress', (e) => {
-            if(e.key === 'Enter') sendMessage();
+            if(e.key === 'Enter') {
+                const input = document.getElementById('chatInput');
+                if(input.value.trim()) sendChatMessage(input.value.trim());
+            }
             update(ref(db, `chats/${activeChatId}/typing/${window.currentUser.uid}`), true);
             clearTimeout(typingTimeout);
             typingTimeout = setTimeout(() => update(ref(db, `chats/${activeChatId}/typing/${window.currentUser.uid}`), false), 2000);
         });
 
-        function sendMessage() {
+        function sendChatMessage(text, imageUrl = null, audioUrl = null) {
             if(window.blockedUsers.includes(activeChatPartnerUid)) return;
-            const input = document.getElementById('chatInput');
-            const text = input.value.trim();
-            if(!text) return;
-
+            
             const myUid = window.currentUser.uid;
             const targetUid = activeChatPartnerUid;
-            
-            push(ref(db, `chats/${activeChatId}/messages`), {
-                text: text, sender: myUid, timestamp: Date.now()
-            });
+
+            const msgData = {
+                sender: myUid, 
+                timestamp: Date.now()
+            };
+
+            let previewText = "Sent a message";
+            if(text) { msgData.text = text; previewText = text; }
+            if(imageUrl) { msgData.image = imageUrl; previewText = "Sent a photo"; }
+            if(audioUrl) { msgData.audio = audioUrl; previewText = "Sent a voice note"; }
+
+            push(ref(db, `chats/${activeChatId}/messages`), msgData);
 
             update(ref(db, `user_chats/${myUid}/${targetUid}`), {
-                lastMsg: "You: " + text, timestamp: Date.now()
+                lastMsg: "You: " + previewText, timestamp: Date.now()
             });
 
             const targetRef = ref(db, `user_chats/${targetUid}/${myUid}`);
             get(targetRef).then(snap => {
                 const currentUnseen = (snap.val() && snap.val().unseenCount) || 0;
                 update(targetRef, {
-                    lastMsg: text, timestamp: Date.now(), unseenCount: currentUnseen + 1
+                    lastMsg: previewText, timestamp: Date.now(), unseenCount: currentUnseen + 1
                 });
             });
 
-            input.value = '';
+            document.getElementById('chatInput').value = '';
             update(ref(db, `chats/${activeChatId}/typing/${window.currentUser.uid}`), false);
         }
 
@@ -1240,9 +1342,9 @@ html
                     isLoadingPosts = false;
                     loadStoryFeed(); return;
                 }
-                
+
                 let newPosts = Object.entries(data).map(([key, val]) => ({ key, ...val }));
-                
+
                 // Filter Blocked Users
                 newPosts = newPosts.filter(p => !window.blockedUsers.includes(p.uid));
 
@@ -1267,7 +1369,7 @@ html
                    const savedPosts = window.allPosts.filter(p => savedKeys.includes(p.key));
                    renderFeed(savedPosts);
                 } else { renderFeed(window.allPosts); }
-                
+
                 loadStoryFeed(); updateGreeting(); isLoadingPosts = false;
             }).catch(err => { spinner.style.display = 'none'; isLoadingPosts = false; console.error(err); });
         };
@@ -1381,7 +1483,7 @@ html
         window.renderFeed = function(posts, targetId = 'feed') {
             const feed = document.getElementById(targetId);
             if(!posts || !posts.length) return feed.innerHTML = '<div style="text-align:center; padding:30px; width:100%;">কোনো পোস্ট নেই</div>';
-            
+
             feed.innerHTML = posts.map(post => {
                 const liked = localStorage.getItem('LIKED_' + post.key);
                 let content = post.content || '';
@@ -1395,7 +1497,7 @@ html
                 let likeIconClass = liked ? 'fas fa-heart' : 'far fa-heart';
                 let likeColorStyle = liked ? 'color:#e74c3c' : '';
                 if(liked && reactionData) { const style = getReactionIcon(reactionData.type); likeIconClass = style.icon; likeColorStyle = `color:${style.color}`; }
-                
+
                 // Badge Logic
                 const isVerified = window.userVerificationCache[post.uid] === true;
                 const badgeHtml = getVerifiedBadge(isVerified);
@@ -1447,7 +1549,7 @@ html
             document.getElementById('sheetFooter').style.display = 'none';
             const isMe = window.currentUser && window.currentUser.uid === authorUid;
             const isAdmin = window.currentUser && window.currentUser.uid === ADMIN_UID;
-            
+
             let html = `
                 <div class="menu-option" onclick="handleReport('${postKey}', '${authorUid}')">
                     <i class="fas fa-exclamation-triangle"></i> রিপোর্ট করুন
@@ -1475,7 +1577,7 @@ html
         window.handleReport = async function(postKey, authorUid) {
             if(!checkAuth()) return;
             document.getElementById('universalBottomSheet').classList.remove('active');
-            
+
             const { value: reason } = await Swal.fire({
                 title: 'রিপোর্টের কারণ',
                 input: 'select',
@@ -1509,7 +1611,7 @@ html
         window.handleBlock = function(targetUid, name) {
             if(!checkAuth()) return;
             document.getElementById('universalBottomSheet').classList.remove('active');
-            
+
             Swal.fire({
                 title: 'ব্লক করবেন?',
                 text: `${name}-এর পোস্ট আর দেখা যাবে না।`,
@@ -1607,7 +1709,7 @@ html
                     const commentData = { text: txt, author: window.currentUser.displayName, timestamp: Date.now(), parentId: replyingToCommentId, isVerified: isVerified };
                     push(ref(db, 'comments/'+key), commentData);
                 });
-                
+
                 document.getElementById('sheetInput').value = '';
                 const post = window.allPosts.find(p => p.key === key);
                 if(post && post.uid && post.uid !== window.currentUser.uid) { sendNotification(post.uid, 'comment', key); }
@@ -1620,7 +1722,7 @@ html
             let isVerified = c.isVerified;
             // If undefined (old comments), we might skip looking it up to save reads, or assume false.
             if (isVerified === undefined) isVerified = false;
-            
+
             const badgeHtml = getVerifiedBadge(isVerified);
             const indentClass = isReply ? 'nested-reply' : '';
             const replyBtn = !isReply ? `<button class="reply-btn" onclick="startReply('${c.key}', '${c.author}')">উত্তর দিন</button>` : '';
@@ -1649,7 +1751,7 @@ html
              else { document.getElementById('adminFields').style.display = 'none'; document.getElementById('adminTabs').style.display = 'none'; }
         };
         window.closeAdminModal = () => document.getElementById('adminModalWrapper').style.display = 'none';
-        
+
         window.switchAdminTab = function(tab) {
             const form = document.getElementById('writeFormContainer');
             // const pending = document.getElementById('pendingListContainer'); // REMOVED
@@ -1676,7 +1778,7 @@ html
                 const data = snap.val();
                 if(!data) { feed.innerHTML = '<p style="text-align:center;">কোনো রিপোর্ট নেই</p>'; return; }
                 const reports = Object.entries(data).map(([key, val]) => ({ key, ...val })).reverse();
-                
+
                 feed.innerHTML = reports.map(r => {
                     const reporter = r.reportedByName || `UID: ${r.reportedBy.substr(0,5)}...`;
                     return `
@@ -1717,7 +1819,7 @@ html
             const content = document.getElementById('richEditor').innerHTML;
             const category = document.getElementById('postCategory').value;
             if (!title || !document.getElementById('richEditor').innerText.trim()) return showToast('❌ শিরোনাম ও লেখা প্রয়োজন');
-            
+
             // Client Side Bad Word Filter
             const fullText = (title + " " + document.getElementById('richEditor').innerText).toLowerCase();
             const foundBadWord = BAD_WORDS.find(word => fullText.includes(word));
@@ -1740,13 +1842,13 @@ html
                 image: document.getElementById('postImage').value || null, likes: 0, views: 0
             };
             const isAdmin = window.currentUser.uid === ADMIN_UID;
-            
+
             // Allow admin to pin
             if (isAdmin) {
                 postData.voice = document.getElementById('voiceUrl').value;
                 postData.isPinned = document.getElementById('isPinned').checked;
             }
-            
+
             // DIRECT PUBLISH LOGIC (Replaced Pending System)
             push(ref(db, 'posts'), postData).then(() => { 
                 if(window.currentUser) { 
@@ -1812,7 +1914,7 @@ html
             const uid = targetUid || urlUid || (window.currentUser ? window.currentUser.uid : null);
             currentlyViewingUid = uid;
             if(!uid) { document.getElementById('profileNameDisplay').innerText = "অতিথি"; return; }
-            
+
             // Block Check
             if(window.blockedUsers.includes(uid)) {
                 document.getElementById('profileNameDisplay').innerText = "Blocked User";
@@ -1828,12 +1930,12 @@ html
 
             document.getElementById('profileEditBtn').style.display = isMe ? 'flex' : 'none';
             document.getElementById('logoutBtn').style.display = isMe ? 'block' : 'none';
-            
+
             // Button Logic
             const followBtn = document.getElementById('profileFollowBtn');
             const savedBtn = document.getElementById('profileSavedViewBtn');
             const msgBtn = document.getElementById('profileMsgBtn');
-            
+
             // Remove previous verify button if exists
             const existingVerifyBtn = document.getElementById('adminVerifyBtn');
             if(existingVerifyBtn) existingVerifyBtn.remove();
@@ -1868,7 +1970,7 @@ html
                 if(data.fbLink) socialHtml += `<a href="${data.fbLink}" target="_blank" class="social-link-btn"><i class="fab fa-facebook"></i></a>`;
                 if(data.instaLink) socialHtml += `<a href="${data.instaLink}" target="_blank" class="social-link-btn"><i class="fab fa-instagram"></i></a>`;
                 document.getElementById('profileSocialLinks').innerHTML = socialHtml;
-                
+
                 // ADMIN VERIFICATION BUTTON
                 if (isAdmin && !isMe) {
                     const btn = document.createElement('button');
@@ -2011,11 +2113,11 @@ html
             document.getElementById('detailTitle').innerText = post.title;
             document.getElementById('detailDate').innerText = post.date;
             document.getElementById('detailBody').innerHTML = formatPostContent(post.content);
-            
+
             // Verification Badge in Detail
             const isVerified = window.userVerificationCache[post.uid] === true;
             document.getElementById('detailAuthorName').innerHTML = `${post.author} ${getVerifiedBadge(isVerified)}`;
-            
+
             document.getElementById('detailAuthorImg').src = post.userImg || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
             const imgEl = document.getElementById('detailMainImg');
             if(post.image) { imgEl.src = post.image; imgEl.style.display = 'block'; } else imgEl.style.display = 'none';
@@ -2068,7 +2170,13 @@ html
         window.showToast = (msg) => { const t = document.getElementById('toast'); document.getElementById('toastMsg').innerText = msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2000); };
         window.execCmd = (cmd) => document.execCommand(cmd, false, null);
         window.addLink = () => { const u = prompt('Link:'); if(u) document.execCommand('createLink', false, u); };
-        window.toggleTheme = () => document.body.classList.toggle('dark-theme');
+        
+        // Updated Theme Toggle with Persistence
+        window.toggleTheme = () => {
+            document.body.classList.toggle('dark-theme');
+            localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
+        };
+        
         window.saveDraft = () => {
              const title = document.getElementById('postTitle').value;
              const drafts = JSON.parse(localStorage.getItem('MUKTOLIPI_DRAFTS_V2') || '[]');
