@@ -8,16 +8,17 @@ html
 
     <!-- PWA Manifest & Meta Tags -->
     <link rel="icon" type="image/png" href="icon.png">
-    <link rel="apple-touch-ic" href="icon.png">
-    <link rel="manifest" href="manifest.json">    <meta name="theme-color" content="#1877f2">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="manifest" href="manifest.json">    
+    <meta name="theme-color" content="#1877f2">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="description" content="মনের কথা, মুক্ত ভাষায়- মুক্তলিপি ডায়েরি">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.co" crossorigin>
-    <link href="https://fonts.googleapis.com/cs2?family=Galada&family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Serif+Bengali:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Galada&family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Serif+Bengali:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.ss">
 
     <!-- Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -257,9 +258,7 @@ html
         .reaction-item { position: relative; cursor: pointer; transition: transform 0.2s ease, margin 0.2s ease; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; }
         .reaction-img { width: 100%; height: 100%; object-fit: contain; transform-origin: bottom center; transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1); pointer-events: none; }
         .reaction-item:hover .reaction-img, .reaction-item.active .reaction-img { transform: scale(1.6) translateY(-8px); }
-        .reaction-label { position: absolute; top: -28px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.75); color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; opacity: 0; pointer-events: none; transition: opacity 0.2s; white-space: nowrap; }
-        .reaction-item:hover .reaction-label, .reaction-item.active .reaction-label { opacity: 1; }
-
+        
         .reaction-box.show .reaction-item { animation: slideUpFade 0.3s backwards; }
         .reaction-box.show .reaction-item:nth-child(1) { animation-delay: 0.05s; }
         .reaction-box.show .reaction-item:nth-child(2) { animation-delay: 0.08s; }
@@ -275,10 +274,10 @@ html
         @keyframes rubberBand { 0% { transform: scale(1); } 30% { transform: scale(1.25, 0.75); } 40% { transform: scale(0.75, 1.25); } 50% { transform: scale(1.15, 0.85); } 65% { transform: scale(0.95, 1.05); } 75% { transform: scale(1.05, 0.95); } 100% { transform: scale(1); } }
 
         /* ---------------------------------------------------- */
-        /* --- FACEBOOK STYLE COMMENTS (NEW) --- */
+        /* --- FACEBOOK STYLE COMMENTS (FIXED NESTING) --- */
         /* ---------------------------------------------------- */
-        .comment-container { display: flex; flex-direction: column; gap: 15px; padding-bottom: 10px; }
-        .comment-wrapper { display: flex; gap: 8px; position: relative; }
+        .comment-container { display: flex; flex-direction: column; gap: 10px; padding-bottom: 10px; }
+        .comment-wrapper { display: flex; gap: 8px; position: relative; margin-bottom: 5px; }
         .comment-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 1px solid var(--border-color); }
         
         .comment-content-box { display: flex; flex-direction: column; max-width: 85%; }
@@ -297,7 +296,7 @@ html
         
         .comment-actions { display: flex; gap: 12px; margin-left: 12px; margin-top: 4px; font-size: 12px; color: var(--secondary-text); align-items: center; }
         
-        /* Reaction Dock for Comments - positioned differently */
+        /* Reaction Dock for Comments */
         .comment-wrapper .reaction-box { bottom: 30px; left: 0; transform: scale(0.9); transform-origin: left bottom; z-index: 2050; }
 
         .c-action-btn { cursor: pointer; font-weight: 600; background: none; border: none; padding: 0; color: inherit; font-size: 12px; position: relative;}
@@ -316,7 +315,17 @@ html
             border: 1px solid var(--border-color);
         }
         
-        .reply-indent { margin-left: 42px; display: none; flex-direction: column; gap: 10px; margin-top: 10px; }
+        /* CSS FIX: Indentation for Replies */
+        .reply-indent { 
+            margin-left: 45px; 
+            display: none; 
+            flex-direction: column; 
+            gap: 10px; 
+            margin-top: 5px; 
+            border-left: 2px solid var(--border-color);
+            padding-left: 8px;
+        }
+        
         .view-replies-link { margin-left: 54px; font-size: 13px; font-weight: 600; color: var(--secondary-text); cursor: pointer; margin-top: 5px; display: flex; align-items: center; gap: 5px; }
         .view-replies-link:hover { text-decoration: underline; }
         .view-replies-link::before { content: ""; display: inline-block; width: 20px; height: 1px; background: var(--secondary-text); vertical-align: middle; }
@@ -593,7 +602,7 @@ html
             </div>
         </div>
         <div class="drawer-footer">
-            Version 1.1
+            Version 1.2
         </div>
     </div>
 
@@ -1875,7 +1884,7 @@ html
             if (btn) updateLikeVisual(btn, key);
         };
 
-        // --- UPDATED COMMENTS SYSTEM (FB STYLE) ---
+        // --- UPDATED COMMENTS SYSTEM (FB STYLE + NESTING FIX) ---
 
         // Helper: Format Relative Time
         function getRelativeTime(timestamp) {
@@ -1893,7 +1902,7 @@ html
             return new Date(timestamp).toLocaleDateString();
         }
 
-        // 1. Open Comments Sheet -> Load Logic
+        // 1. Open Comments Sheet
         window.openCommentsSheet = (key) => {
             if(!checkAuth()) return;
             document.getElementById('sheetTitle').innerText = 'মন্তব্য';
@@ -1909,24 +1918,39 @@ html
                 const data = snap.val();
                 if(!data) { document.getElementById('sheetBody').innerHTML = '<p style="text-align:center; color:var(--secondary-text);">কোনো মন্তব্য নেই</p>'; return; }
                 
-                // Process comments
+                // Process comments: Separate Parents & Children
                 const allComments = Object.entries(data).map(([k,v]) => ({key:k, ...v}));
-                window.currentPostComments = allComments; // Cache for logic
+                window.currentPostComments = allComments; 
                 
-                // Separate Parent/Child
+                // Sorting: Newest Parents First
                 const parents = allComments.filter(c => !c.parentId).sort((a,b) => b.timestamp - a.timestamp);
                 const children = allComments.filter(c => c.parentId);
 
                 let html = '<div class="comment-container">';
+                
+                // --- FIX: Logic to render Nested Structure ---
                 for (const p of parents) {
-                    const pChildren = children.filter(c => c.parentId === p.key).sort((a,b) => a.timestamp - b.timestamp);
-                    html += await renderCommentHTML(p, false, pChildren);
+                    // Render the Parent Comment Bubble
+                    html += await renderCommentBubble(p, false); 
+                    
+                    // Find children for this specific parent
+                    const myChildren = children.filter(c => c.parentId === p.key).sort((a,b) => a.timestamp - b.timestamp);
+                    
+                    if (myChildren.length > 0) {
+                        html += `<div class="view-replies-link" id="view-replies-${p.key}" onclick="toggleReplies('${p.key}')">View ${myChildren.length} replies</div>`;
+                        html += `<div id="replies-${p.key}" class="reply-indent">`; // Hidden by default CSS
+                        for(const child of myChildren) {
+                             html += await renderCommentBubble(child, true);
+                        }
+                        html += `</div>`;
+                    }
                 }
+
                 html += '</div>';
                 document.getElementById('sheetBody').innerHTML = html;
             });
 
-            // Submission Logic (Smart Notification)
+            // Submission Logic
             const sendBtn = document.getElementById('sheetSendBtn');
             sendBtn.onclick = () => {
                 const txt = document.getElementById('sheetInput').value;
@@ -1934,7 +1958,6 @@ html
                 
                 get(ref(db, `users/${window.currentUser.uid}/isVerified`)).then(snap => {
                     const isVerified = snap.val() === true;
-                    // Get user avatar for local display/notif
                     const myAvatar = window.currentUser.photoURL; 
 
                     const commentData = { 
@@ -1948,21 +1971,18 @@ html
                         reactions: {}
                     };
                     
-                    // Push to DB
                     push(ref(db, 'comments/'+key), commentData);
 
                     // --- SMART NOTIFICATION LOGIC ---
                     const post = window.allPosts.find(p => p.key === key);
-                    
                     if (replyingToCommentId) {
-                        // SCENARIO B: Reply
-                        // Find original comment author
+                        // Notify original comment author
                         const parentComm = window.currentPostComments.find(c => c.key === replyingToCommentId);
                         if(parentComm && parentComm.uid && parentComm.uid !== window.currentUser.uid) {
                              sendNotification(parentComm.uid, 'reply', key);
                         }
                     } else {
-                        // SCENARIO A: Top-Level Comment
+                        // Notify post author
                         if(post && post.uid && post.uid !== window.currentUser.uid) { 
                             sendNotification(post.uid, 'comment', key); 
                         }
@@ -1974,8 +1994,8 @@ html
             };
         };
 
-        // 2. Render HTML (Facebook Style Bubble)
-        async function renderCommentHTML(c, isReply, children = []) {
+        // 2. Render Single Comment Bubble (Reused for Parent & Child)
+        async function renderCommentBubble(c, isReply) {
             let isVerified = c.isVerified === undefined ? false : c.isVerified;
             const badgeHtml = getVerifiedBadge(isVerified);
             const userImg = c.userImg || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
@@ -1988,10 +2008,8 @@ html
                 const reacts = Object.values(c.reactions);
                 reactionCount = reacts.length;
                 if(reactionCount > 0) {
-                     // Pick most frequent or just the last one
                      const type = reacts[reacts.length-1].type; 
                      const style = getReactionStyle(type);
-                     // If like, use solid blue thumb. Else image.
                      if(type === 'like') topReactionIcon = '<i class="fas fa-thumbs-up" style="color:#1877f2"></i>';
                      else topReactionIcon = `<img src="${style.icon}" style="width:10px; height:10px;">`;
                 }
@@ -2010,7 +2028,9 @@ html
                  btnStyle = `color:${s.color};`;
             }
 
-            const wrapperClass = isReply ? 'comment-wrapper reply-indent' : 'comment-wrapper';
+            // If it's a reply inside the indent container, we don't need margin-top on the wrapper itself usually, 
+            // but margin is handled by CSS gap in container.
+            const wrapperClass = 'comment-wrapper';
             
             // Reaction Box HTML
             const reactionBoxHTML = `
@@ -2028,7 +2048,7 @@ html
             </div>`;
 
             let html = `
-            <div class="${wrapperClass}" id="comment-wrap-${c.key}" style="${isReply?'display:flex; margin-top:5px;':''}">
+            <div class="${wrapperClass}" id="comment-wrap-${c.key}">
                 <img src="${userImg}" class="comment-avatar">
                 <div class="comment-content-box">
                     <div class="comment-bubble">
@@ -2055,30 +2075,21 @@ html
                 </div>
             </div>`;
 
-            // Nested Logic (Accordion)
-            if (!isReply && children.length > 0) {
-                html += `<div class="view-replies-link" id="view-replies-${c.key}" onclick="toggleReplies('${c.key}')">View ${children.length} replies</div>`;
-                html += `<div id="replies-${c.key}" class="reply-indent">`;
-                // Generate child HTML but keep hidden
-                for (const child of children) {
-                    html += await renderCommentHTML(child, true, []);
-                }
-                html += `</div>`;
-            }
-
             return html;
         }
 
-        // 3. Nested Replies Toggle
+        // 3. Toggle Replies visibility
         window.toggleReplies = function(parentId) {
             const container = document.getElementById(`replies-${parentId}`);
             const link = document.getElementById(`view-replies-${parentId}`);
+            if(!container) return;
+            
             if(container.style.display === 'flex') {
                  container.style.display = 'none';
-                 // Reset text? No need generally
+                 // Optionally show link again if we hid it
             } else {
                  container.style.display = 'flex';
-                 link.style.display = 'none'; // Hide button after opening
+                 link.style.display = 'none'; // Hide "View Replies" button after opening
             }
         };
 
@@ -2095,7 +2106,7 @@ html
             document.getElementById('cancelReplyBtn').style.display = 'none';
         };
 
-        // 4. Comment Reaction Logic (Long Press)
+        // 4. Comment Reaction Logic (Attached to Window for Scope)
         window.startCommentPress = function(e, commentId, btn) {
             if(!checkAuth()) return;
             isCommentLongPress = false;
