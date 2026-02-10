@@ -53,36 +53,6 @@ html
 <button onclick="debugOneSignal()" style="position:fixed; top:150px; left:10px; z-index:9999; padding:10px; background:red; color:white; border:none; border-radius:5px;">
     Test Notification
 </button>
-
-<script>
-    function debugOneSignal() {
-        alert("Testing OneSignal..."); // ১. বাটন কাজ করছে কিনা চেক
-        
-        if (window.OneSignalDeferred) {
-            window.OneSignalDeferred.push(function(OneSignal) {
-                
-                // চেক করা হচ্ছে ইউজার আগেই সাবস্ক্রাইব করেছে কিনা
-                if (OneSignal.User.PushSubscription.optedIn) {
-                    alert("⚠️ আপনি আগেই সাবস্ক্রাইব করেছেন! (Already Allowed)");
-                    return;
-                }
-
-                alert("Attempting to show prompt..."); // ২. প্রম্পট ডাকার চেষ্টা
-                
-                OneSignal.Slidedown.promptPush()
-                    .then(function(result) {
-                        alert("✅ Result: " + result); 
-                    })
-                    .catch(function(error) {
-                        alert("❌ Error: " + JSON.stringify(error)); 
-                        console.error(error);
-                    });
-            });
-        } else {
-            alert("❌ OneSignal লোড হয়নি! ইন্টারনেট চেক করুন বা AdBlocker বন্ধ করুন।");
-        }
-    }
-</script>
     <style>
         :root { 
             --bg-color: #f4f7f6; 
