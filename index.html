@@ -20,10 +20,10 @@ html
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.et/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-    <!-- OneSignal SDK (UPDATED CONFIGURATION) -->
+    <!-- OneSignal SDK -->
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script>
       window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -31,22 +31,8 @@ html
         OneSignal.init({
           appId: "d2470015-4ed1-4274-96bd-1654f86cb54a",
           allowLocalhostAsSecureOrigin: true,
-          // Bell Icon Configuration (Kept as fallback)
-          notifyButton: {
-            enable: true,
-          },
-          // Automatic Slidedown Prompt Configuration
-          prompts: [
-            {
-              type: "slidedown",
-              autoPrompt: true,
-              text: {
-                actionMessage: "আপনি কি নতুন পোস্টের নোটিফিকেশন পেতে চান?",
-                acceptButton: "হ্যাঁ",
-                cancelButton: "পরে"
-              }
-            }
-          ]
+          notifyButton: { enable: true },
+          prompts: [{ type: "slidedown", autoPrompt: true, text: { actionMessage: "আপনি কি নতুন পোস্টের নোটিফিকেশন পেতে চান?", acceptButton: "হ্যাঁ", cancelButton: "পরে" } }]
         });
       });
     </script>
@@ -215,7 +201,7 @@ html
         /* Post Card Details */
         .pinned-badge { position: absolute; top: 15px; right: 15px; color: #e74c3c; font-size: 16px; transform: rotate(45deg); z-index: 2; }
 
-        .author-info { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; cursor: pointer; padding-right: 25px; /* space for menu */ }
+        .author-info { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; cursor: pointer; padding-right: 25px; }
         .avatar-circle { width: 34px; height: 34px; background: #e4e6eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; border: 1px solid var(--border-color);}
         .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
         .author-text h4 { margin: 0; font-size: 14px; font-weight: 700; display:flex; align-items:center; }
@@ -236,17 +222,137 @@ html
         .action-btn:hover { color: var(--primary-color); }
         .count-text { font-size: 12px; font-weight: 600; }
 
-        /* Reaction Bar */
-        .reaction-bar {
-            position: absolute; bottom: 40px; left: -10px; background: var(--sheet-bg); border-radius: 50px;
-            padding: 5px 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.15); display: none; gap: 8px; z-index: 100;
-            border: 1px solid var(--border-color); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        /* ---------------------------------------------------- */
+        /* --- FACEBOOK STYLE REACTION SYSTEM (NEW & UPDATED) --- */
+        /* ---------------------------------------------------- */
+
+        /* The Pill Container */
+        .reaction-box {
+            position: absolute;
+            bottom: 45px;
+            left: -10px;
+            background: #ffffff;
+            border-radius: 50px;
+            padding: 6px 6px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+            display: none;
+            gap: 4px;
+            z-index: 1000;
+            border: 1px solid rgba(0,0,0,0.05);
+            align-items: center;
+            height: 44px;
         }
-        .reaction-bar.show { display: flex; }
-        .reaction-icon { font-size: 22px; cursor: pointer; transition: transform 0.2s; display: inline-block; }
-        .reaction-icon:hover { transform: scale(1.4) translateY(-5px); }
-        @keyframes popIn { from { opacity: 0; transform: translateY(10px) scale(0.8); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        .r-love { color: #e74c3c; } .r-haha { color: #f7b928; } .r-sad { color: #f7b928; } .r-angry { color: #e74c3c; } .r-care { color: #e6683c; }
+
+        .dark-theme .reaction-box {
+            background: #242526;
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        /* Entrance Animation */
+        .reaction-box.show {
+            display: flex;
+            animation: popUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popUp {
+            from { opacity: 0; transform: translateY(10px) scale(0.8); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Individual Reaction Wrapper */
+        .reaction-item {
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s ease, margin 0.2s ease;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* The Animated GIF/WebP */
+        .reaction-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transform-origin: bottom center;
+            transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1);
+            pointer-events: none; /* Let clicks pass to wrapper */
+        }
+
+        /* Magnification Effect (Fisheye) */
+        .reaction-item:hover .reaction-img, 
+        .reaction-item.active .reaction-img {
+            transform: scale(1.6) translateY(-8px);
+        }
+
+        /* Tooltip Label */
+        .reaction-label {
+            position: absolute;
+            top: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.75);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+        }
+
+        .reaction-item:hover .reaction-label,
+        .reaction-item.active .reaction-label {
+            opacity: 1;
+        }
+
+        /* Staggered Entrance for Items */
+        .reaction-box.show .reaction-item {
+            animation: slideUpFade 0.3s backwards;
+        }
+        .reaction-box.show .reaction-item:nth-child(1) { animation-delay: 0.05s; }
+        .reaction-box.show .reaction-item:nth-child(2) { animation-delay: 0.08s; }
+        .reaction-box.show .reaction-item:nth-child(3) { animation-delay: 0.11s; }
+        .reaction-box.show .reaction-item:nth-child(4) { animation-delay: 0.14s; }
+        .reaction-box.show .reaction-item:nth-child(5) { animation-delay: 0.17s; }
+        .reaction-box.show .reaction-item:nth-child(6) { animation-delay: 0.20s; }
+        .reaction-box.show .reaction-item:nth-child(7) { animation-delay: 0.23s; }
+
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Flying Animation Class */
+        .flying-emoji {
+            position: fixed;
+            z-index: 9999;
+            width: 40px;
+            height: 40px;
+            pointer-events: none;
+            transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        /* Button Bounce */
+        .btn-bounce {
+            animation: rubberBand 0.6s;
+        }
+        @keyframes rubberBand {
+            0% { transform: scale(1); }
+            30% { transform: scale(1.25, 0.75); }
+            40% { transform: scale(0.75, 1.25); }
+            50% { transform: scale(1.15, 0.85); }
+            65% { transform: scale(0.95, 1.05); }
+            75% { transform: scale(1.05, 0.95); }
+            100% { transform: scale(1); }
+        }
+
+        /* --- END REACTION CSS --- */
+
 
         /* Detail View */
         #detailView {
@@ -520,7 +626,7 @@ html
             </div>
         </div>
         <div class="drawer-footer">
-            সংস্করণ ১.০
+            সংস্করণ ১.১
         </div>
     </div>
 
@@ -940,8 +1046,8 @@ html
         window.allComments = {}; 
         window.db = db; window.ref = ref; window.push = push; window.set = set; window.update = update; window.remove = remove;
         window.currentUser = null;
-        window.blockedUsers = []; // Stores UIDs of users blocked by me
-        window.userVerificationCache = {}; // Stores UID: isVerified mapping
+        window.blockedUsers = []; 
+        window.userVerificationCache = {}; 
 
         // Basic bad word filter (Client side)
         const BAD_WORDS = ["খারাপ", "গালাগালি", "অশ্লীল", "কুত্তা", "শয়তান", "ফালতু", "haram", "kharap", "gali"];
@@ -960,6 +1066,20 @@ html
         let activeChatId = null;
         let activeChatPartnerUid = null;
         let typingTimeout = null;
+
+        // --- ASSETS: FACEBOOK REACTION GIFS ---
+        const reactionAssets = {
+            like: 'https://i.ibb.co/wznXjM5/like.gif',
+            love: 'https://i.ibb.co/0y3M0vV/love.gif',
+            care: 'https://i.ibb.co/sm439jW/care.gif',
+            haha: 'https://i.ibb.co/tqp7q5J/haha.gif',
+            wow: 'https://i.ibb.co/JnHq018/wow.gif',
+            sad: 'https://i.ibb.co/2nfhm1S/sad.gif',
+            angry: 'https://i.ibb.co/SxDg5vQ/angry.gif',
+            // Static Icons for Button
+            staticLike: 'far fa-thumbs-up', // Default gray
+            solidLike: 'fas fa-thumbs-up'   // Active blue
+        };
 
         window.formatPostContent = function(text) {
             if (!text) return '';
@@ -992,12 +1112,10 @@ html
             });
         };
 
-        // --- HELPER: Verified Badge ---
         window.getVerifiedBadge = function(isVerified) {
             return isVerified ? `<i class="fas fa-check-circle verified-badge" title="Verified"></i>` : '';
         };
 
-        // --- HELPER: Block List ---
         window.fetchBlockedUsers = function(uid) {
             return get(ref(db, `users/${uid}/blockedUsers`)).then(snap => {
                 if(snap.exists()) {
@@ -1013,7 +1131,6 @@ html
             window.currentUser = user;
 
             if(user) {
-                // Login to OneSignal with Firebase UID
                 window.OneSignalDeferred.push(function(OneSignal) {
                     OneSignal.login(user.uid);
                 });
@@ -1039,7 +1156,6 @@ html
                     if(!params.get('uid') || params.get('uid') === user.uid) loadProfile();
                 }
             } else {
-                // Logout from OneSignal
                 window.OneSignalDeferred.push(function(OneSignal) {
                     OneSignal.logout();
                 });
@@ -1075,7 +1191,7 @@ html
             }
         }
 
-        // --- NOTIFICATIONS (Updated with OneSignal) ---
+        // --- NOTIFICATIONS ---
         function initNotificationListener(uid) {
             onValue(ref(db, `notifications/${uid}`), (snapshot) => {
                 const data = snapshot.val();
@@ -1089,12 +1205,8 @@ html
 
         function sendNotification(targetUid, type, postId) {
             if(!window.currentUser || targetUid === window.currentUser.uid) return;
-
-            // 1. Existing Firebase Logic
             push(ref(db, `notifications/${targetUid}`), { type: type, postId: postId, sender: window.currentUser.displayName, senderImg: window.currentUser.photoURL, read: false, timestamp: Date.now() });
-
-            // 2. New OneSignal REST API Logic
-            // Construct message
+            
             let messageText = "আপনার প্রোফাইলে নতুন অ্যাক্টিভিটি";
             if(type === 'like') messageText = `${window.currentUser.displayName} আপনার পোস্টে লাইক দিয়েছেন ❤️`;
             else if(type === 'comment') messageText = `${window.currentUser.displayName} আপনার পোস্টে মন্তব্য করেছেন 💬`;
@@ -1108,24 +1220,15 @@ html
                 },
                 body: JSON.stringify({
                     app_id: "d2470015-4ed1-4274-96bd-1654f86cb54a",
-                    include_aliases: {
-                        external_id: [targetUid]
-                    },
+                    include_aliases: { external_id: [targetUid] },
                     target_channel: "push",
-                    contents: {
-                        en: messageText
-                    },
-                    headings: {
-                        en: "মুক্তলিপি ডায়েরি"
-                    },
+                    contents: { en: messageText },
+                    headings: { en: "মুক্তলিপি ডায়েরি" },
                     url: window.location.origin + "?post=" + postId
                 })
             };
 
-            fetch('https://onesignal.com/api/v1/notifications', options)
-                .then(response => response.json())
-                .then(response => console.log('Push sent:', response))
-                .catch(err => console.error('Push error:', err));
+            fetch('https://onesignal.com/api/v1/notifications', options).catch(err => console.error(err));
         }
 
         window.showNotifications = function() {
@@ -1139,9 +1242,7 @@ html
                 if(!data) { document.getElementById('sheetBody').innerHTML = '<div style="text-align:center; color:#888; padding:20px;">কোনো নোটিফিকেশন নেই</div>'; return; }
                 const notifs = Object.entries(data).map(([k,v]) => ({key:k, ...v})).reverse();
                 const html = notifs.map(n => {
-                    let text = '';
-                    if(n.type === 'like') text = `আপনার পোস্টে লাইক দিয়েছেন ❤️`;
-                    else if(n.type === 'comment') text = `আপনার পোস্টে মন্তব্য করেছেন 💬`;
+                    let text = n.type === 'like' ? `আপনার পোস্টে লাইক দিয়েছেন ❤️` : `আপনার পোস্টে মন্তব্য করেছেন 💬`;
                     return `
                     <div class="notif-item ${!n.read ? 'unread' : ''}" onclick="handleNotifClick('${n.key}', '${n.postId}')">
                         <img src="${n.senderImg}" class="notif-avatar">
@@ -1159,7 +1260,7 @@ html
             else get(ref(db, `posts/${postId}`)).then(s => { if(s.exists()) { const p = s.val(); p.key = postId; window.allPosts.push(p); openDetailView(postId); } else showToast('পোস্টটি পাওয়া যায়নি'); });
         };
 
-        // --- REAL-TIME CHAT SYSTEM ---
+        // --- REAL-TIME CHAT ---
         function getChatId(uid1, uid2) { return uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`; }
 
         function initChatListener(uid) {
@@ -1170,13 +1271,11 @@ html
                      document.getElementById('msgBadge').classList.remove('active');
                      return;
                 }
-
                 let totalUnread = 0;
                 const chats = Object.entries(data).map(([targetUid, info]) => {
                     if(info.unseenCount) totalUnread += info.unseenCount;
                     return { targetUid, ...info };
                 });
-
                 const badge = document.getElementById('msgBadge');
                 if(totalUnread > 0) { badge.innerText = totalUnread > 9 ? '9+' : totalUnread; badge.classList.add('active'); }
                 else badge.classList.remove('active');
@@ -1196,7 +1295,6 @@ html
                 const statusSnap = await get(ref(db, `status/${chat.targetUid}`));
                 const isOnline = statusSnap.exists();
                 const badgeHtml = getVerifiedBadge(user.isVerified);
-
                 html += `
                 <div class="chat-list-item ${chat.unseenCount > 0 ? 'unread' : ''}" onclick="openChatRoom('${chat.targetUid}')">
                     <div class="chat-avatar-wrapper">
@@ -1232,17 +1330,14 @@ html
 
             update(ref(db, `user_chats/${myUid}/${targetUid}`), { unseenCount: 0 });
 
-            // Block Logic for Input
             const isBlocked = window.blockedUsers.includes(targetUid);
             const input = document.getElementById('chatInput');
             const btn = document.getElementById('sendMsgBtn');
             if (isBlocked) {
-                input.disabled = true;
-                input.placeholder = "You have blocked this user.";
+                input.disabled = true; input.placeholder = "You have blocked this user.";
                 btn.style.opacity = 0.5; btn.style.pointerEvents = 'none';
             } else {
-                input.disabled = false;
-                input.placeholder = "মেসেজ লিখুন...";
+                input.disabled = false; input.placeholder = "মেসেজ লিখুন...";
                 btn.style.opacity = 1; btn.style.pointerEvents = 'auto';
             }
 
@@ -1292,26 +1387,15 @@ html
             const input = document.getElementById('chatInput');
             const text = input.value.trim();
             if(!text) return;
-
             const myUid = window.currentUser.uid;
             const targetUid = activeChatPartnerUid;
-
-            push(ref(db, `chats/${activeChatId}/messages`), {
-                text: text, sender: myUid, timestamp: Date.now()
-            });
-
-            update(ref(db, `user_chats/${myUid}/${targetUid}`), {
-                lastMsg: "You: " + text, timestamp: Date.now()
-            });
-
+            push(ref(db, `chats/${activeChatId}/messages`), { text: text, sender: myUid, timestamp: Date.now() });
+            update(ref(db, `user_chats/${myUid}/${targetUid}`), { lastMsg: "You: " + text, timestamp: Date.now() });
             const targetRef = ref(db, `user_chats/${targetUid}/${myUid}`);
             get(targetRef).then(snap => {
                 const currentUnseen = (snap.val() && snap.val().unseenCount) || 0;
-                update(targetRef, {
-                    lastMsg: text, timestamp: Date.now(), unseenCount: currentUnseen + 1
-                });
+                update(targetRef, { lastMsg: text, timestamp: Date.now(), unseenCount: currentUnseen + 1 });
             });
-
             input.value = '';
             update(ref(db, `chats/${activeChatId}/typing/${window.currentUser.uid}`), false);
         }
@@ -1384,17 +1468,13 @@ html
                 }
 
                 let newPosts = Object.entries(data).map(([key, val]) => ({ key, ...val }));
-
-                // Filter Blocked Users
                 newPosts = newPosts.filter(p => !window.blockedUsers.includes(p.uid));
-
                 newPosts.sort((a, b) => b.timestamp - a.timestamp);
                 if (newPosts.length < 10) reachedEnd = true;
                 const keys = Object.keys(data).sort();
                 lastLoadedKey = keys[0]; 
                 window.allPosts = [...window.allPosts, ...newPosts];
 
-                // Fetch Verification Status for new authors
                 const uniqueUids = [...new Set(newPosts.map(p => p.uid).filter(uid => uid && !window.userVerificationCache.hasOwnProperty(uid)))];
                 if(uniqueUids.length > 0) {
                     await Promise.all(uniqueUids.map(uid => 
@@ -1421,7 +1501,6 @@ html
             }
         });
 
-        // --- GREETING ---
         function updateGreeting() {
             const hr = new Date().getHours();
             let greet = `<i class="fas fa-moon"></i> শুভ রাত্রি`;
@@ -1440,9 +1519,7 @@ html
                 const followingMap = snap.val();
                 if (!followingMap) { renderDefaultStories(); return; }
                 const uids = Object.keys(followingMap);
-                // Filter blocked from stories too
                 const safeUids = uids.filter(uid => !window.blockedUsers.includes(uid));
-
                 const promises = safeUids.map(uid => get(ref(db, 'users/' + uid)));
                 Promise.all(promises).then(snapshots => {
                     const storyData = [];
@@ -1480,46 +1557,168 @@ html
             viewUserProfile(targetUid); loadStoryFeed(); 
         };
 
-        // --- LONG PRESS & REACTIONS ---
-        let pressTimer;
-        window.startLongPress = function(e, key, likes, el) {
+        // --- FACEBOOK STYLE REACTION LOGIC ---
+        let pressTimer = null;
+        let isLongPress = false;
+        
+        window.startLongPress = function(e, key, likes, btn) {
             if(!checkAuth()) return;
-            e.stopPropagation();
-            pressTimer = setTimeout(() => { showReactions(key, el); }, 600);
+            // e.preventDefault(); // Do not prevent default to allow scrolling if user moves
+            isLongPress = false;
+            pressTimer = setTimeout(() => {
+                isLongPress = true;
+                if(navigator.vibrate) navigator.vibrate(50); // Feedback for open
+                showReactions(key, btn);
+            }, 500);
         };
-        window.endLongPress = function(e, key, likes, el) {
-            e.stopPropagation();
-            if (pressTimer) {
-                clearTimeout(pressTimer);
-                const popup = el.parentElement.querySelector('.reaction-bar');
-                if (!popup || !popup.classList.contains('show')) handleLike(key, likes, el);
-                pressTimer = null;
+
+        window.endLongPress = function(e, key, likes, btn) {
+            if (pressTimer) clearTimeout(pressTimer);
+            if (!isLongPress) {
+                // Short press - Regular Like Toggle
+                // Close any open reaction bars first
+                document.querySelectorAll('.reaction-box').forEach(b => b.classList.remove('show'));
+                handleLike(key, likes, btn); 
+            }
+            // Logic for drag-release handled in 'touchend' on container
+            isLongPress = false;
+        };
+
+        window.showReactions = function(key, btnEl) {
+            document.querySelectorAll('.reaction-box').forEach(b => b.classList.remove('show'));
+            const wrapper = btnEl.closest('.action-btn-wrapper');
+            const bar = wrapper.querySelector('.reaction-box');
+            if(bar) { 
+                bar.classList.add('show'); 
+                // Auto-close after inactivity
+                setTimeout(() => { if(!isLongPress) bar.classList.remove('show'); }, 4000);
             }
         };
-        window.showReactions = function(key, btnEl) {
-            document.querySelectorAll('.reaction-bar').forEach(b => b.classList.remove('show'));
-            const wrapper = btnEl.closest('.action-btn-wrapper');
-            const bar = wrapper.querySelector('.reaction-bar');
-            if(bar) { bar.classList.add('show'); setTimeout(() => bar.classList.remove('show'), 4000); }
-            pressTimer = null;
+
+        // Hit Testing for Touch/Mouse Drag over Emojis
+        window.handleReactionMove = function(e, container) {
+            if(!isLongPress && e.type !== 'mousemove') return; // Only process if menu is open
+            e.preventDefault(); // Stop scroll while selecting reaction
+
+            const touch = e.touches ? e.touches[0] : e;
+            const x = touch.clientX;
+            const y = touch.clientY;
+
+            // Check elements under finger
+            const items = container.querySelectorAll('.reaction-item');
+            let activeItem = null;
+
+            items.forEach(item => {
+                const rect = item.getBoundingClientRect();
+                // Hitbox logic (with some padding)
+                if (x >= rect.left && x <= rect.right && y >= rect.top - 20 && y <= rect.bottom + 20) {
+                    activeItem = item;
+                }
+            });
+
+            // Update visuals
+            items.forEach(item => {
+                if (item === activeItem) {
+                    if (!item.classList.contains('active')) {
+                        if(navigator.vibrate) navigator.vibrate(10); // Haptic on change
+                        item.classList.add('active');
+                    }
+                } else {
+                    item.classList.remove('active');
+                }
+            });
         };
-        window.selectReaction = function(e, type, key) {
+
+        // Selection Finalization
+        window.handleReactionRelease = function(e, key, container) {
+            if (pressTimer) clearTimeout(pressTimer);
+            const activeItem = container.querySelector('.reaction-item.active');
+            
+            if (activeItem) {
+                const type = activeItem.dataset.type;
+                const src = activeItem.querySelector('img').src;
+                
+                // Trigger Flying Animation
+                performFlyingAnimation(activeItem, key, src);
+                
+                // Save Logic
+                selectReactionLogic(type, key);
+            }
+            
+            // Close Dock
+            container.classList.remove('show');
+            container.querySelectorAll('.reaction-item').forEach(i => i.classList.remove('active'));
+            isLongPress = false;
+        };
+
+        // Direct click on emoji (Desktop fallback)
+        window.handleReactionClick = function(e, type, key) {
             e.stopPropagation();
+            const target = e.currentTarget;
+            const src = target.querySelector('img').src;
+            performFlyingAnimation(target, key, src);
+            selectReactionLogic(type, key);
+            target.closest('.reaction-box').classList.remove('show');
+        };
+
+        function performFlyingAnimation(startEl, key, imgSrc) {
+            const startRect = startEl.getBoundingClientRect();
+            const btn = document.querySelector(`#post-${key} .action-btn.like-btn`);
+            const endRect = btn.getBoundingClientRect();
+
+            const flyer = document.createElement('img');
+            flyer.src = imgSrc;
+            flyer.className = 'flying-emoji';
+            flyer.style.left = startRect.left + 'px';
+            flyer.style.top = startRect.top + 'px';
+            document.body.appendChild(flyer);
+
+            // Trigger Reflow
+            flyer.offsetHeight;
+
+            // Animate
+            flyer.style.left = (endRect.left + 10) + 'px';
+            flyer.style.top = (endRect.top) + 'px';
+            flyer.style.opacity = '0';
+            flyer.style.transform = 'scale(0.5)';
+
+            setTimeout(() => {
+                flyer.remove();
+                btn.classList.add('btn-bounce');
+                setTimeout(() => btn.classList.remove('btn-bounce'), 600);
+            }, 600);
+        }
+
+        function selectReactionLogic(type, key) {
             const myReaction = { type: type, timestamp: Date.now() };
             localStorage.setItem('REACTION_' + key, JSON.stringify(myReaction));
             const btn = document.querySelector(`#post-${key} .action-btn.like-btn`);
-            const bar = e.target.closest('.reaction-bar');
-            if(bar) bar.classList.remove('show');
+            
+            // Check if already liked to avoid double counting, but update visual
             const alreadyLiked = localStorage.getItem('LIKED_' + key);
-            if(!alreadyLiked) handleLike(key, null, btn);
-            else { updateLikeVisual(btn, key); showToast("Reacted!"); }
-        };
-        function getReactionIcon(type) {
-            const map = { 'love': {icon: 'fas fa-heart', color: '#e74c3c'}, 'haha': {icon: 'fas fa-laugh-squint', color: '#f7b928'}, 'sad': {icon: 'fas fa-sad-tear', color: '#f7b928'}, 'angry': {icon: 'fas fa-angry', color: '#e74c3c'}, 'care': {icon: 'fas fa-face-smile-beam', color: '#e6683c'} };
-            return map[type] || {icon: 'fas fa-heart', color: '#e74c3c'};
+            if(!alreadyLiked) {
+                handleLike(key, null, btn, type); // Increment count
+            } else {
+                updateLikeVisual(btn, key); // Just update icon/color
+                // showToast(`${type.charAt(0).toUpperCase() + type.slice(1)}!`);
+            }
         }
 
-        // --- RENDER FEED ---
+        function getReactionStyle(type) {
+            const map = {
+                'like': { text: 'Like', color: '#1877f2', icon: reactionAssets.like }, // Blue like
+                'love': { text: 'Love', color: '#e74c3c', icon: reactionAssets.love },
+                'haha': { text: 'Haha', color: '#f7b928', icon: reactionAssets.haha },
+                'wow':  { text: 'Wow',  color: '#f7b928', icon: reactionAssets.wow },
+                'sad':  { text: 'Sad',  color: '#f7b928', icon: reactionAssets.sad },
+                'angry':{ text: 'Angry',color: '#e74c3c', icon: reactionAssets.angry },
+                'care': { text: 'Care', color: '#e6683c', icon: reactionAssets.care }
+            };
+            return map[type] || { text: 'Like', color: '#1877f2', icon: reactionAssets.like }; // fallback
+        }
+
+
+        // --- FEED RENDER UPDATE FOR REACTIONS ---
         window.renderFeed = function(posts, targetId = 'feed') {
             const feed = document.getElementById(targetId);
             if(!posts || !posts.length) return feed.innerHTML = '<div style="text-align:center; padding:30px; width:100%;">কোনো পোস্ট নেই</div>';
@@ -1533,20 +1732,73 @@ html
                 const authorImg = post.userImg || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
                 const commentCount = window.allComments[post.key] ? Object.keys(window.allComments[post.key]).length : 0;
                 const shareCount = parseInt(localStorage.getItem('SHARE_COUNT_' + post.key) || '0');
+                
+                // Reaction State
                 let reactionData = JSON.parse(localStorage.getItem('REACTION_' + post.key) || 'null');
-                let likeIconClass = liked ? 'fas fa-heart' : 'far fa-heart';
-                let likeColorStyle = liked ? 'color:#e74c3c' : '';
-                if(liked && reactionData) { const style = getReactionIcon(reactionData.type); likeIconClass = style.icon; likeColorStyle = `color:${style.color}`; }
+                let displayIcon = `<i class="${reactionAssets.staticLike}"></i>`; // Default Gray Thumb
+                let displayColor = '';
+                let displayText = 'Like';
+                let btnClass = '';
+
+                if (liked) {
+                    btnClass = 'liked';
+                    if (reactionData) {
+                        const style = getReactionStyle(reactionData.type);
+                        // For the button, we often use static icons or small images.
+                        // If it's the default like, use fontawesome solid. Else use image.
+                        if (reactionData.type === 'like') {
+                            displayIcon = `<i class="${reactionAssets.solidLike}"></i>`;
+                        } else {
+                            displayIcon = `<img src="${style.icon}" style="width:18px;height:18px;vertical-align:middle;">`;
+                        }
+                        displayColor = `color:${style.color}`;
+                        displayText = style.text;
+                    } else {
+                         // Default fallback Like
+                         displayIcon = `<i class="${reactionAssets.solidLike}"></i>`;
+                         displayColor = 'color:#1877f2';
+                    }
+                }
 
                 // Badge Logic
                 const isVerified = window.userVerificationCache[post.uid] === true;
                 const badgeHtml = getVerifiedBadge(isVerified);
 
+                // Reaction Bar HTML (The Dock)
+                const reactionsHTML = `
+                <div class="reaction-box" 
+                     ontouchmove="handleReactionMove(event, this)" 
+                     ontouchend="handleReactionRelease(event, '${post.key}', this)"
+                     onmousemove="handleReactionMove(event, this)"
+                     onmouseleave="this.classList.remove('show')">
+                    
+                    <div class="reaction-item" data-type="like" onclick="handleReactionClick(event, 'like', '${post.key}')">
+                        <span class="reaction-label">Like</span><img src="${reactionAssets.like}" class="reaction-img">
+                    </div>
+                    <div class="reaction-item" data-type="love" onclick="handleReactionClick(event, 'love', '${post.key}')">
+                        <span class="reaction-label">Love</span><img src="${reactionAssets.love}" class="reaction-img">
+                    </div>
+                    <div class="reaction-item" data-type="care" onclick="handleReactionClick(event, 'care', '${post.key}')">
+                        <span class="reaction-label">Care</span><img src="${reactionAssets.care}" class="reaction-img">
+                    </div>
+                    <div class="reaction-item" data-type="haha" onclick="handleReactionClick(event, 'haha', '${post.key}')">
+                        <span class="reaction-label">Haha</span><img src="${reactionAssets.haha}" class="reaction-img">
+                    </div>
+                    <div class="reaction-item" data-type="wow" onclick="handleReactionClick(event, 'wow', '${post.key}')">
+                        <span class="reaction-label">Wow</span><img src="${reactionAssets.wow}" class="reaction-img">
+                    </div>
+                    <div class="reaction-item" data-type="sad" onclick="handleReactionClick(event, 'sad', '${post.key}')">
+                        <span class="reaction-label">Sad</span><img src="${reactionAssets.sad}" class="reaction-img">
+                    </div>
+                    <div class="reaction-item" data-type="angry" onclick="handleReactionClick(event, 'angry', '${post.key}')">
+                        <span class="reaction-label">Angry</span><img src="${reactionAssets.angry}" class="reaction-img">
+                    </div>
+                </div>`;
+
                 return `
                 <div class="post-card glass-panel" id="post-${post.key}" onclick="openDetailView('${post.key}')">
                     ${post.isPinned ? '<i class="fas fa-thumbtack pinned-badge"></i>' : ''}
                     
-                    <!-- POST OPTIONS MENU -->
                     <button class="post-options-btn" onclick="event.stopPropagation(); openPostMenu('${post.key}', '${post.uid}', '${post.author}')">
                         <i class="fas fa-ellipsis-h"></i>
                     </button>
@@ -1560,20 +1812,15 @@ html
                     <div class="content-preview">${formattedPreview}</div>
                     <div class="interaction-bar">
                         <div class="action-btn-wrapper">
-                            <div class="reaction-bar">
-                                <span class="reaction-icon r-love" onclick="selectReaction(event, 'love', '${post.key}')"><i class="fas fa-heart"></i></span>
-                                <span class="reaction-icon r-haha" onclick="selectReaction(event, 'haha', '${post.key}')"><i class="fas fa-laugh-squint"></i></span>
-                                <span class="reaction-icon r-care" onclick="selectReaction(event, 'care', '${post.key}')"><i class="fas fa-face-smile-beam"></i></span>
-                                <span class="reaction-icon r-sad" onclick="selectReaction(event, 'sad', '${post.key}')"><i class="fas fa-sad-tear"></i></span>
-                                <span class="reaction-icon r-angry" onclick="selectReaction(event, 'angry', '${post.key}')"><i class="fas fa-angry"></i></span>
-                            </div>
-                            <button class="action-btn like-btn ${liked ? 'liked' : ''}" 
+                            ${reactionsHTML}
+                            <button class="action-btn like-btn ${btnClass}" 
+                                style="${displayColor}"
                                 onmousedown="startLongPress(event, '${post.key}', ${post.likes||0}, this)" 
                                 onmouseup="endLongPress(event, '${post.key}', ${post.likes||0}, this)"
                                 ontouchstart="startLongPress(event, '${post.key}', ${post.likes||0}, this)"
                                 ontouchend="endLongPress(event, '${post.key}', ${post.likes||0}, this)"
                                 oncontextmenu="return false;">
-                                <i class="${likeIconClass}" style="${likeColorStyle}"></i> <span class="count-text">${post.likes||0}</span>
+                                ${displayIcon} <span class="count-text" style="margin-left:4px;">${displayText} (${post.likes||0})</span>
                             </button>
                         </div>
                         <button class="action-btn" onclick="event.stopPropagation(); openCommentsSheet('${post.key}');"><i class="far fa-comment"></i> <span class="count-text">${commentCount}</span></button>
@@ -1583,100 +1830,32 @@ html
             }).join('');
         }
 
-        // --- NEW: REPORT & BLOCK SYSTEM ---
         window.openPostMenu = function(postKey, authorUid, authorName) {
             document.getElementById('sheetTitle').innerText = 'অপশন';
             document.getElementById('sheetFooter').style.display = 'none';
             const isMe = window.currentUser && window.currentUser.uid === authorUid;
             const isAdmin = window.currentUser && window.currentUser.uid === ADMIN_UID;
-
-            let html = `
-                <div class="menu-option" onclick="handleReport('${postKey}', '${authorUid}')">
-                    <i class="fas fa-exclamation-triangle"></i> রিপোর্ট করুন
-                </div>
-            `;
-
-            if (!isMe) {
-                html += `
-                <div class="menu-option" onclick="handleBlock('${authorUid}', '${authorName}')">
-                    <i class="fas fa-ban"></i> ব্লক করুন (${authorName})
-                </div>`;
-            }
-
-            if (isMe || isAdmin) {
-                html += `
-                <div class="menu-option danger" onclick="handleDelete('${postKey}')">
-                    <i class="fas fa-trash"></i> পোস্ট মুছুন
-                </div>`;
-            }
-
+            let html = `<div class="menu-option" onclick="handleReport('${postKey}', '${authorUid}')"><i class="fas fa-exclamation-triangle"></i> রিপোর্ট করুন</div>`;
+            if (!isMe) { html += `<div class="menu-option" onclick="handleBlock('${authorUid}', '${authorName}')"><i class="fas fa-ban"></i> ব্লক করুন (${authorName})</div>`; }
+            if (isMe || isAdmin) { html += `<div class="menu-option danger" onclick="handleDelete('${postKey}')"><i class="fas fa-trash"></i> পোস্ট মুছুন</div>`; }
             document.getElementById('sheetBody').innerHTML = html;
             document.getElementById('universalBottomSheet').classList.add('active');
         };
-
         window.handleReport = async function(postKey, authorUid) {
             if(!checkAuth()) return;
             document.getElementById('universalBottomSheet').classList.remove('active');
-
-            const { value: reason } = await Swal.fire({
-                title: 'রিপোর্টের কারণ',
-                input: 'select',
-                inputOptions: {
-                    'spam': 'স্প্যাম',
-                    'harassment': 'হয়রানি',
-                    'nudity': 'অশ্লীলতা',
-                    'hate': 'ঘৃণাত্মক বক্তব্য',
-                    'other': 'অন্যান্য'
-                },
-                inputPlaceholder: 'কারণ নির্বাচন করুন',
-                showCancelButton: true,
-                confirmButtonText: 'জমা দিন'
-            });
-
-            if (reason) {
-                push(ref(db, 'reports'), {
-                    postId: postKey,
-                    reportedUser: authorUid,
-                    reportedBy: window.currentUser.uid,
-                    reportedByName: window.currentUser.displayName || "Anonymous", // Save Name
-                    reason: reason,
-                    timestamp: Date.now(),
-                    status: "pending"
-                }).then(() => {
-                    Swal.fire('ধন্যবাদ', 'আপনার রিপোর্ট জমা হয়েছে।', 'success');
-                });
-            }
+            const { value: reason } = await Swal.fire({ title: 'রিপোর্টের কারণ', input: 'select', inputOptions: { 'spam': 'স্প্যাম', 'harassment': 'হয়রানি', 'nudity': 'অশ্লীলতা', 'hate': 'ঘৃণাত্মক বক্তব্য', 'other': 'অন্যান্য' }, inputPlaceholder: 'কারণ নির্বাচন করুন', showCancelButton: true, confirmButtonText: 'জমা দিন' });
+            if (reason) { push(ref(db, 'reports'), { postId: postKey, reportedUser: authorUid, reportedBy: window.currentUser.uid, reportedByName: window.currentUser.displayName || "Anonymous", reason: reason, timestamp: Date.now(), status: "pending" }).then(() => { Swal.fire('ধন্যবাদ', 'আপনার রিপোর্ট জমা হয়েছে।', 'success'); }); }
         };
-
         window.handleBlock = function(targetUid, name) {
             if(!checkAuth()) return;
             document.getElementById('universalBottomSheet').classList.remove('active');
-
-            Swal.fire({
-                title: 'ব্লক করবেন?',
-                text: `${name}-এর পোস্ট আর দেখা যাবে না।`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#e74c3c',
-                confirmButtonText: 'হ্যাঁ, ব্লক'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    update(ref(db, `users/${window.currentUser.uid}/blockedUsers`), {
-                        [targetUid]: true
-                    }).then(() => {
-                        window.blockedUsers.push(targetUid);
-                        showToast("ব্লক করা হয়েছে 🚫");
-                        loadPostsChunk(true); // Refresh feed
-                    });
-                }
-            });
+            Swal.fire({ title: 'ব্লক করবেন?', text: `${name}-এর পোস্ট আর দেখা যাবে না।`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#e74c3c', confirmButtonText: 'হ্যাঁ, ব্লক' }).then((result) => { if (result.isConfirmed) { update(ref(db, `users/${window.currentUser.uid}/blockedUsers`), { [targetUid]: true }).then(() => { window.blockedUsers.push(targetUid); showToast("ব্লক করা হয়েছে 🚫"); loadPostsChunk(true); }); } });
         };
-
         window.handleDelete = function(key) {
             document.getElementById('universalBottomSheet').classList.remove('active');
             Swal.fire({ title: 'ডিলিট করবেন?', text: "এটি ফিরে পাওয়া যাবে না!", icon: 'warning', showCancelButton: true, confirmButtonText: 'হ্যাঁ, ডিলিট' }).then((result) => { if (result.isConfirmed) { remove(ref(db, 'posts/'+key)).then(() => showToast("ডিলিট হয়েছে")); } });
         };
-        // ------------------------------------
 
         window.incrementShare = function(key) {
             let count = parseInt(localStorage.getItem('SHARE_COUNT_' + key) || '0');
@@ -1684,34 +1863,69 @@ html
             const el = document.getElementById('shareCnt-' + key); if(el) el.innerText = count;
         };
 
+        // --- UPDATED VISUAL UPDATE FUNCTION ---
         window.updateLikeVisual = function(btn, key) {
             const liked = localStorage.getItem('LIKED_' + key);
             const reactionData = JSON.parse(localStorage.getItem('REACTION_' + key) || 'null');
-            let iconClass = liked ? 'fas fa-heart' : 'far fa-heart';
-            let color = liked ? '#e74c3c' : '';
-            if(liked && reactionData) { const style = getReactionIcon(reactionData.type); iconClass = style.icon; color = style.color; }
-            btn.querySelector('i').className = iconClass; btn.querySelector('i').style.color = color;
-            if(liked) btn.classList.add('liked'); else btn.classList.remove('liked');
+            const post = window.allPosts.find(p => p.key === key);
+            const count = post ? (post.likes || 0) : 0;
+
+            if (liked) {
+                btn.classList.add('liked');
+                if (reactionData) {
+                    const style = getReactionStyle(reactionData.type);
+                    // If simple like, use icon. Else image.
+                    let iconHTML = '';
+                    if(reactionData.type === 'like') iconHTML = `<i class="${reactionAssets.solidLike}"></i>`;
+                    else iconHTML = `<img src="${style.icon}" style="width:18px;height:18px;vertical-align:middle;">`;
+                    
+                    btn.innerHTML = `${iconHTML} <span class="count-text" style="margin-left:4px;">${style.text} (${count})</span>`;
+                    btn.style.color = style.color;
+                } else {
+                    // Fallback normal like
+                    btn.innerHTML = `<i class="${reactionAssets.solidLike}"></i> <span class="count-text" style="margin-left:4px;">Like (${count})</span>`;
+                    btn.style.color = '#1877f2';
+                }
+            } else {
+                btn.classList.remove('liked');
+                btn.innerHTML = `<i class="${reactionAssets.staticLike}"></i> <span class="count-text" style="margin-left:4px;">Like (${count})</span>`;
+                btn.style.color = '';
+            }
         };
 
-        window.handleLike = (key, count, btn) => {
+        window.handleLike = (key, count, btn, type = null) => {
             if(!checkAuth()) return;
             const alreadyLiked = localStorage.getItem('LIKED_'+key);
             let newCount = count || 0;
             const post = window.allPosts.find(p => p.key === key);
+            
             if (alreadyLiked) {
+                // If it's a generic click on an already liked button -> Unline
+                // BUT if type is provided (from reaction menu), we don't toggle off, we just switch.
+                if (type) {
+                     // Just Switching Reaction
+                     // Count stays same (already counted). Just update local visual.
+                     // Note: Ideally backend should update "reaction type". Here we simulate.
+                     updateLikeVisual(btn, key);
+                     return; 
+                }
+
                 newCount = Math.max(0, newCount - 1);
                 update(ref(db, 'posts/'+key), {likes: newCount});
-                localStorage.removeItem('LIKED_'+key); localStorage.removeItem('REACTION_'+key);
+                localStorage.removeItem('LIKED_'+key); 
+                localStorage.removeItem('REACTION_'+key);
             } else {
                 newCount = newCount + 1;
                 update(ref(db, 'posts/'+key), {likes: newCount});
                 localStorage.setItem('LIKED_'+key, true);
-                showToast("লাইক দিয়েছেন ❤️");
+                if(!type) type = 'like'; // Default
+                const myReaction = { type: type, timestamp: Date.now() };
+                localStorage.setItem('REACTION_' + key, JSON.stringify(myReaction));
+
                 if(post && post.uid && post.uid !== window.currentUser.uid) { sendNotification(post.uid, 'like', key); }
             }
-            if (btn && btn.id === 'detailLikeBtn') { btn.querySelector('span').innerText = newCount; updateLikeVisual(btn, key); }
-            else if (btn) { const txt = btn.querySelector('.count-text'); if(txt) txt.innerText = newCount; updateLikeVisual(btn, key); }
+            if(post) post.likes = newCount; // Update local modal
+            if (btn) updateLikeVisual(btn, key);
         };
 
         // --- COMMENTS ---
@@ -1729,13 +1943,10 @@ html
                 const parents = allComments.filter(c => !c.parentId);
                 const children = allComments.filter(c => c.parentId);
                 let html = '';
-                // Since we need async rendering for badges, we'll do it carefully
                 for (const p of parents) {
                     html += await renderCommentHTML(p, false);
                     const replies = children.filter(c => c.parentId === p.key);
-                    for (const r of replies) {
-                        html += await renderCommentHTML(r, true);
-                    }
+                    for (const r of replies) { html += await renderCommentHTML(r, true); }
                 }
                 document.getElementById('sheetBody').innerHTML = html;
             });
@@ -1743,13 +1954,11 @@ html
             sendBtn.onclick = () => {
                 const txt = document.getElementById('sheetInput').value;
                 if(!txt) return;
-                // Save isVerified flag for future efficiency
                 get(ref(db, `users/${window.currentUser.uid}/isVerified`)).then(snap => {
                     const isVerified = snap.val() === true;
                     const commentData = { text: txt, author: window.currentUser.displayName, timestamp: Date.now(), parentId: replyingToCommentId, isVerified: isVerified };
                     push(ref(db, 'comments/'+key), commentData);
                 });
-
                 document.getElementById('sheetInput').value = '';
                 const post = window.allPosts.find(p => p.key === key);
                 if(post && post.uid && post.uid !== window.currentUser.uid) { sendNotification(post.uid, 'comment', key); }
@@ -1758,11 +1967,7 @@ html
         };
 
         async function renderCommentHTML(c, isReply) {
-            // Check cache or comment object for verification
-            let isVerified = c.isVerified;
-            // If undefined (old comments), we might skip looking it up to save reads, or assume false.
-            if (isVerified === undefined) isVerified = false;
-
+            let isVerified = c.isVerified === undefined ? false : c.isVerified;
             const badgeHtml = getVerifiedBadge(isVerified);
             const indentClass = isReply ? 'nested-reply' : '';
             const replyBtn = !isReply ? `<button class="reply-btn" onclick="startReply('${c.key}', '${c.author}')">উত্তর দিন</button>` : '';
@@ -1794,23 +1999,12 @@ html
 
         window.switchAdminTab = function(tab) {
             const form = document.getElementById('writeFormContainer');
-            // const pending = document.getElementById('pendingListContainer'); // REMOVED
             const reports = document.getElementById('reportListContainer');
-
-            // Reset
-            form.style.display = 'none';
-            // pending.style.display = 'none';
-            reports.style.display = 'none';
-
-            if(tab === 'new') { 
-                form.style.display = 'block'; 
-            } else if (tab === 'reports') {
-                reports.style.display = 'block';
-                renderReportList();
-            }
+            form.style.display = 'none'; reports.style.display = 'none';
+            if(tab === 'new') { form.style.display = 'block'; } 
+            else if (tab === 'reports') { reports.style.display = 'block'; renderReportList(); }
         };
 
-        // --- REPORT LIST LOGIC ---
         window.renderReportList = function() {
             const feed = document.getElementById('reportFeed');
             feed.innerHTML = '<p style="text-align:center;">লোড হচ্ছে...</p>';
@@ -1818,60 +2012,23 @@ html
                 const data = snap.val();
                 if(!data) { feed.innerHTML = '<p style="text-align:center;">কোনো রিপোর্ট নেই</p>'; return; }
                 const reports = Object.entries(data).map(([key, val]) => ({ key, ...val })).reverse();
-
                 feed.innerHTML = reports.map(r => {
                     const reporter = r.reportedByName || `UID: ${r.reportedBy.substr(0,5)}...`;
-                    return `
-                    <div class="pending-item">
-                        <div style="font-weight:bold; color:#e74c3c;">${r.reason.toUpperCase()}</div>
-                        <div style="font-size:12px; color:#666;">Reported By: ${reporter}</div>
-                         <div style="font-size:11px; color:#999;">${new Date(r.timestamp).toLocaleDateString()}</div>
-                        <div class="pending-actions">
-                            <button class="btn-view" onclick="openDetailView('${r.postId}')">দেখুন</button>
-                            <button class="btn-reject" onclick="deleteReportedPost('${r.key}', '${r.postId}')">মুছুন</button>
-                            <button class="btn-dismiss" onclick="dismissReport('${r.key}')">বাতিল</button>
-                        </div>
-                    </div>`;
+                    return `<div class="pending-item"><div style="font-weight:bold; color:#e74c3c;">${r.reason.toUpperCase()}</div><div style="font-size:12px; color:#666;">Reported By: ${reporter}</div><div style="font-size:11px; color:#999;">${new Date(r.timestamp).toLocaleDateString()}</div><div class="pending-actions"><button class="btn-view" onclick="openDetailView('${r.postId}')">দেখুন</button><button class="btn-reject" onclick="deleteReportedPost('${r.key}', '${r.postId}')">মুছুন</button><button class="btn-dismiss" onclick="dismissReport('${r.key}')">বাতিল</button></div></div>`;
                 }).join('');
             });
         };
-
-        window.dismissReport = function(reportKey) {
-            remove(ref(db, `reports/${reportKey}`)).then(() => {
-                showToast("রিপোর্ট বাতিল হয়েছে");
-                renderReportList();
-            });
-        };
-
-        window.deleteReportedPost = function(reportKey, postKey) {
-            if(confirm("পোস্টটি ডিলিট করবেন?")) {
-                remove(ref(db, `posts/${postKey}`));
-                remove(ref(db, `reports/${reportKey}`));
-                showToast("পোস্ট ডিলিট করা হয়েছে 🗑️");
-                renderReportList();
-            }
-        };
-
-        // NOTE: Pending list functions removed (approvePost, rejectPost, renderPendingList)
+        window.dismissReport = function(reportKey) { remove(ref(db, `reports/${reportKey}`)).then(() => { showToast("রিপোর্ট বাতিল হয়েছে"); renderReportList(); }); };
+        window.deleteReportedPost = function(reportKey, postKey) { if(confirm("পোস্টটি ডিলিট করবেন?")) { remove(ref(db, `posts/${postKey}`)); remove(ref(db, `reports/${reportKey}`)); showToast("পোস্ট ডিলিট করা হয়েছে 🗑️"); renderReportList(); } };
 
         window.handleSubmission = function() {
             const title = document.getElementById('postTitle').value;
             const content = document.getElementById('richEditor').innerHTML;
             const category = document.getElementById('postCategory').value;
             if (!title || !document.getElementById('richEditor').innerText.trim()) return showToast('❌ শিরোনাম ও লেখা প্রয়োজন');
-
-            // Client Side Bad Word Filter
             const fullText = (title + " " + document.getElementById('richEditor').innerText).toLowerCase();
             const foundBadWord = BAD_WORDS.find(word => fullText.includes(word));
-            if (foundBadWord) {
-                Swal.fire({
-                    icon: 'warning', title: 'সতর্কতা',
-                    text: 'আপনার পোস্টে আপত্তিকর শব্দ রয়েছে। দয়া করে ভাষা সংযত করুন।',
-                    confirmButtonColor: '#e74c3c'
-                });
-                return;
-            }
-
+            if (foundBadWord) { Swal.fire({ icon: 'warning', title: 'সতর্কতা', text: 'আপনার পোস্টে আপত্তিকর শব্দ রয়েছে। দয়া করে ভাষা সংযত করুন।', confirmButtonColor: '#e74c3c' }); return; }
             const postData = {
                 title, content, category,
                 date: new Date().toLocaleDateString('bn-BD', { year: 'numeric', month: 'long', day: 'numeric' }),
@@ -1882,20 +2039,10 @@ html
                 image: document.getElementById('postImage').value || null, likes: 0, views: 0
             };
             const isAdmin = window.currentUser.uid === ADMIN_UID;
-
-            // Allow admin to pin
-            if (isAdmin) {
-                postData.voice = document.getElementById('voiceUrl').value;
-                postData.isPinned = document.getElementById('isPinned').checked;
-            }
-
-            // DIRECT PUBLISH LOGIC (Replaced Pending System)
+            if (isAdmin) { postData.voice = document.getElementById('voiceUrl').value; postData.isPinned = document.getElementById('isPinned').checked; }
             push(ref(db, 'posts'), postData).then(() => { 
-                if(window.currentUser) { 
-                    update(ref(db, 'users/' + window.currentUser.uid), { lastPostTimestamp: Date.now() }); 
-                } 
-                showToast("পাবলিশ হয়েছে ✅"); 
-                closeAdminModal(); 
+                if(window.currentUser) { update(ref(db, 'users/' + window.currentUser.uid), { lastPostTimestamp: Date.now() }); } 
+                showToast("পাবলিশ হয়েছে ✅"); closeAdminModal(); 
             });
         };
 
@@ -1942,10 +2089,7 @@ html
         // --- PROFILE ---
         window.viewUserProfile = function(uid) {
             if (!uid || uid === 'undefined') return;
-            // Check if blocked
-            if(window.blockedUsers.includes(uid)) {
-                return showToast("You have blocked this user.");
-            }
+            if(window.blockedUsers.includes(uid)) { return showToast("You have blocked this user."); }
             navTo('profile'); loadProfile(uid);
         };
         window.loadProfile = function(targetUid) {
@@ -1954,51 +2098,29 @@ html
             const uid = targetUid || urlUid || (window.currentUser ? window.currentUser.uid : null);
             currentlyViewingUid = uid;
             if(!uid) { document.getElementById('profileNameDisplay').innerText = "অতিথি"; return; }
-
-            // Block Check
             if(window.blockedUsers.includes(uid)) {
                 document.getElementById('profileNameDisplay').innerText = "Blocked User";
-                document.getElementById('profileBioDisplay').innerText = "You have blocked this user. Unblock them to see content.";
+                document.getElementById('profileBioDisplay').innerText = "You have blocked this user.";
                 document.getElementById('profileContentFeed').innerHTML = '';
                 document.getElementById('profilePic').src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
                 return;
             }
-
             if(history.pushState) { const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?uid=' + uid; window.history.pushState({path:newurl},'',newurl); }
             const isMe = window.currentUser && window.currentUser.uid === uid;
             const isAdmin = window.currentUser && window.currentUser.uid === ADMIN_UID;
-
             document.getElementById('profileEditBtn').style.display = isMe ? 'flex' : 'none';
             document.getElementById('logoutBtn').style.display = isMe ? 'block' : 'none';
-
-            // Button Logic
             const followBtn = document.getElementById('profileFollowBtn');
             const savedBtn = document.getElementById('profileSavedViewBtn');
             const msgBtn = document.getElementById('profileMsgBtn');
-
-            // Remove previous verify button if exists
             const existingVerifyBtn = document.getElementById('adminVerifyBtn');
             if(existingVerifyBtn) existingVerifyBtn.remove();
-
-            if (isMe) {
-                followBtn.style.display = 'none';
-                msgBtn.style.display = 'none';
-                if(savedBtn) savedBtn.style.display = 'flex';
-            } else {
-                followBtn.style.display = 'block';
-                msgBtn.style.display = 'flex';
-                if(savedBtn) savedBtn.style.display = 'none';
-                if (window.currentUser) {
-                    get(ref(db, `followers/${uid}/${window.currentUser.uid}`)).then(snap => {
-                        if (snap.exists()) { followBtn.classList.add('following'); followBtn.innerText = 'Follow'; } 
-                        else { followBtn.classList.remove('following'); followBtn.innerText = 'Follow'; }
-                    });
-                }
+            if (isMe) { followBtn.style.display = 'none'; msgBtn.style.display = 'none'; if(savedBtn) savedBtn.style.display = 'flex'; } 
+            else {
+                followBtn.style.display = 'block'; msgBtn.style.display = 'flex'; if(savedBtn) savedBtn.style.display = 'none';
+                if (window.currentUser) { get(ref(db, `followers/${uid}/${window.currentUser.uid}`)).then(snap => { if (snap.exists()) { followBtn.classList.add('following'); followBtn.innerText = 'Follow'; } else { followBtn.classList.remove('following'); followBtn.innerText = 'Follow'; } }); }
             }
-            get(ref(db, `followers/${uid}`)).then(snap => {
-                const count = snap.exists() ? Object.keys(snap.val()).length : 0;
-                document.getElementById('statFollowers').innerText = count;
-            });
+            get(ref(db, `followers/${uid}`)).then(snap => { const count = snap.exists() ? Object.keys(snap.val()).length : 0; document.getElementById('statFollowers').innerText = count; });
             get(ref(db, 'users/' + uid)).then(snap => {
                 const data = snap.val() || {};
                 document.getElementById('profilePic').src = data.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
@@ -2010,19 +2132,10 @@ html
                 if(data.fbLink) socialHtml += `<a href="${data.fbLink}" target="_blank" class="social-link-btn"><i class="fab fa-facebook"></i></a>`;
                 if(data.instaLink) socialHtml += `<a href="${data.instaLink}" target="_blank" class="social-link-btn"><i class="fab fa-instagram"></i></a>`;
                 document.getElementById('profileSocialLinks').innerHTML = socialHtml;
-
-                // ADMIN VERIFICATION BUTTON
                 if (isAdmin && !isMe) {
-                    const btn = document.createElement('button');
-                    btn.id = 'adminVerifyBtn';
-                    btn.className = 'btn-profile-action';
-                    btn.style.display = 'flex';
-                    btn.style.color = data.isVerified ? '#e74c3c' : '#1877f2';
-                    btn.innerHTML = data.isVerified ? '<i class="fas fa-times-circle"></i> আন-ভেরিফাই' : '<i class="fas fa-check-circle"></i> ভেরিফাই করুন';
-                    btn.onclick = () => toggleVerification(uid, data.isVerified);
+                    const btn = document.createElement('button'); btn.id = 'adminVerifyBtn'; btn.className = 'btn-profile-action'; btn.style.display = 'flex'; btn.style.color = data.isVerified ? '#e74c3c' : '#1877f2'; btn.innerHTML = data.isVerified ? '<i class="fas fa-times-circle"></i> আন-ভেরিফাই' : '<i class="fas fa-check-circle"></i> ভেরিফাই করুন'; btn.onclick = () => toggleVerification(uid, data.isVerified);
                     document.getElementById('profileActionContainer').appendChild(btn);
                 }
-
                 get(query(ref(db, 'posts'), orderByChild('uid'), equalTo(uid), limitToLast(20))).then(postSnap => {
                      const userPosts = postSnap.val() ? Object.values(postSnap.val()) : [];
                      document.getElementById('statPosts').innerText = userPosts.length;
@@ -2045,7 +2158,7 @@ html
             const newStatus = !currentStatus;
             update(ref(db, `users/${targetUid}`), { isVerified: newStatus }).then(() => {
                 showToast(newStatus ? "ব্যবহারকারী ভেরিফাইড হয়েছেন ✅" : "ভেরিফিকেশন বাতিল করা হয়েছে ❌");
-                loadProfile(targetUid); // Refresh UI
+                loadProfile(targetUid); 
             });
         };
 
@@ -2106,17 +2219,14 @@ html
             }
             if (page === 'chatList') {
                 if(!checkAuth()) return;
-                // Deactivate nav items, close detail
                 document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
                 closeDetailView();
                 document.getElementById('feedView').style.display = 'none';
                 document.getElementById('profileView').style.display = 'none';
                 document.getElementById('chatListView').style.display = 'block';
-                // Trigger fetch immediately
                 initChatListener(window.currentUser.uid);
                 return;
             }
-
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active')); if(btn) btn.classList.add('active');
             closeDetailView();
             const feedView = document.getElementById('feedView');
@@ -2153,18 +2263,16 @@ html
             document.getElementById('detailTitle').innerText = post.title;
             document.getElementById('detailDate').innerText = post.date;
             document.getElementById('detailBody').innerHTML = formatPostContent(post.content);
-
-            // Verification Badge in Detail
             const isVerified = window.userVerificationCache[post.uid] === true;
             document.getElementById('detailAuthorName').innerHTML = `${post.author} ${getVerifiedBadge(isVerified)}`;
-
             document.getElementById('detailAuthorImg').src = post.userImg || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
             const imgEl = document.getElementById('detailMainImg');
             if(post.image) { imgEl.src = post.image; imgEl.style.display = 'block'; } else imgEl.style.display = 'none';
             const likeBtn = document.getElementById('detailLikeBtn');
             likeBtn.onclick = () => handleLike(key, post.likes, likeBtn);
-            likeBtn.querySelector('span').innerText = post.likes||0;
+            // Detail View doesn't have the reaction menu yet, keeps standard like logic visually but updates counts
             updateLikeVisual(likeBtn, key);
+
             document.getElementById('detailCommentBtn').onclick = () => openCommentsSheet(key);
             document.getElementById('detailShareBtn').onclick = () => openShareSheet(key);
             const saved = (JSON.parse(localStorage.getItem('SAVED_POSTS') || '[]')).includes(key);
@@ -2240,4 +2348,4 @@ html
 
     </script>
 </body>
-</html>
+</html
