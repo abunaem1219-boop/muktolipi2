@@ -16,7 +16,7 @@ html
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.co" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Galada&family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Serif+Bengali:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/cs2?family=Galada&family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Serif+Bengali:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Libraries -->
@@ -162,7 +162,9 @@ html
             padding: 15px; border-radius: 20px; 
             position: relative; overflow: visible; 
             transform-origin: center center;
-            box-sizing: border-box; cursor: pointer;
+            box-sizing: border-box;
+            /* UX UPDATE: Removed cursor: pointer from parent to prevent accidental clicks */
+            cursor: default; 
         }
         .post-options-btn {
             position: absolute; top: 15px; right: 15px; z-index: 5;
@@ -207,13 +209,35 @@ html
         .author-text h4 { margin: 0; font-size: 14px; font-weight: 700; display:flex; align-items:center; }
         .post-meta { font-size: 11px; color: var(--secondary-text); display: flex; align-items: center; gap: 5px; }
 
-        .post-title { font-size: 17px; margin: 0 0 8px 0; font-weight: 700; line-height: 1.35; color: var(--text-color); }
-        .post-img-container { width: 100%; border-radius: 12px; overflow: hidden; margin: 8px 0; line-height: 0; }
+        .post-title { 
+            font-size: 17px; margin: 0 0 8px 0; font-weight: 700; line-height: 1.35; color: var(--text-color); 
+            /* UX UPDATE: Title is now explicitly clickable */
+            cursor: pointer;
+        }
+        .post-img-container { 
+            width: 100%; border-radius: 12px; overflow: hidden; margin: 8px 0; line-height: 0; 
+            /* UX UPDATE: Image is now explicitly clickable */
+            cursor: pointer;
+        }
         .post-img { width: 100%; display: block; object-fit: cover; }
         .hashtag { color: var(--primary-color); font-weight: 600; cursor: pointer; z-index:10; position:relative; }
         .hashtag:hover { text-decoration: underline; }
 
-        .content-preview { font-size: 14px; line-height: 1.6; color: var(--text-color); overflow: hidden; position: relative; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; margin-bottom: 10px; }
+        /* UX UPDATE: Read More Button Styling */
+        .read-more-btn {
+            color: var(--secondary-text);
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 5px;
+            font-size: 14px;
+            padding: 5px 0; /* Touch friendly */
+        }
+        .read-more-btn:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
+        .content-preview { font-size: 14px; line-height: 1.6; color: var(--text-color); overflow: hidden; position: relative; display: block; margin-bottom: 10px; }
 
         .interaction-bar { display: flex; justify-content: space-between; border-top: 1px solid var(--border-color); padding-top: 10px; margin-top: auto; position: relative; }
         .action-btn-wrapper { position: relative; display: inline-block; }
@@ -1744,10 +1768,25 @@ html
 
             feed.innerHTML = posts.map(post => {
                 const liked = localStorage.getItem('LIKED_' + post.key);
-                let content = post.content || '';
-                let cleanText = content.replace(/<[^>]*>/g, '');
-                let shortText = cleanText.length > 120 ? cleanText.substring(0, 120) + '...' : cleanText;
-                const formattedPreview = formatPostContent(shortText);
+                
+                // UX UPDATE: Truncate text logic
+                let contentHTML = post.content || '';
+                // Create temp element to strip HTML for length check
+                let tempDiv = document.createElement("div");
+                tempDiv.innerHTML = contentHTML;
+                let plainText = tempDiv.textContent || tempDiv.innerText || "";
+                
+                let displayContent = "";
+                
+                if(plainText.length > 150) {
+                    // Truncate logic
+                    let truncated = plainText.substring(0, 150) + "...";
+                    displayContent = `${formatPostContent(truncated)} <span class="read-more-btn" onclick="openDetailView('${post.key}')">আরও পড়ুন</span>`;
+                } else {
+                    // Show full formatted content
+                    displayContent = formatPostContent(contentHTML);
+                }
+
                 const authorImg = post.userImg || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
                 const commentCount = window.allComments[post.key] ? Object.keys(window.allComments[post.key]).length : 0;
                 const shareCount = parseInt(localStorage.getItem('SHARE_COUNT_' + post.key) || '0');
@@ -1814,8 +1853,9 @@ html
                     </div>
                 </div>`;
 
+                // UX UPDATE: Removed parent onclick, added specific onclicks
                 return `
-                <div class="post-card glass-panel" id="post-${post.key}" onclick="openDetailView('${post.key}')">
+                <div class="post-card glass-panel" id="post-${post.key}">
                     ${post.isPinned ? '<i class="fas fa-thumbtack pinned-badge"></i>' : ''}
                     
                     <button class="post-options-btn" onclick="event.stopPropagation(); openPostMenu('${post.key}', '${post.uid}', '${post.author}')">
@@ -1826,9 +1866,9 @@ html
                         <div class="avatar-circle"><img src="${authorImg}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"></div>
                         <div class="author-text"><h4>${post.author} ${badgeHtml}</h4><div class="post-meta"><i class="far fa-clock"></i> ${post.date}</div></div>
                     </div>
-                    ${post.image ? `<div class="post-img-container"><img src="${post.image}" class="post-img" loading="lazy"></div>` : ''}
-                    <h2 class="post-title">${post.title}</h2>
-                    <div class="content-preview">${formattedPreview}</div>
+                    ${post.image ? `<div class="post-img-container" onclick="openDetailView('${post.key}')"><img src="${post.image}" class="post-img" loading="lazy"></div>` : ''}
+                    <h2 class="post-title" onclick="openDetailView('${post.key}')">${post.title}</h2>
+                    <div class="content-preview">${displayContent}</div>
                     <div class="interaction-bar">
                         <div class="action-btn-wrapper">
                             ${reactionsHTML}
