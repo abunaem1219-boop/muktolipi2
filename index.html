@@ -20,7 +20,7 @@ html
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Libraries -->
-    <script src="https://cdn.jsdelivr.et/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <!-- OneSignal SDK -->
@@ -1067,10 +1067,7 @@ html
         let activeChatPartnerUid = null;
         let typingTimeout = null;
 
-        // --- ASSETS: FACEBOOK REACTION GIFS ---
-        // --- ASSETS: FACEBOOK REACTION GIFS (UPDATED LINKS) ---
-        // --- ASSETS: FACEBOOK REACTION GIFS (MASTER SOLUTION - JSDelivr CDN) ---
-        // --- ASSETS: FACEBOOK REACTION GIFS (MASTER SOLUTION - JSDelivr CDN) ---
+        // --- ASSETS: FACEBOOK REACTION GIFS (MASTER SOLUTION V2 - JSDelivr) ---
         const reactionAssets = {
             like: 'https://cdn.jsdelivr.net/gh/Likhon-Sheikh/Facebook-Reactions-Gif@master/like.gif',
             love: 'https://cdn.jsdelivr.net/gh/Likhon-Sheikh/Facebook-Reactions-Gif@master/love.gif',
@@ -1080,9 +1077,27 @@ html
             sad: 'https://cdn.jsdelivr.net/gh/Likhon-Sheikh/Facebook-Reactions-Gif@master/sad.gif',
             angry: 'https://cdn.jsdelivr.net/gh/Likhon-Sheikh/Facebook-Reactions-Gif@master/angry.gif',
             
-            // Static Icons for Button
-            staticLike: 'far fa-thumbs-up', // Default gray
-            solidLike: 'fas fa-thumbs-up'   // Active blue
+            // Static Icons
+            staticLike: 'far fa-thumbs-up', 
+            solidLike: 'fas fa-thumbs-up'
+        };
+
+        // Fallback function for broken GIFs
+        window.imgError = function(image) {
+            image.onerror = ""; 
+            const type = image.getAttribute('data-type') || 'like';
+            const fallbacks = {
+                like: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Facebook_Like_2016.svg/100px-Facebook_Like_2016.svg.png',
+                love: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Facebook_Love_2016.svg/100px-Facebook_Love_2016.svg.png',
+                care: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Facebook_Care_Reaction.png/100px-Facebook_Care_Reaction.png',
+                haha: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Facebook_Haha_2016.svg/100px-Facebook_Haha_2016.svg.png',
+                wow: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Facebook_Wow_2016.svg/100px-Facebook_Wow_2016.svg.png',
+                sad: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Facebook_Sad_2016.svg/100px-Facebook_Sad_2016.svg.png',
+                angry: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Facebook_Angry_2016.svg/100px-Facebook_Angry_2016.svg.png'
+            };
+            image.src = fallbacks[type] || fallbacks.like;
+            image.style.transform = "scale(0.8)";
+            return true;
         };
 
         window.formatPostContent = function(text) {
@@ -1777,25 +1792,25 @@ html
                      onmouseleave="this.classList.remove('show')">
                     
                     <div class="reaction-item" data-type="like" onclick="handleReactionClick(event, 'like', '${post.key}')">
-                        <span class="reaction-label">Like</span><img src="${reactionAssets.like}" class="reaction-img">
+                        <span class="reaction-label">Like</span><img src="${reactionAssets.like}" class="reaction-img" data-type="like" onerror="window.imgError(this)">
                     </div>
                     <div class="reaction-item" data-type="love" onclick="handleReactionClick(event, 'love', '${post.key}')">
-                        <span class="reaction-label">Love</span><img src="${reactionAssets.love}" class="reaction-img">
+                        <span class="reaction-label">Love</span><img src="${reactionAssets.love}" class="reaction-img" data-type="love" onerror="window.imgError(this)">
                     </div>
                     <div class="reaction-item" data-type="care" onclick="handleReactionClick(event, 'care', '${post.key}')">
-                        <span class="reaction-label">Care</span><img src="${reactionAssets.care}" class="reaction-img">
+                        <span class="reaction-label">Care</span><img src="${reactionAssets.care}" class="reaction-img" data-type="care" onerror="window.imgError(this)">
                     </div>
                     <div class="reaction-item" data-type="haha" onclick="handleReactionClick(event, 'haha', '${post.key}')">
-                        <span class="reaction-label">Haha</span><img src="${reactionAssets.haha}" class="reaction-img">
+                        <span class="reaction-label">Haha</span><img src="${reactionAssets.haha}" class="reaction-img" data-type="haha" onerror="window.imgError(this)">
                     </div>
                     <div class="reaction-item" data-type="wow" onclick="handleReactionClick(event, 'wow', '${post.key}')">
-                        <span class="reaction-label">Wow</span><img src="${reactionAssets.wow}" class="reaction-img">
+                        <span class="reaction-label">Wow</span><img src="${reactionAssets.wow}" class="reaction-img" data-type="wow" onerror="window.imgError(this)">
                     </div>
                     <div class="reaction-item" data-type="sad" onclick="handleReactionClick(event, 'sad', '${post.key}')">
-                        <span class="reaction-label">Sad</span><img src="${reactionAssets.sad}" class="reaction-img">
+                        <span class="reaction-label">Sad</span><img src="${reactionAssets.sad}" class="reaction-img" data-type="sad" onerror="window.imgError(this)">
                     </div>
                     <div class="reaction-item" data-type="angry" onclick="handleReactionClick(event, 'angry', '${post.key}')">
-                        <span class="reaction-label">Angry</span><img src="${reactionAssets.angry}" class="reaction-img">
+                        <span class="reaction-label">Angry</span><img src="${reactionAssets.angry}" class="reaction-img" data-type="angry" onerror="window.imgError(this)">
                     </div>
                 </div>`;
 
@@ -1839,9 +1854,9 @@ html
             document.getElementById('sheetFooter').style.display = 'none';
             const isMe = window.currentUser && window.currentUser.uid === authorUid;
             const isAdmin = window.currentUser && window.currentUser.uid === ADMIN_UID;
-            let html = `<div class="menu-option" onclick="handleReport('${postKey}', '${authorUid}')"><i class="fas fa-exclamation-triangle"></i> রিপোর্ট করুন</div>`;
-            if (!isMe) { html += `<div class="menu-option" onclick="handleBlock('${authorUid}', '${authorName}')"><i class="fas fa-ban"></i> ব্লক করুন (${authorName})</div>`; }
-            if (isMe || isAdmin) { html += `<div class="menu-option danger" onclick="handleDelete('${postKey}')"><i class="fas fa-trash"></i> পোস্ট মুছুন</div>`; }
+            let html = `<div class="menu-option" onclick="closeBottomSheet(); handleReport('${postKey}', '${authorUid}')"><i class="fas fa-exclamation-triangle"></i> রিপোর্ট করুন</div>`;
+            if (!isMe) { html += `<div class="menu-option" onclick="closeBottomSheet(); handleBlock('${authorUid}', '${authorName}')"><i class="fas fa-ban"></i> ব্লক করুন (${authorName})</div>`; }
+            if (isMe || isAdmin) { html += `<div class="menu-option danger" onclick="closeBottomSheet(); handleDelete('${postKey}')"><i class="fas fa-trash"></i> পোস্ট মুছুন</div>`; }
             document.getElementById('sheetBody').innerHTML = html;
             document.getElementById('universalBottomSheet').classList.add('active');
         };
@@ -2352,4 +2367,4 @@ html
 
     </script>
 </body>
-</html
+</html>
