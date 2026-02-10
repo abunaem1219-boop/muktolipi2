@@ -8,7 +8,7 @@ html
 
     <!-- PWA Manifest & Meta Tags -->
     <link rel="icon" type="image/png" href="icon.png">
-    <link rel="apple-touch-ico" href="icon.png">
+    <link rel="apple-touch-ic" href="icon.png">
     <link rel="manifest" href="manifest.json">    <meta name="theme-color" content="#1877f2">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="description" content="মনের কথা, মুক্ত ভাষায়- মুক্তলিপি ডায়েরি">
@@ -62,9 +62,12 @@ html
             --msg-sent-text: #fff;
             --msg-rcv-bg: #e4e6eb;
             --msg-rcv-text: #050505;
+            
+            /* Comment Specifics */
+            --comment-bubble-bg: #f0f2f5;
         }
         .dark-theme { 
-            --bg-color: #121212; 
+            --bg-color: #1a1a1a; 
             --glass-bg: rgba(30, 30, 30, 0.95);
             --glass-border: 1px solid rgba(255, 255, 255, 0.1);
             --text-color: #e4e6eb; 
@@ -75,13 +78,16 @@ html
             --highlight-color: #584c06;
             --shadow-soft: 0 4px 12px rgba(0,0,0,0.3);
             --shadow-card: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-            --sheet-bg: #1e1e1e;
+            --sheet-bg: #242526;
             --shimmer-bg: rgba(255,255,255,0.05);
             --shimmer-highlight: rgba(255,255,255,0.1);
             --msg-sent-bg: #4595ff;
             --msg-sent-text: #000;
             --msg-rcv-bg: #303030;
             --msg-rcv-text: #e4e6eb;
+            
+            /* Comment Specifics */
+            --comment-bubble-bg: #3a3b3c;
         }
 
         body, .glass-panel, input, select, textarea, .nav-item, .post-card, .btn, .sheet-content, .side-drawer {
@@ -109,8 +115,8 @@ html
         }
         .header-banner { width: 100%; height: 100%; object-fit: cover; }
         .banner-text {
-            position: absolute; bottom: 10px; left: 15px; color: white; 
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5); font-weight: 700; font-size: 18px;
+            position: absolute; bottom: 10px; left: 14px; color: white; 
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5); font-weight: 700; font-size: 12px;
         }
 
         /* --- Dynamic Header & Stories --- */
@@ -119,18 +125,18 @@ html
         .date-text { font-size: 13px; color: var(--secondary-text); margin-top: 2px; }
 
         .stories-container {
-            display: flex; gap: 15px; overflow-x: auto; padding: 5px 5px 15px 5px;
+            display: flex; gap: 10px; overflow-x: auto; padding: 4px 4px 14px 4px;
             margin-bottom: 10px; scrollbar-width: none;
         }
         .stories-container::-webkit-scrollbar { display: none; }
         .story-item { display: flex; flex-direction: column; align-items: center; min-width: 60px; cursor: pointer; }
 
         .story-ring {
-            width: 55px; height: 55px; border-radius: 50%; padding: 3px;
+            width: 50px; height: 50px; border-radius: 50%; padding: 2px;
             border: 2px solid transparent; 
             background: transparent;
-            display: flex; align-items: center; justify-content: center; margin-bottom: 5px;
-            transition: transform 0.2s, border-color 0.3s;
+            display: flex; align-items: center; justify-content: center; margin-bottom: 3px;
+            transition: transform 03s, border-color 0.3s;
             position: relative;
         }
         .story-ring.seen-gradient {
@@ -150,7 +156,7 @@ html
         }
         .story-ring:active { transform: scale(0.9); }
         .story-img { width: 100%; height: 100%; border-radius: 50%; border: 2px solid var(--bg-color); object-fit: cover; }
-        .story-name { font-size: 11px; max-width: 60px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-color); }
+        .story-name { font-size: 14px; max-width: 60px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-color); }
 
         /* --- Masonry & Post Card --- */
         .masonry-feed { column-count: 2; column-gap: 15px; }
@@ -163,7 +169,6 @@ html
             position: relative; overflow: visible; 
             transform-origin: center center;
             box-sizing: border-box;
-            /* UX UPDATE: Removed cursor: pointer from parent to prevent accidental clicks */
             cursor: default; 
         }
         .post-options-btn {
@@ -187,7 +192,19 @@ html
         .badge.active { display: flex; }
 
         /* Verified Badge */
-        .verified-badge { color: #1877f2; margin-left: 4px; font-size: 13px; vertical-align: middle; display: inline-block; }
+        .verified-badge { 
+            color: #1877f2; 
+            margin-left: 3px; 
+            font-size: 14px; 
+            vertical-align: middle; 
+            display: inline-block; 
+            animation: pulse 0.2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
 
         /* Search & Filter */
         .search-wrapper { position: relative; margin-bottom: 15px; }
@@ -209,33 +226,14 @@ html
         .author-text h4 { margin: 0; font-size: 14px; font-weight: 700; display:flex; align-items:center; }
         .post-meta { font-size: 11px; color: var(--secondary-text); display: flex; align-items: center; gap: 5px; }
 
-        .post-title { 
-            font-size: 17px; margin: 0 0 8px 0; font-weight: 700; line-height: 1.35; color: var(--text-color); 
-            /* UX UPDATE: Title is now explicitly clickable */
-            cursor: pointer;
-        }
-        .post-img-container { 
-            width: 100%; border-radius: 12px; overflow: hidden; margin: 8px 0; line-height: 0; 
-            /* UX UPDATE: Image is now explicitly clickable */
-            cursor: pointer;
-        }
+        .post-title { font-size: 17px; margin: 0 0 8px 0; font-weight: 700; line-height: 1.35; color: var(--text-color); cursor: pointer; }
+        .post-img-container { width: 100%; border-radius: 12px; overflow: hidden; margin: 8px 0; line-height: 0; cursor: pointer; }
         .post-img { width: 100%; display: block; object-fit: cover; }
         .hashtag { color: var(--primary-color); font-weight: 600; cursor: pointer; z-index:10; position:relative; }
         .hashtag:hover { text-decoration: underline; }
 
-        /* UX UPDATE: Read More Button Styling */
-        .read-more-btn {
-            color: var(--secondary-text);
-            font-weight: 600;
-            cursor: pointer;
-            margin-left: 5px;
-            font-size: 14px;
-            padding: 5px 0; /* Touch friendly */
-        }
-        .read-more-btn:hover {
-            color: var(--primary-color);
-            text-decoration: underline;
-        }
+        .read-more-btn { color: var(--secondary-text); font-weight: 600; cursor: pointer; margin-left: 5px; font-size: 14px; padding: 5px 0; }
+        .read-more-btn:hover { color: var(--primary-color); text-decoration: underline; }
 
         .content-preview { font-size: 14px; line-height: 1.6; color: var(--text-color); overflow: hidden; position: relative; display: block; margin-bottom: 10px; }
 
@@ -247,97 +245,22 @@ html
         .count-text { font-size: 12px; font-weight: 600; }
 
         /* ---------------------------------------------------- */
-        /* --- FACEBOOK STYLE REACTION SYSTEM (NEW & UPDATED) --- */
+        /* --- FACEBOOK STYLE REACTION SYSTEM --- */
         /* ---------------------------------------------------- */
-
-        /* The Pill Container */
         .reaction-box {
-            position: absolute;
-            bottom: 45px;
-            left: -10px;
-            background: #ffffff;
-            border-radius: 50px;
-            padding: 6px 6px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.25);
-            display: none;
-            gap: 4px;
-            z-index: 1000;
-            border: 1px solid rgba(0,0,0,0.05);
-            align-items: center;
-            height: 44px;
+            position: absolute; bottom: 45px; left: -10px; background: #ffffff; border-radius: 50px; padding: 6px 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.25); display: none; gap: 4px; z-index: 1000; border: 1px solid rgba(0,0,0,0.05); align-items: center; height: 44px;
         }
+        .dark-theme .reaction-box { background: #242526; border-color: rgba(255,255,255,0.1); }
+        .reaction-box.show { display: flex; animation: popUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popUp { from { opacity: 0; transform: translateY(10px) scale(0.8); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
-        .dark-theme .reaction-box {
-            background: #242526;
-            border-color: rgba(255,255,255,0.1);
-        }
+        .reaction-item { position: relative; cursor: pointer; transition: transform 0.2s ease, margin 0.2s ease; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; }
+        .reaction-img { width: 100%; height: 100%; object-fit: contain; transform-origin: bottom center; transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1); pointer-events: none; }
+        .reaction-item:hover .reaction-img, .reaction-item.active .reaction-img { transform: scale(1.6) translateY(-8px); }
+        .reaction-label { position: absolute; top: -28px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.75); color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; opacity: 0; pointer-events: none; transition: opacity 0.2s; white-space: nowrap; }
+        .reaction-item:hover .reaction-label, .reaction-item.active .reaction-label { opacity: 1; }
 
-        /* Entrance Animation */
-        .reaction-box.show {
-            display: flex;
-            animation: popUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        @keyframes popUp {
-            from { opacity: 0; transform: translateY(10px) scale(0.8); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        /* Individual Reaction Wrapper */
-        .reaction-item {
-            position: relative;
-            cursor: pointer;
-            transition: transform 0.2s ease, margin 0.2s ease;
-            width: 38px;
-            height: 38px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* The Animated GIF/WebP */
-        .reaction-img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            transform-origin: bottom center;
-            transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1);
-            pointer-events: none; /* Let clicks pass to wrapper */
-        }
-
-        /* Magnification Effect (Fisheye) */
-        .reaction-item:hover .reaction-img, 
-        .reaction-item.active .reaction-img {
-            transform: scale(1.6) translateY(-8px);
-        }
-
-        /* Tooltip Label */
-        .reaction-label {
-            position: absolute;
-            top: -28px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.75);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 10px;
-            font-weight: bold;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s;
-            white-space: nowrap;
-        }
-
-        .reaction-item:hover .reaction-label,
-        .reaction-item.active .reaction-label {
-            opacity: 1;
-        }
-
-        /* Staggered Entrance for Items */
-        .reaction-box.show .reaction-item {
-            animation: slideUpFade 0.3s backwards;
-        }
+        .reaction-box.show .reaction-item { animation: slideUpFade 0.3s backwards; }
         .reaction-box.show .reaction-item:nth-child(1) { animation-delay: 0.05s; }
         .reaction-box.show .reaction-item:nth-child(2) { animation-delay: 0.08s; }
         .reaction-box.show .reaction-item:nth-child(3) { animation-delay: 0.11s; }
@@ -345,38 +268,60 @@ html
         .reaction-box.show .reaction-item:nth-child(5) { animation-delay: 0.17s; }
         .reaction-box.show .reaction-item:nth-child(6) { animation-delay: 0.20s; }
         .reaction-box.show .reaction-item:nth-child(7) { animation-delay: 0.23s; }
+        @keyframes slideUpFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        @keyframes slideUpFade {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        .flying-emoji { position: fixed; z-index: 9999; width: 40px; height: 40px; pointer-events: none; transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1); }
+        .btn-bounce { animation: rubberBand 0.6s; }
+        @keyframes rubberBand { 0% { transform: scale(1); } 30% { transform: scale(1.25, 0.75); } 40% { transform: scale(0.75, 1.25); } 50% { transform: scale(1.15, 0.85); } 65% { transform: scale(0.95, 1.05); } 75% { transform: scale(1.05, 0.95); } 100% { transform: scale(1); } }
+
+        /* ---------------------------------------------------- */
+        /* --- FACEBOOK STYLE COMMENTS (NEW) --- */
+        /* ---------------------------------------------------- */
+        .comment-container { display: flex; flex-direction: column; gap: 15px; padding-bottom: 10px; }
+        .comment-wrapper { display: flex; gap: 8px; position: relative; }
+        .comment-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 1px solid var(--border-color); }
+        
+        .comment-content-box { display: flex; flex-direction: column; max-width: 85%; }
+        
+        .comment-bubble { 
+            background: var(--comment-bubble-bg); 
+            padding: 8px 12px; 
+            border-radius: 18px; 
+            position: relative; 
+            display: inline-block;
+            word-wrap: break-word;
         }
+        
+        .comment-author-name { font-weight: 700; font-size: 13px; color: var(--text-color); cursor: pointer; display: block; margin-bottom: 2px; }
+        .comment-text { font-size: 14px; line-height: 1.4; color: var(--text-color); }
+        
+        .comment-actions { display: flex; gap: 12px; margin-left: 12px; margin-top: 4px; font-size: 12px; color: var(--secondary-text); align-items: center; }
+        
+        /* Reaction Dock for Comments - positioned differently */
+        .comment-wrapper .reaction-box { bottom: 30px; left: 0; transform: scale(0.9); transform-origin: left bottom; z-index: 2050; }
 
-        /* Flying Animation Class */
-        .flying-emoji {
-            position: fixed;
-            z-index: 9999;
-            width: 40px;
-            height: 40px;
-            pointer-events: none;
-            transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+        .c-action-btn { cursor: pointer; font-weight: 600; background: none; border: none; padding: 0; color: inherit; font-size: 12px; position: relative;}
+        .c-action-btn:hover { text-decoration: underline; }
+        
+        /* Floating Reaction Badge on Bubble */
+        .comment-reaction-badge { 
+            position: absolute; bottom: -6px; right: -4px; 
+            background: var(--sheet-bg); 
+            border-radius: 10px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2); 
+            padding: 2px 4px; 
+            display: flex; align-items: center; 
+            font-size: 11px; gap: 3px; 
+            z-index: 10;
+            border: 1px solid var(--border-color);
         }
+        
+        .reply-indent { margin-left: 42px; display: none; flex-direction: column; gap: 10px; margin-top: 10px; }
+        .view-replies-link { margin-left: 54px; font-size: 13px; font-weight: 600; color: var(--secondary-text); cursor: pointer; margin-top: 5px; display: flex; align-items: center; gap: 5px; }
+        .view-replies-link:hover { text-decoration: underline; }
+        .view-replies-link::before { content: ""; display: inline-block; width: 20px; height: 1px; background: var(--secondary-text); vertical-align: middle; }
 
-        /* Button Bounce */
-        .btn-bounce {
-            animation: rubberBand 0.6s;
-        }
-        @keyframes rubberBand {
-            0% { transform: scale(1); }
-            30% { transform: scale(1.25, 0.75); }
-            40% { transform: scale(0.75, 1.25); }
-            50% { transform: scale(1.15, 0.85); }
-            65% { transform: scale(0.95, 1.05); }
-            75% { transform: scale(1.05, 0.95); }
-            100% { transform: scale(1); }
-        }
-
-        /* --- END REACTION CSS --- */
-
+        /* --- END COMMENTS CSS --- */
 
         /* Detail View */
         #detailView {
@@ -549,8 +494,6 @@ html
         .sk-line.short { width: 60%; }
         .loading-spinner-area { text-align:center; padding:20px; color:var(--secondary-text); font-size:12px; display:none; }
 
-        .reply-btn { font-size: 11px; color: var(--primary-color); cursor: pointer; margin-top: 2px; border: none; background: none; font-weight: 600; padding: 0; }
-        .nested-reply { margin-left: 30px; border-left: 2px solid var(--border-color); padding-left: 10px; margin-top: 8px; background: rgba(0,0,0,0.02); border-radius: 0 8px 8px 0; padding: 8px; }
         .notif-item { display: flex; gap: 10px; padding: 12px; border-bottom: 1px solid var(--border-color); cursor: pointer; align-items: center; }
         .notif-item:hover { background: rgba(0,0,0,0.02); }
         .notif-item.unread { background: rgba(24, 119, 242, 0.05); border-left: 3px solid var(--primary-color); }
@@ -559,7 +502,7 @@ html
         .notif-time { font-size: 10px; color: var(--secondary-text); }
         .cancel-reply { font-size: 18px; color: #e74c3c; cursor: pointer; display: none; margin-left: 5px; align-self: center; }
 
-        /* --- CHAT STYLES (NEW) --- */
+        /* --- CHAT STYLES --- */
         .chat-list-item { display: flex; gap: 10px; padding: 12px; background: var(--glass-bg); margin-bottom: 8px; border-radius: 12px; align-items: center; cursor: pointer; border: 1px solid transparent; }
         .chat-list-item:hover { background: rgba(0,0,0,0.03); }
         .chat-list-item.unread { border-left: 3px solid var(--primary-color); background: rgba(24, 119, 242, 0.05); }
@@ -650,7 +593,7 @@ html
             </div>
         </div>
         <div class="drawer-footer">
-            সংস্করণ ১.১
+            Version 1.1
         </div>
     </div>
 
@@ -967,7 +910,7 @@ html
     <div id="adminModalWrapper" class="modal-overlay">
         <div class="modal-content glass-panel">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h3 id="formTitle" style="margin:0;">লেখা জমা দিন</h3>
+                <h3 id="formTitle" style="margin:0;">পোস্ট করুন</h3>
                 <button onclick="closeAdminModal()" style="background:none; border:none; font-size:20px; color:var(--text-color);"><i class="fas fa-times"></i></button>
             </div>
 
@@ -1022,7 +965,7 @@ html
 
                 <div style="display:flex; gap:10px; margin-top:15px;">
                     <button class="btn" onclick="saveDraft()" style="background:rgba(0,0,0,0.1); color:var(--text-color); flex:1;">ড্রাফট</button>
-                    <button class="btn btn-primary" id="submitBtn" onclick="handleSubmission()" style="flex:2;">জমা দিন</button>
+                    <button class="btn btn-primary" id="submitBtn" onclick="handleSubmission()" style="flex:2;">পোস্ট করুন</button>
                 </div>
             </div>
 
@@ -1090,6 +1033,10 @@ html
         let activeChatId = null;
         let activeChatPartnerUid = null;
         let typingTimeout = null;
+        
+        // --- COMMENT REACTION VARIABLES ---
+        let commentPressTimer = null;
+        let isCommentLongPress = false;
 
         // --- ASSETS: FACEBOOK REACTION GIFS (MASTER SOLUTION V2 - JSDelivr) ---
         const reactionAssets = {
@@ -1156,8 +1103,10 @@ html
         };
 
         window.getVerifiedBadge = function(isVerified) {
-            return isVerified ? `<i class="fas fa-check-circle verified-badge" title="Verified"></i>` : '';
-        };
+    return isVerified ? `<i class="fas fa-certificate verified-badge" style="color: #1877f2; position: relative;">
+        <i class="fas fa-check" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 10px; color: white;"></i>
+    </i>` : '';
+};
 
         window.fetchBlockedUsers = function(uid) {
             return get(ref(db, `users/${uid}/blockedUsers`)).then(snap => {
@@ -1253,6 +1202,7 @@ html
             let messageText = "আপনার প্রোফাইলে নতুন অ্যাক্টিভিটি";
             if(type === 'like') messageText = `${window.currentUser.displayName} আপনার পোস্টে লাইক দিয়েছেন ❤️`;
             else if(type === 'comment') messageText = `${window.currentUser.displayName} আপনার পোস্টে মন্তব্য করেছেন 💬`;
+            else if(type === 'reply') messageText = `${window.currentUser.displayName} আপনার মন্তব্যের উত্তর দিয়েছেন ↩️`;
 
             const options = {
                 method: 'POST',
@@ -1285,7 +1235,11 @@ html
                 if(!data) { document.getElementById('sheetBody').innerHTML = '<div style="text-align:center; color:#888; padding:20px;">কোনো নোটিফিকেশন নেই</div>'; return; }
                 const notifs = Object.entries(data).map(([k,v]) => ({key:k, ...v})).reverse();
                 const html = notifs.map(n => {
-                    let text = n.type === 'like' ? `আপনার পোস্টে লাইক দিয়েছেন ❤️` : `আপনার পোস্টে মন্তব্য করেছেন 💬`;
+                    let text = "অ্যাক্টিভিটি";
+                    if(n.type === 'like') text = `আপনার পোস্টে লাইক দিয়েছেন ❤️`;
+                    else if(n.type === 'comment') text = `আপনার পোস্টে মন্তব্য করেছেন 💬`;
+                    else if(n.type === 'reply') text = `আপনার মন্তব্যের উত্তর দিয়েছেন ↩️`;
+                    
                     return `
                     <div class="notif-item ${!n.read ? 'unread' : ''}" onclick="handleNotifClick('${n.key}', '${n.postId}')">
                         <img src="${n.senderImg}" class="notif-avatar">
@@ -1606,11 +1560,10 @@ html
         
         window.startLongPress = function(e, key, likes, btn) {
             if(!checkAuth()) return;
-            // e.preventDefault(); // Do not prevent default to allow scrolling if user moves
             isLongPress = false;
             pressTimer = setTimeout(() => {
                 isLongPress = true;
-                if(navigator.vibrate) navigator.vibrate(50); // Feedback for open
+                if(navigator.vibrate) navigator.vibrate(50);
                 showReactions(key, btn);
             }, 500);
         };
@@ -1618,12 +1571,9 @@ html
         window.endLongPress = function(e, key, likes, btn) {
             if (pressTimer) clearTimeout(pressTimer);
             if (!isLongPress) {
-                // Short press - Regular Like Toggle
-                // Close any open reaction bars first
                 document.querySelectorAll('.reaction-box').forEach(b => b.classList.remove('show'));
                 handleLike(key, likes, btn); 
             }
-            // Logic for drag-release handled in 'touchend' on container
             isLongPress = false;
         };
 
@@ -1633,37 +1583,28 @@ html
             const bar = wrapper.querySelector('.reaction-box');
             if(bar) { 
                 bar.classList.add('show'); 
-                // Auto-close after inactivity
                 setTimeout(() => { if(!isLongPress) bar.classList.remove('show'); }, 4000);
             }
         };
 
-        // Hit Testing for Touch/Mouse Drag over Emojis
         window.handleReactionMove = function(e, container) {
-            if(!isLongPress && e.type !== 'mousemove') return; // Only process if menu is open
-            e.preventDefault(); // Stop scroll while selecting reaction
-
+            if(!isLongPress && e.type !== 'mousemove') return; 
+            e.preventDefault(); 
             const touch = e.touches ? e.touches[0] : e;
             const x = touch.clientX;
             const y = touch.clientY;
-
-            // Check elements under finger
             const items = container.querySelectorAll('.reaction-item');
             let activeItem = null;
-
             items.forEach(item => {
                 const rect = item.getBoundingClientRect();
-                // Hitbox logic (with some padding)
                 if (x >= rect.left && x <= rect.right && y >= rect.top - 20 && y <= rect.bottom + 20) {
                     activeItem = item;
                 }
             });
-
-            // Update visuals
             items.forEach(item => {
                 if (item === activeItem) {
                     if (!item.classList.contains('active')) {
-                        if(navigator.vibrate) navigator.vibrate(10); // Haptic on change
+                        if(navigator.vibrate) navigator.vibrate(10); 
                         item.classList.add('active');
                     }
                 } else {
@@ -1672,29 +1613,20 @@ html
             });
         };
 
-        // Selection Finalization
         window.handleReactionRelease = function(e, key, container) {
             if (pressTimer) clearTimeout(pressTimer);
             const activeItem = container.querySelector('.reaction-item.active');
-            
             if (activeItem) {
                 const type = activeItem.dataset.type;
                 const src = activeItem.querySelector('img').src;
-                
-                // Trigger Flying Animation
                 performFlyingAnimation(activeItem, key, src);
-                
-                // Save Logic
                 selectReactionLogic(type, key);
             }
-            
-            // Close Dock
             container.classList.remove('show');
             container.querySelectorAll('.reaction-item').forEach(i => i.classList.remove('active'));
             isLongPress = false;
         };
 
-        // Direct click on emoji (Desktop fallback)
         window.handleReactionClick = function(e, type, key) {
             e.stopPropagation();
             const target = e.currentTarget;
@@ -1706,25 +1638,26 @@ html
 
         function performFlyingAnimation(startEl, key, imgSrc) {
             const startRect = startEl.getBoundingClientRect();
-            const btn = document.querySelector(`#post-${key} .action-btn.like-btn`);
-            const endRect = btn.getBoundingClientRect();
+            // Try post button first, if not found try comment button
+            let btn = document.querySelector(`#post-${key} .action-btn.like-btn`);
+            if (!btn) {
+                // If this is a comment reaction
+                btn = document.querySelector(`#comment-like-btn-${key}`);
+            }
+            if(!btn) return;
 
+            const endRect = btn.getBoundingClientRect();
             const flyer = document.createElement('img');
             flyer.src = imgSrc;
             flyer.className = 'flying-emoji';
             flyer.style.left = startRect.left + 'px';
             flyer.style.top = startRect.top + 'px';
             document.body.appendChild(flyer);
-
-            // Trigger Reflow
-            flyer.offsetHeight;
-
-            // Animate
+            flyer.offsetHeight; // Reflow
             flyer.style.left = (endRect.left + 10) + 'px';
             flyer.style.top = (endRect.top) + 'px';
             flyer.style.opacity = '0';
             flyer.style.transform = 'scale(0.5)';
-
             setTimeout(() => {
                 flyer.remove();
                 btn.classList.add('btn-bounce');
@@ -1736,20 +1669,17 @@ html
             const myReaction = { type: type, timestamp: Date.now() };
             localStorage.setItem('REACTION_' + key, JSON.stringify(myReaction));
             const btn = document.querySelector(`#post-${key} .action-btn.like-btn`);
-            
-            // Check if already liked to avoid double counting, but update visual
             const alreadyLiked = localStorage.getItem('LIKED_' + key);
             if(!alreadyLiked) {
-                handleLike(key, null, btn, type); // Increment count
+                handleLike(key, null, btn, type); 
             } else {
-                updateLikeVisual(btn, key); // Just update icon/color
-                // showToast(`${type.charAt(0).toUpperCase() + type.slice(1)}!`);
+                updateLikeVisual(btn, key);
             }
         }
 
         function getReactionStyle(type) {
             const map = {
-                'like': { text: 'Like', color: '#1877f2', icon: reactionAssets.like }, // Blue like
+                'like': { text: 'Like', color: '#1877f2', icon: reactionAssets.like }, 
                 'love': { text: 'Love', color: '#e74c3c', icon: reactionAssets.love },
                 'haha': { text: 'Haha', color: '#f7b928', icon: reactionAssets.haha },
                 'wow':  { text: 'Wow',  color: '#f7b928', icon: reactionAssets.wow },
@@ -1757,33 +1687,24 @@ html
                 'angry':{ text: 'Angry',color: '#e74c3c', icon: reactionAssets.angry },
                 'care': { text: 'Care', color: '#e6683c', icon: reactionAssets.care }
             };
-            return map[type] || { text: 'Like', color: '#1877f2', icon: reactionAssets.like }; // fallback
+            return map[type] || { text: 'Like', color: '#1877f2', icon: reactionAssets.like }; 
         }
 
-
-        // --- FEED RENDER UPDATE FOR REACTIONS ---
         window.renderFeed = function(posts, targetId = 'feed') {
             const feed = document.getElementById(targetId);
             if(!posts || !posts.length) return feed.innerHTML = '<div style="text-align:center; padding:30px; width:100%;">কোনো পোস্ট নেই</div>';
 
             feed.innerHTML = posts.map(post => {
                 const liked = localStorage.getItem('LIKED_' + post.key);
-                
-                // UX UPDATE: Truncate text logic
                 let contentHTML = post.content || '';
-                // Create temp element to strip HTML for length check
                 let tempDiv = document.createElement("div");
                 tempDiv.innerHTML = contentHTML;
                 let plainText = tempDiv.textContent || tempDiv.innerText || "";
-                
                 let displayContent = "";
-                
                 if(plainText.length > 150) {
-                    // Truncate logic
                     let truncated = plainText.substring(0, 150) + "...";
                     displayContent = `${formatPostContent(truncated)} <span class="read-more-btn" onclick="openDetailView('${post.key}')">আরও পড়ুন</span>`;
                 } else {
-                    // Show full formatted content
                     displayContent = formatPostContent(contentHTML);
                 }
 
@@ -1791,9 +1712,8 @@ html
                 const commentCount = window.allComments[post.key] ? Object.keys(window.allComments[post.key]).length : 0;
                 const shareCount = parseInt(localStorage.getItem('SHARE_COUNT_' + post.key) || '0');
                 
-                // Reaction State
                 let reactionData = JSON.parse(localStorage.getItem('REACTION_' + post.key) || 'null');
-                let displayIcon = `<i class="${reactionAssets.staticLike}"></i>`; // Default Gray Thumb
+                let displayIcon = `<i class="${reactionAssets.staticLike}"></i>`;
                 let displayColor = '';
                 let displayText = 'Like';
                 let btnClass = '';
@@ -1802,8 +1722,6 @@ html
                     btnClass = 'liked';
                     if (reactionData) {
                         const style = getReactionStyle(reactionData.type);
-                        // For the button, we often use static icons or small images.
-                        // If it's the default like, use fontawesome solid. Else use image.
                         if (reactionData.type === 'like') {
                             displayIcon = `<i class="${reactionAssets.solidLike}"></i>`;
                         } else {
@@ -1812,17 +1730,14 @@ html
                         displayColor = `color:${style.color}`;
                         displayText = style.text;
                     } else {
-                         // Default fallback Like
                          displayIcon = `<i class="${reactionAssets.solidLike}"></i>`;
                          displayColor = 'color:#1877f2';
                     }
                 }
 
-                // Badge Logic
                 const isVerified = window.userVerificationCache[post.uid] === true;
                 const badgeHtml = getVerifiedBadge(isVerified);
 
-                // Reaction Bar HTML (The Dock)
                 const reactionsHTML = `
                 <div class="reaction-box" 
                      ontouchmove="handleReactionMove(event, this)" 
@@ -1830,38 +1745,19 @@ html
                      onmousemove="handleReactionMove(event, this)"
                      onmouseleave="this.classList.remove('show')">
                     
-                    <div class="reaction-item" data-type="like" onclick="handleReactionClick(event, 'like', '${post.key}')">
-                        <span class="reaction-label">Like</span><img src="${reactionAssets.like}" class="reaction-img" data-type="like" onerror="window.imgError(this)">
-                    </div>
-                    <div class="reaction-item" data-type="love" onclick="handleReactionClick(event, 'love', '${post.key}')">
-                        <span class="reaction-label">Love</span><img src="${reactionAssets.love}" class="reaction-img" data-type="love" onerror="window.imgError(this)">
-                    </div>
-                    <div class="reaction-item" data-type="care" onclick="handleReactionClick(event, 'care', '${post.key}')">
-                        <span class="reaction-label">Care</span><img src="${reactionAssets.care}" class="reaction-img" data-type="care" onerror="window.imgError(this)">
-                    </div>
-                    <div class="reaction-item" data-type="haha" onclick="handleReactionClick(event, 'haha', '${post.key}')">
-                        <span class="reaction-label">Haha</span><img src="${reactionAssets.haha}" class="reaction-img" data-type="haha" onerror="window.imgError(this)">
-                    </div>
-                    <div class="reaction-item" data-type="wow" onclick="handleReactionClick(event, 'wow', '${post.key}')">
-                        <span class="reaction-label">Wow</span><img src="${reactionAssets.wow}" class="reaction-img" data-type="wow" onerror="window.imgError(this)">
-                    </div>
-                    <div class="reaction-item" data-type="sad" onclick="handleReactionClick(event, 'sad', '${post.key}')">
-                        <span class="reaction-label">Sad</span><img src="${reactionAssets.sad}" class="reaction-img" data-type="sad" onerror="window.imgError(this)">
-                    </div>
-                    <div class="reaction-item" data-type="angry" onclick="handleReactionClick(event, 'angry', '${post.key}')">
-                        <span class="reaction-label">Angry</span><img src="${reactionAssets.angry}" class="reaction-img" data-type="angry" onerror="window.imgError(this)">
-                    </div>
+                    <div class="reaction-item" data-type="like" onclick="handleReactionClick(event, 'like', '${post.key}')"><img src="${reactionAssets.like}" class="reaction-img" onerror="window.imgError(this)"></div>
+                    <div class="reaction-item" data-type="love" onclick="handleReactionClick(event, 'love', '${post.key}')"><img src="${reactionAssets.love}" class="reaction-img" onerror="window.imgError(this)"></div>
+                    <div class="reaction-item" data-type="care" onclick="handleReactionClick(event, 'care', '${post.key}')"><img src="${reactionAssets.care}" class="reaction-img" onerror="window.imgError(this)"></div>
+                    <div class="reaction-item" data-type="haha" onclick="handleReactionClick(event, 'haha', '${post.key}')"><img src="${reactionAssets.haha}" class="reaction-img" onerror="window.imgError(this)"></div>
+                    <div class="reaction-item" data-type="wow" onclick="handleReactionClick(event, 'wow', '${post.key}')"><img src="${reactionAssets.wow}" class="reaction-img" onerror="window.imgError(this)"></div>
+                    <div class="reaction-item" data-type="sad" onclick="handleReactionClick(event, 'sad', '${post.key}')"><img src="${reactionAssets.sad}" class="reaction-img" onerror="window.imgError(this)"></div>
+                    <div class="reaction-item" data-type="angry" onclick="handleReactionClick(event, 'angry', '${post.key}')"><img src="${reactionAssets.angry}" class="reaction-img" onerror="window.imgError(this)"></div>
                 </div>`;
 
-                // UX UPDATE: Removed parent onclick, added specific onclicks
                 return `
                 <div class="post-card glass-panel" id="post-${post.key}">
                     ${post.isPinned ? '<i class="fas fa-thumbtack pinned-badge"></i>' : ''}
-                    
-                    <button class="post-options-btn" onclick="event.stopPropagation(); openPostMenu('${post.key}', '${post.uid}', '${post.author}')">
-                        <i class="fas fa-ellipsis-h"></i>
-                    </button>
-
+                    <button class="post-options-btn" onclick="event.stopPropagation(); openPostMenu('${post.key}', '${post.uid}', '${post.author}')"><i class="fas fa-ellipsis-h"></i></button>
                     <div class="author-info" onclick="event.stopPropagation(); viewUserProfile('${post.uid}')">
                         <div class="avatar-circle"><img src="${authorImg}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"></div>
                         <div class="author-text"><h4>${post.author} ${badgeHtml}</h4><div class="post-meta"><i class="far fa-clock"></i> ${post.date}</div></div>
@@ -1922,8 +1818,8 @@ html
             const el = document.getElementById('shareCnt-' + key); if(el) el.innerText = count;
         };
 
-        // --- UPDATED VISUAL UPDATE FUNCTION ---
         window.updateLikeVisual = function(btn, key) {
+            if(!btn) return;
             const liked = localStorage.getItem('LIKED_' + key);
             const reactionData = JSON.parse(localStorage.getItem('REACTION_' + key) || 'null');
             const post = window.allPosts.find(p => p.key === key);
@@ -1933,7 +1829,6 @@ html
                 btn.classList.add('liked');
                 if (reactionData) {
                     const style = getReactionStyle(reactionData.type);
-                    // If simple like, use icon. Else image.
                     let iconHTML = '';
                     if(reactionData.type === 'like') iconHTML = `<i class="${reactionAssets.solidLike}"></i>`;
                     else iconHTML = `<img src="${style.icon}" style="width:18px;height:18px;vertical-align:middle;">`;
@@ -1941,7 +1836,6 @@ html
                     btn.innerHTML = `${iconHTML} <span class="count-text" style="margin-left:4px;">${style.text} (${count})</span>`;
                     btn.style.color = style.color;
                 } else {
-                    // Fallback normal like
                     btn.innerHTML = `<i class="${reactionAssets.solidLike}"></i> <span class="count-text" style="margin-left:4px;">Like (${count})</span>`;
                     btn.style.color = '#1877f2';
                 }
@@ -1959,16 +1853,10 @@ html
             const post = window.allPosts.find(p => p.key === key);
             
             if (alreadyLiked) {
-                // If it's a generic click on an already liked button -> Unline
-                // BUT if type is provided (from reaction menu), we don't toggle off, we just switch.
                 if (type) {
-                     // Just Switching Reaction
-                     // Count stays same (already counted). Just update local visual.
-                     // Note: Ideally backend should update "reaction type". Here we simulate.
                      updateLikeVisual(btn, key);
                      return; 
                 }
-
                 newCount = Math.max(0, newCount - 1);
                 update(ref(db, 'posts/'+key), {likes: newCount});
                 localStorage.removeItem('LIKED_'+key); 
@@ -1977,17 +1865,35 @@ html
                 newCount = newCount + 1;
                 update(ref(db, 'posts/'+key), {likes: newCount});
                 localStorage.setItem('LIKED_'+key, true);
-                if(!type) type = 'like'; // Default
+                if(!type) type = 'like'; 
                 const myReaction = { type: type, timestamp: Date.now() };
                 localStorage.setItem('REACTION_' + key, JSON.stringify(myReaction));
 
                 if(post && post.uid && post.uid !== window.currentUser.uid) { sendNotification(post.uid, 'like', key); }
             }
-            if(post) post.likes = newCount; // Update local modal
+            if(post) post.likes = newCount; 
             if (btn) updateLikeVisual(btn, key);
         };
 
-        // --- COMMENTS ---
+        // --- UPDATED COMMENTS SYSTEM (FB STYLE) ---
+
+        // Helper: Format Relative Time
+        function getRelativeTime(timestamp) {
+            const now = Date.now();
+            const diff = now - timestamp;
+            const sec = 1000;
+            const min = 60 * sec;
+            const hour = 60 * min;
+            const day = 24 * hour;
+            
+            if (diff < min) return "Just now";
+            if (diff < hour) return Math.floor(diff / min) + "m";
+            if (diff < day) return Math.floor(diff / hour) + "h";
+            if (diff < 7 * day) return Math.floor(diff / day) + "d";
+            return new Date(timestamp).toLocaleDateString();
+        }
+
+        // 1. Open Comments Sheet -> Load Logic
         window.openCommentsSheet = (key) => {
             if(!checkAuth()) return;
             document.getElementById('sheetTitle').innerText = 'মন্তব্য';
@@ -1995,43 +1901,186 @@ html
             document.getElementById('sheetFooter').style.display = 'flex';
             document.getElementById('universalBottomSheet').classList.add('active');
             cancelReply(); 
+            
+            // Set current post ID for submission
+            window.currentPostId = key;
+
             onValue(ref(db, 'comments/'+key), async snap => {
                 const data = snap.val();
                 if(!data) { document.getElementById('sheetBody').innerHTML = '<p style="text-align:center; color:var(--secondary-text);">কোনো মন্তব্য নেই</p>'; return; }
+                
+                // Process comments
                 const allComments = Object.entries(data).map(([k,v]) => ({key:k, ...v}));
-                const parents = allComments.filter(c => !c.parentId);
+                window.currentPostComments = allComments; // Cache for logic
+                
+                // Separate Parent/Child
+                const parents = allComments.filter(c => !c.parentId).sort((a,b) => b.timestamp - a.timestamp);
                 const children = allComments.filter(c => c.parentId);
-                let html = '';
+
+                let html = '<div class="comment-container">';
                 for (const p of parents) {
-                    html += await renderCommentHTML(p, false);
-                    const replies = children.filter(c => c.parentId === p.key);
-                    for (const r of replies) { html += await renderCommentHTML(r, true); }
+                    const pChildren = children.filter(c => c.parentId === p.key).sort((a,b) => a.timestamp - b.timestamp);
+                    html += await renderCommentHTML(p, false, pChildren);
                 }
+                html += '</div>';
                 document.getElementById('sheetBody').innerHTML = html;
             });
+
+            // Submission Logic (Smart Notification)
             const sendBtn = document.getElementById('sheetSendBtn');
             sendBtn.onclick = () => {
                 const txt = document.getElementById('sheetInput').value;
                 if(!txt) return;
+                
                 get(ref(db, `users/${window.currentUser.uid}/isVerified`)).then(snap => {
                     const isVerified = snap.val() === true;
-                    const commentData = { text: txt, author: window.currentUser.displayName, timestamp: Date.now(), parentId: replyingToCommentId, isVerified: isVerified };
+                    // Get user avatar for local display/notif
+                    const myAvatar = window.currentUser.photoURL; 
+
+                    const commentData = { 
+                        text: txt, 
+                        author: window.currentUser.displayName, 
+                        uid: window.currentUser.uid,
+                        userImg: myAvatar,
+                        timestamp: Date.now(), 
+                        parentId: replyingToCommentId, 
+                        isVerified: isVerified,
+                        reactions: {}
+                    };
+                    
+                    // Push to DB
                     push(ref(db, 'comments/'+key), commentData);
+
+                    // --- SMART NOTIFICATION LOGIC ---
+                    const post = window.allPosts.find(p => p.key === key);
+                    
+                    if (replyingToCommentId) {
+                        // SCENARIO B: Reply
+                        // Find original comment author
+                        const parentComm = window.currentPostComments.find(c => c.key === replyingToCommentId);
+                        if(parentComm && parentComm.uid && parentComm.uid !== window.currentUser.uid) {
+                             sendNotification(parentComm.uid, 'reply', key);
+                        }
+                    } else {
+                        // SCENARIO A: Top-Level Comment
+                        if(post && post.uid && post.uid !== window.currentUser.uid) { 
+                            sendNotification(post.uid, 'comment', key); 
+                        }
+                    }
                 });
+
                 document.getElementById('sheetInput').value = '';
-                const post = window.allPosts.find(p => p.key === key);
-                if(post && post.uid && post.uid !== window.currentUser.uid) { sendNotification(post.uid, 'comment', key); }
                 cancelReply();
             };
         };
 
-        async function renderCommentHTML(c, isReply) {
+        // 2. Render HTML (Facebook Style Bubble)
+        async function renderCommentHTML(c, isReply, children = []) {
             let isVerified = c.isVerified === undefined ? false : c.isVerified;
             const badgeHtml = getVerifiedBadge(isVerified);
-            const indentClass = isReply ? 'nested-reply' : '';
-            const replyBtn = !isReply ? `<button class="reply-btn" onclick="startReply('${c.key}', '${c.author}')">উত্তর দিন</button>` : '';
-            return `<div class="${indentClass}" style="margin-bottom:10px; border-bottom:1px solid var(--border-color); padding-bottom:5px;"><div style="font-weight:bold; font-size:12px;">${c.author} ${badgeHtml}</div><div style="font-size:14px;">${c.text}</div>${replyBtn}</div>`;
+            const userImg = c.userImg || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+            const timeAgo = getRelativeTime(c.timestamp);
+            
+            // Reaction Count Logic
+            let reactionCount = 0;
+            let topReactionIcon = '';
+            if (c.reactions) {
+                const reacts = Object.values(c.reactions);
+                reactionCount = reacts.length;
+                if(reactionCount > 0) {
+                     // Pick most frequent or just the last one
+                     const type = reacts[reacts.length-1].type; 
+                     const style = getReactionStyle(type);
+                     // If like, use solid blue thumb. Else image.
+                     if(type === 'like') topReactionIcon = '<i class="fas fa-thumbs-up" style="color:#1877f2"></i>';
+                     else topReactionIcon = `<img src="${style.icon}" style="width:10px; height:10px;">`;
+                }
+            }
+            
+            // My Reaction Status
+            let myReaction = null;
+            if(c.reactions && window.currentUser && c.reactions[window.currentUser.uid]) {
+                myReaction = c.reactions[window.currentUser.uid];
+            }
+            let btnText = "Like";
+            let btnStyle = "";
+            if(myReaction) {
+                 const s = getReactionStyle(myReaction.type);
+                 btnText = s.text;
+                 btnStyle = `color:${s.color};`;
+            }
+
+            const wrapperClass = isReply ? 'comment-wrapper reply-indent' : 'comment-wrapper';
+            
+            // Reaction Box HTML
+            const reactionBoxHTML = `
+            <div class="reaction-box" 
+                 id="reaction-dock-${c.key}"
+                 ontouchmove="handleReactionMove(event, this)" 
+                 ontouchend="handleCommentReactionRelease(event, '${window.currentPostId}', '${c.key}', this)"
+                 onmousemove="handleReactionMove(event, this)"
+                 onmouseleave="this.classList.remove('show')">
+                <div class="reaction-item" data-type="like" onclick="handleCommentReactionClick(event, 'like', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.like}" class="reaction-img"></div>
+                <div class="reaction-item" data-type="love" onclick="handleCommentReactionClick(event, 'love', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.love}" class="reaction-img"></div>
+                <div class="reaction-item" data-type="haha" onclick="handleCommentReactionClick(event, 'haha', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.haha}" class="reaction-img"></div>
+                <div class="reaction-item" data-type="sad" onclick="handleCommentReactionClick(event, 'sad', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.sad}" class="reaction-img"></div>
+                <div class="reaction-item" data-type="angry" onclick="handleCommentReactionClick(event, 'angry', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.angry}" class="reaction-img"></div>
+            </div>`;
+
+            let html = `
+            <div class="${wrapperClass}" id="comment-wrap-${c.key}" style="${isReply?'display:flex; margin-top:5px;':''}">
+                <img src="${userImg}" class="comment-avatar">
+                <div class="comment-content-box">
+                    <div class="comment-bubble">
+                        <span class="comment-author-name">${c.author} ${badgeHtml}</span>
+                        <span class="comment-text">${formatPostContent(c.text)}</span>
+                        ${reactionCount > 0 ? `<div class="comment-reaction-badge">${topReactionIcon} ${reactionCount}</div>` : ''}
+                    </div>
+                    <div class="comment-actions">
+                        <div class="action-btn-wrapper">
+                             ${reactionBoxHTML}
+                             <button class="c-action-btn" id="comment-like-btn-${c.key}"
+                                style="${btnStyle}"
+                                onmousedown="startCommentPress(event, '${c.key}', this)" 
+                                onmouseup="endCommentPress(event, '${window.currentPostId}', '${c.key}', this)"
+                                ontouchstart="startCommentPress(event, '${c.key}', this)" 
+                                ontouchend="endCommentPress(event, '${window.currentPostId}', '${c.key}', this)"
+                                oncontextmenu="return false;">
+                                ${btnText}
+                             </button>
+                        </div>
+                        <button class="c-action-btn" onclick="startReply('${c.key}', '${c.author}')">Reply</button>
+                        <span>${timeAgo}</span>
+                    </div>
+                </div>
+            </div>`;
+
+            // Nested Logic (Accordion)
+            if (!isReply && children.length > 0) {
+                html += `<div class="view-replies-link" id="view-replies-${c.key}" onclick="toggleReplies('${c.key}')">View ${children.length} replies</div>`;
+                html += `<div id="replies-${c.key}" class="reply-indent">`;
+                // Generate child HTML but keep hidden
+                for (const child of children) {
+                    html += await renderCommentHTML(child, true, []);
+                }
+                html += `</div>`;
+            }
+
+            return html;
         }
+
+        // 3. Nested Replies Toggle
+        window.toggleReplies = function(parentId) {
+            const container = document.getElementById(`replies-${parentId}`);
+            const link = document.getElementById(`view-replies-${parentId}`);
+            if(container.style.display === 'flex') {
+                 container.style.display = 'none';
+                 // Reset text? No need generally
+            } else {
+                 container.style.display = 'flex';
+                 link.style.display = 'none'; // Hide button after opening
+            }
+        };
 
         window.startReply = function(commentId, authorName) {
             replyingToCommentId = commentId;
@@ -2045,6 +2094,72 @@ html
             input.placeholder = "মন্তব্য লিখুন...";
             document.getElementById('cancelReplyBtn').style.display = 'none';
         };
+
+        // 4. Comment Reaction Logic (Long Press)
+        window.startCommentPress = function(e, commentId, btn) {
+            if(!checkAuth()) return;
+            isCommentLongPress = false;
+            commentPressTimer = setTimeout(() => {
+                isCommentLongPress = true;
+                if(navigator.vibrate) navigator.vibrate(50);
+                // Find dock within this comment wrapper
+                const dock = document.getElementById(`reaction-dock-${commentId}`);
+                if(dock) dock.classList.add('show');
+            }, 500);
+        };
+
+        window.endCommentPress = function(e, postId, commentId, btn) {
+            if(commentPressTimer) clearTimeout(commentPressTimer);
+            if(!isCommentLongPress) {
+                // Short press: Toggle Like
+                const dock = document.getElementById(`reaction-dock-${commentId}`);
+                if(dock) dock.classList.remove('show');
+                handleCommentLikeToggle(postId, commentId);
+            }
+            isCommentLongPress = false;
+        };
+
+        window.handleCommentReactionRelease = function(e, postId, commentId, container) {
+            if(commentPressTimer) clearTimeout(commentPressTimer);
+            const activeItem = container.querySelector('.reaction-item.active');
+            if(activeItem) {
+                const type = activeItem.dataset.type;
+                const src = activeItem.querySelector('img').src;
+                performFlyingAnimation(activeItem, commentId, src);
+                updateCommentReactionDB(postId, commentId, type);
+            }
+            container.classList.remove('show');
+            isCommentLongPress = false;
+        };
+
+        window.handleCommentReactionClick = function(e, type, postId, commentId) {
+            e.stopPropagation();
+            const target = e.currentTarget;
+            const src = target.querySelector('img').src;
+            performFlyingAnimation(target, commentId, src);
+            updateCommentReactionDB(postId, commentId, type);
+            const dock = document.getElementById(`reaction-dock-${commentId}`);
+            if(dock) dock.classList.remove('show');
+        };
+
+        function handleCommentLikeToggle(postId, commentId) {
+            // Check current status
+            const path = `comments/${postId}/${commentId}/reactions/${window.currentUser.uid}`;
+            get(ref(db, path)).then(snap => {
+                if(snap.exists()) {
+                    remove(ref(db, path)); // Unlike
+                } else {
+                    update(ref(db, path), { type: 'like', timestamp: Date.now() });
+                }
+            });
+        }
+
+        function updateCommentReactionDB(postId, commentId, type) {
+            const path = `comments/${postId}/${commentId}/reactions/${window.currentUser.uid}`;
+            update(ref(db, path), { type: type, timestamp: Date.now() });
+        }
+        
+        // --- END UPDATED COMMENTS SYSTEM ---
 
         // --- ADMIN MODAL & REPORTS ---
         window.openWriteModal = function() {
@@ -2329,7 +2444,6 @@ html
             if(post.image) { imgEl.src = post.image; imgEl.style.display = 'block'; } else imgEl.style.display = 'none';
             const likeBtn = document.getElementById('detailLikeBtn');
             likeBtn.onclick = () => handleLike(key, post.likes, likeBtn);
-            // Detail View doesn't have the reaction menu yet, keeps standard like logic visually but updates counts
             updateLikeVisual(likeBtn, key);
 
             document.getElementById('detailCommentBtn').onclick = () => openCommentsSheet(key);
