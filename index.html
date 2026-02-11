@@ -8,9 +8,9 @@ html
 
     <!-- PWA Manifest & Meta Tags -->
     <link rel="icon" type="image/png" href="icon.png">
-    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="apple-touchicon" href="icon.png">
     <link rel="manifest" href="manifest.json">    
-    <meta name="teme-color" content="#1877f2">
+    <meta name="theme-color" content="#1877f2">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="description" content="মনের কথা, মুক্ত ভাষায়- মুক্তলিপি ডায়েরি">
 
@@ -64,8 +64,7 @@ html
             --msg-sent-text: #fff;
             --msg-rcv-bg: #e4e6eb;
             --msg-rcv-text: #050505;
-            
-            /* Comment Specifics */            --comment-bubble-bg: #f0f2f5;
+            --comment-bubble-bg: #f0f2f5;
         }
         .dark-theme { 
             --bg-color: #1a1a1a; 
@@ -86,8 +85,6 @@ html
             --msg-sent-text: #000;
             --msg-rcv-bg: #303030;
             --msg-rcv-text: #e4e6eb;
-            
-            /* Comment Specifics */
             --comment-bubble-bg: #3a3b3c;
         }
 
@@ -108,17 +105,6 @@ html
         #readingProgress { position: fixed; top: 0; left: 0; width: 0%; height: 3px; background: var(--gradient-primary); z-index: 9999; transition: width 0.1s; }
         #offlineBanner { display: none; background: #333; color: white; text-align: center; padding: 8px; font-size: 13px; position: sticky; top: 0; z-index: 1000; }
         .container { max-width: 800px; margin: 0 auto; padding: 70px 15px 10px 15px; min-height: 100vh;}
-
-        /* --- Header Banner --- */
-        .header-banner-container {
-            width: 100%; height: 120px; border-radius: 15px; overflow: hidden; margin-bottom: 15px;
-            position: relative; box-shadow: var(--shadow-soft);
-        }
-        .header-banner { width: 100%; height: 100%; object-fit: cover; }
-        .banner-text {
-            position: absolute; bottom: 10px; left: 14px; color: white; 
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5); font-weight: 700; font-size: 12px;
-        }
 
         /* --- Dynamic Header & Stories --- */
         .greeting-section { margin-bottom: 15px; padding: 0 5px; }
@@ -208,11 +194,6 @@ html
         }
 
         /* Search & Filter */
-        .search-wrapper { position: relative; margin-bottom: 15px; }
-        #searchBar { width: 100%; padding: 12px 40px 12px 20px; border-radius: 30px; border: 1px solid var(--border-color); background: var(--glass-bg); color: var(--text-color); outline: none; box-sizing: border-box; font-size: 15px; box-shadow: var(--shadow-soft); transition: 0.3s; }
-        #searchBar:focus { box-shadow: 0 4px 15px rgba(24, 119, 242, 0.2); border-color: var(--primary-color); }
-        .search-clear { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--secondary-text); cursor: pointer; display: none; }
-
         .category-tabs { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; margin-bottom: 10px; }
         .category-tabs::-webkit-scrollbar { display: none; }
         .cat-btn { white-space: nowrap; padding: 8px 18px; border-radius: 20px; border: 1px solid transparent; background: var(--glass-bg); color: var(--text-color); cursor: pointer; font-size: 14px; transition: 0.3s; font-family: inherit; font-weight: 500; box-shadow: var(--shadow-soft); display: flex; align-items: center; gap: 6px; }
@@ -245,9 +226,7 @@ html
         .action-btn:hover { color: var(--primary-color); }
         .count-text { font-size: 12px; font-weight: 600; }
 
-        /* ---------------------------------------------------- */
-        /* --- FACEBOOK STYLE REACTION SYSTEM --- */
-        /* ---------------------------------------------------- */
+        /* Reaction System */
         .reaction-box {
             position: absolute; bottom: 45px; left: -10px; background: #ffffff; border-radius: 50px; padding: 6px 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.25); display: none; gap: 4px; z-index: 1000; border: 1px solid rgba(0,0,0,0.05); align-items: center; height: 44px;
         }
@@ -264,16 +243,13 @@ html
         .reaction-box.show .reaction-item:nth-child(3) { animation-delay: 0.11s; }
         .reaction-box.show .reaction-item:nth-child(4) { animation-delay: 0.14s; }
         .reaction-box.show .reaction-item:nth-child(5) { animation-delay: 0.17s; }
-        /* নিচের দুটি লাইন নতুন যুক্ত করতে হবে */
         .reaction-box.show .reaction-item:nth-child(6) { animation-delay: 0.20s; }
         .reaction-box.show .reaction-item:nth-child(7) { animation-delay: 0.23s; }
-        @keyframes slideUpFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         .flying-emoji { position: fixed; z-index: 9999; width: 40px; height: 40px; pointer-events: none; transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1); }
         .btn-bounce { animation: rubberBand 0.6s; }
         @keyframes rubberBand { 0% { transform: scale(1); } 30% { transform: scale(1.25, 0.75); } 40% { transform: scale(0.75, 1.25); } 50% { transform: scale(1.15, 0.85); } 65% { transform: scale(0.95, 1.05); } 75% { transform: scale(1.05, 0.95); } 100% { transform: scale(1); } }
 
-        /* Reaction Summary Styles */
         .reaction-summary-bar {
             display: flex; align-items: center; gap: 5px; margin-bottom: 8px; font-size: 12px; color: var(--secondary-text); cursor: pointer;
         }
@@ -282,7 +258,6 @@ html
             width: 16px; height: 16px; border: 2px solid var(--sheet-bg); border-radius: 50%; margin-right: -4px;
         }
 
-        /* Who Reacted Modal */
         .who-reacted-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.5); z-index: 3100; display: none;
@@ -304,9 +279,7 @@ html
         .reaction-user-item:last-child { border-bottom: none; }
         .reaction-user-emoji { margin-left: auto; font-size: 18px; }
 
-        /* ---------------------------------------------------- */
-        /* --- FACEBOOK STYLE COMMENTS (FIXED NESTING) --- */
-        /* ---------------------------------------------------- */
+        /* Comments */
         .comment-container { display: flex; flex-direction: column; gap: 10px; padding-bottom: 10px; }
         .comment-wrapper { display: flex; gap: 8px; position: relative; margin-bottom: 5px; }
         .comment-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 1px solid var(--border-color); }
@@ -327,13 +300,11 @@ html
         
         .comment-actions { display: flex; gap: 12px; margin-left: 12px; margin-top: 4px; font-size: 12px; color: var(--secondary-text); align-items: center; }
         
-        /* Reaction Dock for Comments */
         .comment-wrapper .reaction-box { bottom: 30px; left: 0; transform: scale(0.9); transform-origin: left bottom; z-index: 2050; }
 
         .c-action-btn { cursor: pointer; font-weight: 600; background: none; border: none; padding: 0; color: inherit; font-size: 12px; position: relative;}
         .c-action-btn:hover { text-decoration: underline; }
         
-        /* Floating Reaction Badge on Bubble */
         .comment-reaction-badge { 
             position: absolute; bottom: -6px; right: -4px; 
             background: var(--sheet-bg); 
@@ -346,37 +317,19 @@ html
             border: 1px solid var(--border-color);
         }
         
-        /* CSS FIX: Indentation for Replies */
-        /* রিপ্লাই সেকশনের ইন্ডেন্টেশন এবং বাম পাশে দাগ */
- .reply-indent {
-    margin-left: 48px; /* বাম থেকে একটু বেশি সরাবে */
-    margin-top: 5px;
-    border-left: 2px solid #e4e6eb; /* ফেসবুকের মতো একটি হালকা দাগ */
-    padding-left: 10px;
-    display: none; /* ডিফল্টভাবে লুকানো থাকবে, JS দিয়ে খোলা হবে */
-    flex-direction: column;
-    gap: 8px;
-}
-
-/* রিপ্লাইয়ের জন্য আলাদা স্টাইল */
-.comment-wrapper.reply-style .comment-avatar {
-    width: 24px;  /* প্যারেন্ট কমেন্টের চেয়ে ছবি ছোট হবে */
-    height: 24px;
-}
-
-.comment-wrapper.reply-style .comment-bubble {
-    padding: 6px 10px; /* বাবল একটু ছোট হবে */
-    background-color: #f0f2f5; 
-}
-
-.comment-wrapper.reply-style .comment-author-name {
-    font-size: 12px; /* নাম একটু ছোট */
-}
-
-.comment-wrapper.reply-style .comment-text {
-    font-size: 13px; /* টেক্সট একটু ছোট */
-}
-        /* --- END COMMENTS CSS --- */
+        .reply-indent {
+            margin-left: 48px;
+            margin-top: 5px;
+            border-left: 2px solid #e4e6eb;
+            padding-left: 10px;
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .comment-wrapper.reply-style .comment-avatar { width: 24px; height: 24px; }
+        .comment-wrapper.reply-style .comment-bubble { padding: 6px 10px; background-color: #f0f2f5; }
+        .comment-wrapper.reply-style .comment-author-name { font-size: 12px; }
+        .comment-wrapper.reply-style .comment-text { font-size: 13px; }
 
         /* Detail View */
         #detailView {
@@ -480,13 +433,11 @@ html
         .sheet-drag-handle { width: 40px; height: 4px; background: rgba(0,0,0,0.1); border-radius: 10px; margin: 12px auto; flex-shrink: 0; }
         .sheet-body { overflow-y: auto; padding: 0 20px 20px 20px; flex: 1; }
 
-        /* Menu Options */
         .menu-option { padding: 15px 0; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid var(--border-color); cursor: pointer; color: var(--text-color); font-size: 15px; }
         .menu-option:last-child { border-bottom: none; }
         .menu-option i { width: 20px; text-align: center; }
         .menu-option.danger { color: #e74c3c; }
 
-        /* Share & Loaders */
         .share-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 20px 0; }
         .share-item { display: flex; flex-direction: column; align-items: center; gap: 8px; background: none; border: none; cursor: pointer; color: var(--text-color); }
         .share-icon-circle { width: 50px; height: 50px; border-radius: 50%; background: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; font-size: 20px; transition: 0.2s; }
@@ -531,7 +482,6 @@ html
         .pending-actions { display:flex; gap:10px; margin-top:5px; }
         .btn-approve { background: #2ecc71; color: white; flex:1; border:none; border-radius:5px; padding:5px; cursor:pointer; }
         .btn-reject { background: #e74c3c; color: white; flex:1; border:none; border-radius:5px; padding:5px; cursor:pointer; }
-        /* Report Buttons */
         .btn-view { background: var(--primary-color); color: white; flex:1; border:none; border-radius:5px; padding:5px; cursor:pointer; }
         .btn-dismiss { background: var(--secondary-text); color: white; flex:1; border:none; border-radius:5px; padding:5px; cursor:pointer; }
 
@@ -622,43 +572,52 @@ html
             padding: 15px; text-align: center; font-size: 11px; color: var(--secondary-text);
             border-top: 1px solid var(--border-color);
         }
+
         /* Mention List Style */
-/* Mention List Style Update */
-
-.mention-item {
-    padding: 12px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    border-bottom: 1px solid var(--border-color);
-}
-.mention-item:hover {
-    background: rgba(24, 119, 242, 0.05);
-}
-
-.mention-avatar {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.mention-name {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-color);
-}
-
-/* মেনশন করা নাম নীল দেখানোর জন্য */
-.mentioned-link {
-    color: var(--primary-color);
-    font-weight: bold;
-    text-decoration: none;
-    background: rgba(24, 119, 242, 0.1);
-    padding: 0 4px;
-    border-radius: 4px;
-}
+        .mention-dropdown {
+            position: absolute;
+            bottom: 60px; /* Above input */
+            left: 0;
+            width: 100%;
+            background: var(--sheet-bg);
+            border-top: 1px solid var(--border-color);
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            flex-direction: column;
+            z-index: 2500;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+        }
+        .mention-item {
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .mention-item:hover {
+            background: rgba(24, 119, 242, 0.05);
+        }
+        .mention-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .mention-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+        .mentioned-link {
+            color: var(--primary-color);
+            font-weight: bold;
+            text-decoration: none;
+            background: rgba(24, 119, 242, 0.1);
+            padding: 0 4px;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -714,11 +673,9 @@ html
     <!-- Main App Structure -->
 
     <!-- Top Sticky Header -->
-   <!-- Top Sticky Header (Updated with Search) -->
-   <!-- Top Sticky Header (YouTube Style Search) -->
     <div class="sticky-controls" id="mainHeader">
         
-        <!-- ১. স্বাভাবিক অবস্থায় (Normal Header) -->
+        <!-- Normal Header -->
         <div id="defaultHeader" style="display:flex; justify-content:space-between; align-items:center; width:100%;">
             <div style="display:flex; align-items:center; gap: 5px;">
                 <button class="icon-btn" onclick="openDrawer()">
@@ -744,23 +701,18 @@ html
             </div>
         </div>
 
-        <!-- ২. সার্চ মোড (Search Header) -->
+        <!-- Search Header -->
         <div id="searchHeader" style="display:none; width:100%; align-items:center; gap:10px;">
             <button class="icon-btn" onclick="toggleHeaderSearch(false)">
                 <i class="fas fa-arrow-left"></i>
             </button>
-            
-            <!-- সার্চ ইনপুট -->
             <input type="text" id="headerSearchBar" placeholder="এখানে খুঁজুন..." 
                    style="flex:1; margin:0; border-radius:20px; background:rgba(0,0,0,0.05); border:none; height:40px; padding-left:15px;" 
                    oninput="filterPosts(this.value)">
-            
-            <!-- ক্লিয়ার বাটন (শুরুতে লুকানো থাকবে) -->
             <button class="icon-btn" id="headerSearchClearBtn" onclick="clearSearchHeader()" style="display:none;">
                 <i class="fas fa-times"></i>
             </button>
         </div>
-
     </div>
 
     <!-- LOGIN MODAL (Gatekeeper) -->
@@ -843,8 +795,6 @@ html
             <div id="storiesBar" class="stories-container">
                 <!-- Injected via JS -->
             </div>
-
-          
 
             <!-- Tabs -->
             <div class="category-tabs">
@@ -959,8 +909,8 @@ html
             <i class="fas fa-pen-nib"></i>
         </button>
        <button class="nav-item" onclick="showToast('অ্যাপ স্টোর শীঘ্রই আসছে...')">
-    <i class="fas fa-store"></i> অ্যাপ স্টোর
-</button>
+            <i class="fas fa-store"></i> অ্যাপ স্টোর
+        </button>
         <button class="nav-item" onclick="navTo('profile', this)">
             <i class="fas fa-user"></i>প্রোফাইল
         </button>
@@ -971,11 +921,14 @@ html
         <div class="sheet-content" onclick="event.stopPropagation()">
             <div class="sheet-drag-handle"></div>
             <h3 id="sheetTitle" style="text-align:center; margin:10px 0; font-size:16px;">Title</h3>
-            <div id="sheetBody" class="sheet-body"></div>
+            
+            <!-- Mention Dropdown (Positioned inside content) -->
             <div id="mentionList" class="mention-dropdown"></div> 
 
+            <div id="sheetBody" class="sheet-body"></div>
+
             <!-- Footer with Input (Used for Comments) -->
-            <div id="sheetFooter" style="padding:10px 15px; border-top:1px solid var(--border-color); display:none; gap:10px;">
+            <div id="sheetFooter" style="padding:10px 15px; border-top:1px solid var(--border-color); display:none; gap:10px; position:relative;">
                 <input type="text" id="sheetInput" placeholder="মন্তব্য লিখুন...">
                 <i id="cancelReplyBtn" class="fas fa-times cancel-reply" onclick="cancelReply()"></i>
                 <button id="sheetSendBtn" style="background:var(--primary-color); color:white; border:none; border-radius:8px; width:40px;"><i class="fas fa-paper-plane"></i></button>
@@ -1035,7 +988,6 @@ html
             <!-- Admin Tabs (Visible only to Admin) -->
             <div id="adminTabs" style="display:none; gap:10px; margin:10px 0;">
                 <button class="btn" onclick="switchAdminTab('new')" style="padding:8px; font-size:12px; flex:1;">নতুন পোস্ট</button>
-                <!-- Pending List Removed -->
                 <button class="btn" onclick="switchAdminTab('reports')" style="padding:8px; font-size:12px; flex:1; background:#e74c3c; color:white;">রিপোর্ট</button>
             </div>
 
@@ -1107,9 +1059,7 @@ html
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, push, set, onValue, update, remove, get, query, orderByKey, limitToLast, endBefore, equalTo, orderByChild, onChildAdded, onDisconnect, runTransaction, off,
-startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্যই যোগ করবেন
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, push, set, onValue, update, remove, get, query, orderByKey, limitToLast, endBefore, equalTo, orderByChild, onChildAdded, onDisconnect, runTransaction, off, startAt, endAt, limitToFirst } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const ADMIN_UID = "Pg5ko76Pu8Zf4ja9MMzEJRLDMYs1"; 
@@ -1135,14 +1085,15 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
         window.currentUser = null;
         window.blockedUsers = []; 
         window.userVerificationCache = {}; 
+        window.mentionedUids = []; 
         
         // --- NEW REACTION CONSTANTS ---
         window.reactionEmojiMap = {
             like: "👍",
             love: "❤️",
             care: "🤗",
-            haha: "😂", // নতুন
-            wow: "😮",  // নতুন
+            haha: "😂", 
+            wow: "😮",  
             sad: "😢",
             angry: "😡"
         };
@@ -1151,8 +1102,8 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
             like: 'like.gif',
             love: 'love.gif',
             care: 'care.gif',
-            haha: 'haha.gif', // kept for fallback or legacy
-            wow: 'wow.gif',   // kept for fallback
+            haha: 'haha.gif', 
+            wow: 'wow.gif',   
             sad: 'sad.gif',
             angry: 'angry.gif',
             
@@ -1160,7 +1111,6 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
             solidLike: 'fas fa-thumbs-up'
         };
 
-        // Basic bad word filter (Client side)
         const BAD_WORDS = ["খারাপ", "গালাগালি", "অশ্লীল", "কুত্তা", "শয়তান", "ফালতু", "haram", "kharap", "gali"];
 
         const DEVICE_ID = localStorage.getItem('USER_DEVICE_ID') || 'u_' + Date.now();
@@ -1182,7 +1132,6 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
         let commentPressTimer = null;
         let isCommentLongPress = false;
 
-        // Fallback function for broken GIFs
         window.imgError = function(image) {
             image.onerror = ""; 
             const type = image.getAttribute('data-type') || 'like';
@@ -1190,8 +1139,8 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
                 like: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Facebook_Like_2016.svg/100px-Facebook_Like_2016.svg.png',
                 love: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Facebook_Love_2016.svg/100px-Facebook_Love_2016.svg.png',
                 care: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Facebook_Care_Reaction.png/100px-Facebook_Care_Reaction.png',
-                haha: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Facebook_Haha_2016.svg/100px-Facebook_Haha_2016.svg.png', // নতুন লিংক
-                wow: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Facebook_Wow_2016.svg/100px-Facebook_Wow_2016.svg.png',   // নতুন লিংক
+                haha: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Facebook_Haha_2016.svg/100px-Facebook_Haha_2016.svg.png', 
+                wow: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Facebook_Wow_2016.svg/100px-Facebook_Wow_2016.svg.png',
                 sad: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Facebook_Sad_2016.svg/100px-Facebook_Sad_2016.svg.png',
                 angry: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Facebook_Angry_2016.svg/100px-Facebook_Angry_2016.svg.png'
             };
@@ -1202,13 +1151,9 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
 
         window.formatPostContent = function(text) {
             if (!text) return '';
-            // লিংক ফরম্যাট
             let formatted = text.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" style="color:var(--primary-color); text-decoration:underline;" onclick="event.stopPropagation()">$1</a>');
-            // হ্যাসট্যাগ ফরম্যাট
             formatted = formatted.replace(/#(\w+)/g, '<span class="hashtag" onclick="event.stopPropagation(); filterPosts(\'#$1\')">#$1</span>');
-            // মেনশন ফরম্যাট (@Name) - এটি প্রোফাইলে নিয়ে যাবে
             formatted = formatted.replace(/@([\w\u0980-\u09FF\s]+)/g, function(match, name) {
-                // আমরা নাম দিয়ে সার্চ করে প্রোফাইল লিংক করতে পারি, আপাতত নীল করছি
                 return `<span class="mentioned-link">${match}</span>`;
             });
             return formatted;
@@ -1269,7 +1214,6 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
                 initNotificationListener(user.uid);
                 initChatListener(user.uid); 
 
-                // Presence
                 const connectedRef = ref(db, '.info/connected');
                 const myStatusRef = ref(db, 'status/' + user.uid);
                 onValue(connectedRef, (snap) => {
@@ -1317,10 +1261,8 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
                 document.getElementById('userAvatar').src = user.photoURL;
                 document.getElementById('userName').innerText = user.displayName;
                 document.getElementById('submitBtn').disabled = false;
-                // মেনুতে লগআউট বাটন দেখাও
                 if(drawerLogout) drawerLogout.style.display = 'flex';
             } else {
-                // মেনু থেকে লগআউট বাটন লুকাও
                 if(drawerLogout) drawerLogout.style.display = 'none';
             }
         }
@@ -1339,13 +1281,21 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
 
         function sendNotification(targetUid, type, postId) {
             if(!window.currentUser || targetUid === window.currentUser.uid) return;
-            push(ref(db, `notifications/${targetUid}`), { type: type, postId: postId, sender: window.currentUser.displayName, senderImg: window.currentUser.photoURL, read: false, timestamp: Date.now() });
-            
             let messageText = "আপনার প্রোফাইলে নতুন অ্যাক্টিভিটি";
             if(type === 'like') messageText = `${window.currentUser.displayName} আপনার পোস্টে লাইক দিয়েছেন ❤️`;
             else if(type === 'comment') messageText = `${window.currentUser.displayName} আপনার পোস্টে মন্তব্য করেছেন 💬`;
             else if(type === 'reply') messageText = `${window.currentUser.displayName} আপনার মন্তব্যের উত্তর দিয়েছেন ↩️`;
-            else if(n.type === 'mention') text = `আপনাকে একটি কমেন্টে মেনশন করেছেন 🔔`;
+            else if(type === 'mention') messageText = `${window.currentUser.displayName} আপনাকে একটি কমেন্টে মেনশন করেছেন 🔔`;
+            
+            push(ref(db, `notifications/${targetUid}`), { 
+                type: type, 
+                postId: postId, 
+                sender: window.currentUser.displayName, 
+                senderImg: window.currentUser.photoURL, 
+                read: false, 
+                timestamp: Date.now() 
+            });
+            
             const options = {
                 method: 'POST',
                 headers: {
@@ -1696,7 +1646,7 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
             viewUserProfile(targetUid); loadStoryFeed(); 
         };
 
-        // --- FACEBOOK STYLE REACTION LOGIC (UPDATED) ---
+        // --- REACTION LOGIC ---
         let pressTimer = null;
         let isLongPress = false;
         
@@ -1714,7 +1664,6 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
             if (pressTimer) clearTimeout(pressTimer);
             if (!isLongPress) {
                 document.querySelectorAll('.reaction-box').forEach(b => b.classList.remove('show'));
-                // Short press: Default to like toggle
                 toggleReaction(key, 'like');
             }
             isLongPress = false;
@@ -1759,22 +1708,14 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
         window.handleReactionRelease = function(e, key, container) {
             if (pressTimer) clearTimeout(pressTimer);
             const activeItem = container.querySelector('.reaction-item.active');
-            
-            // শুধুমাত্র যদি ড্র্যাগ করে (Active) সিলেক্ট করা হয়, তখনই এখান থেকে কাজ করবে
             if (activeItem) {
                 const type = activeItem.dataset.type;
                 const src = activeItem.querySelector('img').src;
                 performFlyingAnimation(activeItem, key, src);
                 toggleReaction(key, type);
-                
-                // কাজ শেষ, তাই বক্স বন্ধ করছি
                 container.classList.remove('show');
                 container.querySelectorAll('.reaction-item').forEach(i => i.classList.remove('active'));
             }
-            
-            // যদি ড্র্যাগ না করে সাধারণ ট্যাপ করা হয়, তাহলে বক্সটি এখানে বন্ধ হবে না।
-            // সেটা handleReactionClick ফাংশন সামলাবে।
-            
             isLongPress = false;
         };
 
@@ -1789,10 +1730,8 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
 
         function performFlyingAnimation(startEl, key, imgSrc) {
             const startRect = startEl.getBoundingClientRect();
-            // Try post button first, if not found try comment button
             let btn = document.querySelector(`#post-${key} .action-btn.like-btn`);
             if (!btn) {
-                // If this is a comment reaction
                 btn = document.querySelector(`#comment-like-btn-${key}`);
             }
             if(!btn) return;
@@ -1804,7 +1743,7 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
             flyer.style.left = startRect.left + 'px';
             flyer.style.top = startRect.top + 'px';
             document.body.appendChild(flyer);
-            flyer.offsetHeight; // Reflow
+            flyer.offsetHeight; 
             flyer.style.left = (endRect.left + 10) + 'px';
             flyer.style.top = (endRect.top) + 'px';
             flyer.style.opacity = '0';
@@ -1816,15 +1755,13 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
             }, 600);
         }
 
-        // --- NEW REAL-TIME REACTION LOGIC ---
-
         function getReactionStyle(type) {
             const map = {
                 'like': { text: 'Like', color: '#1877f2', icon: reactionAssets.like }, 
                 'love': { text: 'Love', color: '#e74c3c', icon: reactionAssets.love },
                 'care': { text: 'Care', color: '#f7b928', icon: reactionAssets.care },
-                'haha': { text: 'Haha', color: '#f7b928', icon: reactionAssets.haha }, // নতুন যুক্ত করা হয়েছে
-                'wow':  { text: 'Wow',  color: '#f7b928', icon: reactionAssets.wow },  // নতুন যুক্ত করা হয়েছে
+                'haha': { text: 'Haha', color: '#f7b928', icon: reactionAssets.haha }, 
+                'wow':  { text: 'Wow',  color: '#f7b928', icon: reactionAssets.wow },  
                 'sad':  { text: 'Sad',  color: '#f7b928', icon: reactionAssets.sad },
                 'angry':{ text: 'Angry',color: '#e74c3c', icon: reactionAssets.angry }
             };
@@ -1840,30 +1777,22 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
                 const currentType = snap.val();
 
                 if (currentType === newType) {
-                    // Remove reaction
                     remove(userReactionRef);
-                    // Update Count
                     runTransaction(ref(db, `reactionCount/${postId}/${currentType}`), (count) => {
                         return (count || 0) > 0 ? count - 1 : 0;
                     });
                 } else {
-                    // Set new reaction
                     set(userReactionRef, newType);
-                    
-                    // Update Counts
                     if (currentType) {
-                        // Decrement old
                         runTransaction(ref(db, `reactionCount/${postId}/${currentType}`), (count) => {
                             return (count || 0) > 0 ? count - 1 : 0;
                         });
                     } else {
-                        // New reaction, notify owner
                         const post = window.allPosts.find(p => p.key === postId);
                         if(post && post.uid && post.uid !== uid) { 
                             sendNotification(post.uid, 'like', postId); 
                         }
                     }
-                    // Increment new
                     runTransaction(ref(db, `reactionCount/${postId}/${newType}`), (count) => {
                         return (count || 0) + 1;
                     });
@@ -1871,9 +1800,7 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
             });
         };
 
-        // UI Listener for specific post
         function listenToPostReactions(postId) {
-            // 1. My Reaction
             if(window.currentUser) {
                 const myReactionRef = ref(db, `reactions/${postId}/${window.currentUser.uid}`);
                 onValue(myReactionRef, (snap) => {
@@ -1882,7 +1809,6 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
                 });
             }
 
-            // 2. Reaction Summary & Count
             const countRef = ref(db, `reactionCount/${postId}`);
             onValue(countRef, (snap) => {
                 const data = snap.val() || {};
@@ -1923,9 +1849,8 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
                 }
             }
 
-            // Sort types by count descending to show top icons
             types.sort((a,b) => b.count - a.count);
-            const topTypes = types.slice(0, 3); // Top 3
+            const topTypes = types.slice(0, 3); 
 
             let html = '';
             if (total > 0) {
@@ -1954,8 +1879,7 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
                     return;
                 }
 
-                // Fetch user details
-                const reactionEntries = Object.entries(data); // [[uid, type], ...]
+                const reactionEntries = Object.entries(data);
                 let html = '';
                 
                 for(const [uid, type] of reactionEntries) {
@@ -1997,7 +1921,6 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
                 const isVerified = window.userVerificationCache[post.uid] === true;
                 const badgeHtml = getVerifiedBadge(isVerified);
 
-                // Initialize listeners for this post after rendering
                 setTimeout(() => listenToPostReactions(post.key), 0);
 
                 const reactionsHTML = `
@@ -2028,7 +1951,6 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
                     <h2 class="post-title" onclick="openDetailView('${post.key}')">${post.title}</h2>
                     <div class="content-preview">${displayContent}</div>
                     
-                    <!-- Reaction Summary Container -->
                     <div id="summary-${post.key}" class="reaction-summary-bar" onclick="openWhoReactedModal('${post.key}')">
                         <!-- Filled by Realtime Listener -->
                     </div>
@@ -2085,9 +2007,8 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
             const el = document.getElementById('shareCnt-' + key); if(el) el.innerText = count;
         };
 
-        // --- UPDATED COMMENTS SYSTEM (FB STYLE + NESTING FIX) ---
+        // --- COMMENTS SYSTEM (FB STYLE + NESTING FIX) ---
 
-        // Helper: Format Relative Time
         function getRelativeTime(timestamp) {
             const now = Date.now();
             const diff = now - timestamp;
@@ -2103,9 +2024,6 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
             return new Date(timestamp).toLocaleDateString();
         }
 
-        // 1. Open Comments Sheet
-      // 1. Open Comments Sheet (Updated Logic)
-// 1. Open Comments Sheet (Updated with Mention System)
         window.openCommentsSheet = (key) => {
             if(!checkAuth()) return;
             
@@ -2114,15 +2032,12 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
             document.getElementById('sheetFooter').style.display = 'flex';
             document.getElementById('universalBottomSheet').classList.add('active');
             
-            // রিসেট
             cancelReply(); 
             window.currentPostId = key;
-            window.mentionedUids = []; // সঠিক বানান
-            // ইনপুটে মেনশন লিসেনার যুক্ত করা
+            window.mentionedUids = []; 
             const inputEl = document.getElementById('sheetInput');
             inputEl.oninput = (e) => window.handleMentionInput(e);
 
-            // ডাটাবেস থেকে কমেন্ট আনা (আগের লজিকই থাকছে)
             onValue(ref(db, 'comments/'+key), async snap => {
                 const data = snap.val();
                 if(!data) { 
@@ -2153,7 +2068,6 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
                 document.getElementById('sheetBody').innerHTML = html;
             });
 
-            // সাবমিট বাটন লজিক (Updated for Mention Notification)
             const sendBtn = document.getElementById('sheetSendBtn');
             const newBtn = sendBtn.cloneNode(true);
             sendBtn.parentNode.replaceChild(newBtn, sendBtn);
@@ -2182,26 +2096,15 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
                     
                     push(ref(db, 'comments/'+key), commentData);
 
-                    // --- মেনশন নোটিফিকেশন পাঠানো ---
                     if (window.mentionedUids.length > 0) {
                         window.mentionedUids.forEach(uid => {
                             if(uid !== window.currentUser.uid) {
-                                // স্পেশাল নোটিফিকেশন
-                                push(ref(db, `notifications/${uid}`), { 
-                                    type: 'mention', // নতুন টাইপ
-                                    postId: key, 
-                                    sender: window.currentUser.displayName, 
-                                    senderImg: myAvatar, 
-                                    read: false, 
-                                    timestamp: Date.now(),
-                                    text: `আপনাকে একটি কমেন্টে মেনশন করেছেন`
-                                });
+                                sendNotification(uid, 'mention', key);
                             }
                         });
-                        window.mentionedUids = []; // রিসেট
+                        window.mentionedUids = []; 
                     }
 
-                    // সাধারণ নোটিফিকেশন লজিক
                     const post = window.allPosts.find(p => p.key === key);
                     if (parentId) {
                         const parentComm = window.currentPostComments.find(c => c.key === parentId);
@@ -2219,103 +2122,91 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
             };
         };
 
-        // 2. Render Single Comment Bubble (Reused for Parent & Child)
-        // 2. Render Single Comment Bubble (Reused for Parent & Child)
-// 2. Render Single Comment Bubble (Reused for Parent & Child)
-async function renderCommentBubble(c, isReply) {
-    // ব্যাজ চেক করা হচ্ছে
-    let isVerified = c.isVerified === true;
-    const badgeHtml = getVerifiedBadge(isVerified);
-    
-    const userImg = c.userImg || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-    const timeAgo = getRelativeTime(c.timestamp);
-    
-    // Reaction Count Logic
-    let reactionCount = 0;
-    let topReactionIcon = '';
-    if (c.reactions) {
-        const reacts = Object.values(c.reactions);
-        reactionCount = reacts.length;
-        if(reactionCount > 0) {
-             const type = reacts[reacts.length-1].type; 
-             const style = getReactionStyle(type);
-             if(type === 'like') topReactionIcon = '<i class="fas fa-thumbs-up" style="color:#1877f2"></i>';
-             else topReactionIcon = `<img src="${style.icon}" style="width:10px; height:10px;">`;
-        }
-    }
-    
-    // My Reaction Status
-    let myReaction = null;
-    if(c.reactions && window.currentUser && c.reactions[window.currentUser.uid]) {
-        myReaction = c.reactions[window.currentUser.uid];
-    }
-    let btnText = "Like";
-    let btnStyle = "";
-    if(myReaction) {
-         const s = getReactionStyle(myReaction.type);
-         btnText = s.text;
-         btnStyle = `color:${s.color};`;
-    }
+        async function renderCommentBubble(c, isReply) {
+            let isVerified = c.isVerified === true;
+            const badgeHtml = getVerifiedBadge(isVerified);
+            
+            const userImg = c.userImg || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+            const timeAgo = getRelativeTime(c.timestamp);
+            
+            let reactionCount = 0;
+            let topReactionIcon = '';
+            if (c.reactions) {
+                const reacts = Object.values(c.reactions);
+                reactionCount = reacts.length;
+                if(reactionCount > 0) {
+                     const type = reacts[reacts.length-1].type; 
+                     const style = getReactionStyle(type);
+                     if(type === 'like') topReactionIcon = '<i class="fas fa-thumbs-up" style="color:#1877f2"></i>';
+                     else topReactionIcon = `<img src="${style.icon}" style="width:10px; height:10px;">`;
+                }
+            }
+            
+            let myReaction = null;
+            if(c.reactions && window.currentUser && c.reactions[window.currentUser.uid]) {
+                myReaction = c.reactions[window.currentUser.uid];
+            }
+            let btnText = "Like";
+            let btnStyle = "";
+            if(myReaction) {
+                 const s = getReactionStyle(myReaction.type);
+                 btnText = s.text;
+                 btnStyle = `color:${s.color};`;
+            }
 
-    // রিপ্লাই স্টাইল ক্লাস
-    const wrapperClass = isReply ? 'comment-wrapper reply-style' : 'comment-wrapper';
-    
-    // Reaction Box HTML
-    const reactionBoxHTML = `
-    <div class="reaction-box" 
-         id="reaction-dock-${c.key}"
-         ontouchmove="handleReactionMove(event, this)" 
-         ontouchend="handleCommentReactionRelease(event, '${window.currentPostId}', '${c.key}', this)"
-         onmousemove="handleReactionMove(event, this)"
-         onmouseleave="this.classList.remove('show')">
-        <div class="reaction-item" data-type="like" onclick="handleCommentReactionClick(event, 'like', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.like}" class="reaction-img"></div>
-        <div class="reaction-item" data-type="love" onclick="handleCommentReactionClick(event, 'love', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.love}" class="reaction-img"></div>
-        <div class="reaction-item" data-type="care" onclick="handleCommentReactionClick(event, 'care', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.care}" class="reaction-img"></div>
-        <div class="reaction-item" data-type="haha" onclick="handleCommentReactionClick(event, 'haha', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.haha}" class="reaction-img"></div>
-        <div class="reaction-item" data-type="wow" onclick="handleCommentReactionClick(event, 'wow', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.wow}" class="reaction-img"></div>
-        <div class="reaction-item" data-type="sad" onclick="handleCommentReactionClick(event, 'sad', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.sad}" class="reaction-img"></div>
-        <div class="reaction-item" data-type="angry" onclick="handleCommentReactionClick(event, 'angry', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.angry}" class="reaction-img"></div>
-    </div>`;
+            const wrapperClass = isReply ? 'comment-wrapper reply-style' : 'comment-wrapper';
+            
+            const reactionBoxHTML = `
+            <div class="reaction-box" 
+                 id="reaction-dock-${c.key}"
+                 ontouchmove="handleReactionMove(event, this)" 
+                 ontouchend="handleCommentReactionRelease(event, '${window.currentPostId}', '${c.key}', this)"
+                 onmousemove="handleReactionMove(event, this)"
+                 onmouseleave="this.classList.remove('show')">
+                <div class="reaction-item" data-type="like" onclick="handleCommentReactionClick(event, 'like', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.like}" class="reaction-img"></div>
+                <div class="reaction-item" data-type="love" onclick="handleCommentReactionClick(event, 'love', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.love}" class="reaction-img"></div>
+                <div class="reaction-item" data-type="care" onclick="handleCommentReactionClick(event, 'care', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.care}" class="reaction-img"></div>
+                <div class="reaction-item" data-type="haha" onclick="handleCommentReactionClick(event, 'haha', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.haha}" class="reaction-img"></div>
+                <div class="reaction-item" data-type="wow" onclick="handleCommentReactionClick(event, 'wow', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.wow}" class="reaction-img"></div>
+                <div class="reaction-item" data-type="sad" onclick="handleCommentReactionClick(event, 'sad', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.sad}" class="reaction-img"></div>
+                <div class="reaction-item" data-type="angry" onclick="handleCommentReactionClick(event, 'angry', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.angry}" class="reaction-img"></div>
+            </div>`;
 
-    // মূল HTML (এখানেই onclick এবং badge যুক্ত করা হয়েছে)
-    let html = `
-    <div class="${wrapperClass}" id="comment-wrap-${c.key}">
-        <!-- ছবিতে ক্লিক করলে প্রোফাইলে যাবে -->
-        <img src="${userImg}" class="comment-avatar" onclick="closeBottomSheet(); viewUserProfile('${c.uid}')" style="cursor:pointer;">
-        
-        <div class="comment-content-box">
-            <div class="comment-bubble">
-                <!-- নামে ক্লিক করলে প্রোফাইলে যাবে + ব্যাজ যোগ করা হলো -->
-                <span class="comment-author-name" onclick="closeBottomSheet(); viewUserProfile('${c.uid}')">
-                    ${c.author} ${badgeHtml}
-                </span>
+            let html = `
+            <div class="${wrapperClass}" id="comment-wrap-${c.key}">
+                <img src="${userImg}" class="comment-avatar" onclick="closeBottomSheet(); viewUserProfile('${c.uid}')" style="cursor:pointer;">
                 
-                <span class="comment-text">${formatPostContent(c.text)}</span>
-                ${reactionCount > 0 ? `<div class="comment-reaction-badge">${topReactionIcon} ${reactionCount}</div>` : ''}
-            </div>
-            <div class="comment-actions">
-                <div class="action-btn-wrapper">
-                     ${reactionBoxHTML}
-                     <button class="c-action-btn" id="comment-like-btn-${c.key}"
-                        style="${btnStyle}"
-                        onmousedown="startCommentPress(event, '${c.key}', this)" 
-                        onmouseup="endCommentPress(event, '${window.currentPostId}', '${c.key}', this)"
-                        ontouchstart="startCommentPress(event, '${c.key}', this)" 
-                        ontouchend="endCommentPress(event, '${window.currentPostId}', '${c.key}', this)"
-                        oncontextmenu="return false;">
-                        ${btnText}
-                     </button>
+                <div class="comment-content-box">
+                    <div class="comment-bubble">
+                        <span class="comment-author-name" onclick="closeBottomSheet(); viewUserProfile('${c.uid}')">
+                            ${c.author} ${badgeHtml}
+                        </span>
+                        
+                        <span class="comment-text">${formatPostContent(c.text)}</span>
+                        ${reactionCount > 0 ? `<div class="comment-reaction-badge">${topReactionIcon} ${reactionCount}</div>` : ''}
+                    </div>
+                    <div class="comment-actions">
+                        <div class="action-btn-wrapper">
+                             ${reactionBoxHTML}
+                             <button class="c-action-btn" id="comment-like-btn-${c.key}"
+                                style="${btnStyle}"
+                                onmousedown="startCommentPress(event, '${c.key}', this)" 
+                                onmouseup="endCommentPress(event, '${window.currentPostId}', '${c.key}', this)"
+                                ontouchstart="startCommentPress(event, '${c.key}', this)" 
+                                ontouchend="endCommentPress(event, '${window.currentPostId}', '${c.key}', this)"
+                                oncontextmenu="return false;">
+                                ${btnText}
+                             </button>
+                        </div>
+                        <button class="c-action-btn" onclick="startReply('${c.key}', '${c.author}')">Reply</button>
+                        <span>${timeAgo}</span>
+                    </div>
                 </div>
-                <button class="c-action-btn" onclick="startReply('${c.key}', '${c.author}')">Reply</button>
-                <span>${timeAgo}</span>
-            </div>
-        </div>
-    </div>`;
+            </div>`;
 
-    return html;
-}
+            return html;
+        }
 
-        // 3. Toggle Replies visibility
         window.toggleReplies = function(parentId) {
             const container = document.getElementById(`replies-${parentId}`);
             const link = document.getElementById(`view-replies-${parentId}`);
@@ -2323,44 +2214,34 @@ async function renderCommentBubble(c, isReply) {
             
             if(container.style.display === 'flex') {
                  container.style.display = 'none';
-                 // Optionally show link again if we hid it
             } else {
                  container.style.display = 'flex';
-                 link.style.display = 'none'; // Hide "View Replies" button after opening
+                 link.style.display = 'none'; 
             }
         };
 
-        // নতুন startReply ফাংশন
-window.startReply = function(commentId, authorName) {
-    // আইডিটি ইনপুট বক্সের ভেতরে সেভ করে রাখছি
-    const input = document.getElementById('sheetInput');
-    input.dataset.parentId = commentId; 
-    
-    input.placeholder = `Replying to ${authorName}...`;
-    input.focus();
-    
-    // ক্যানসেল বাটন দেখান
-    document.getElementById('cancelReplyBtn').style.display = 'block';
-};
+        window.startReply = function(commentId, authorName) {
+            const input = document.getElementById('sheetInput');
+            input.dataset.parentId = commentId; 
+            input.placeholder = `Replying to ${authorName}...`;
+            input.focus();
+            document.getElementById('cancelReplyBtn').style.display = 'block';
+        };
 
-// নতুন cancelReply ফাংশন
-window.cancelReply = function() {
-    const input = document.getElementById('sheetInput');
-    input.dataset.parentId = ""; // আইডি ক্লিয়ার করা হলো
-    input.value = "";
-    
-    input.placeholder = "মন্তব্য লিখুন...";
-    document.getElementById('cancelReplyBtn').style.display = 'none';
-};
+        window.cancelReply = function() {
+            const input = document.getElementById('sheetInput');
+            input.dataset.parentId = ""; 
+            input.value = "";
+            input.placeholder = "মন্তব্য লিখুন...";
+            document.getElementById('cancelReplyBtn').style.display = 'none';
+        };
 
-        // 4. Comment Reaction Logic (Attached to Window for Scope)
         window.startCommentPress = function(e, commentId, btn) {
             if(!checkAuth()) return;
             isCommentLongPress = false;
             commentPressTimer = setTimeout(() => {
                 isCommentLongPress = true;
                 if(navigator.vibrate) navigator.vibrate(50);
-                // Find dock within this comment wrapper
                 const dock = document.getElementById(`reaction-dock-${commentId}`);
                 if(dock) dock.classList.add('show');
             }, 500);
@@ -2369,7 +2250,6 @@ window.cancelReply = function() {
         window.endCommentPress = function(e, postId, commentId, btn) {
             if(commentPressTimer) clearTimeout(commentPressTimer);
             if(!isCommentLongPress) {
-                // Short press: Toggle Like
                 const dock = document.getElementById(`reaction-dock-${commentId}`);
                 if(dock) dock.classList.remove('show');
                 handleCommentLikeToggle(postId, commentId);
@@ -2380,21 +2260,14 @@ window.cancelReply = function() {
         window.handleCommentReactionRelease = function(e, postId, commentId, container) {
             if(commentPressTimer) clearTimeout(commentPressTimer);
             const activeItem = container.querySelector('.reaction-item.active');
-            
-            // শুধুমাত্র যদি ড্র্যাগ করে (Active) সিলেক্ট করা হয়
             if(activeItem) {
                 const type = activeItem.dataset.type;
                 const src = activeItem.querySelector('img').src;
                 performFlyingAnimation(activeItem, commentId, src);
                 updateCommentReactionDB(postId, commentId, type);
-                
-                // কাজ শেষ, তাই বক্স বন্ধ করছি
                 container.classList.remove('show');
                 container.querySelectorAll('.reaction-item').forEach(i => i.classList.remove('active'));
             }
-            
-            // সাধারণ ট্যাপের ক্ষেত্রে বক্স খোলা থাকবে যাতে ক্লিক ইভেন্ট কাজ করতে পারে
-            
             isCommentLongPress = false;
         };
 
@@ -2409,11 +2282,10 @@ window.cancelReply = function() {
         };
 
         function handleCommentLikeToggle(postId, commentId) {
-            // Check current status
             const path = `comments/${postId}/${commentId}/reactions/${window.currentUser.uid}`;
             get(ref(db, path)).then(snap => {
                 if(snap.exists()) {
-                    remove(ref(db, path)); // Unlike
+                    remove(ref(db, path)); 
                 } else {
                     update(ref(db, path), { type: 'like', timestamp: Date.now() });
                 }
@@ -2424,8 +2296,6 @@ window.cancelReply = function() {
             const path = `comments/${postId}/${commentId}/reactions/${window.currentUser.uid}`;
             update(ref(db, path), { type: type, timestamp: Date.now() });
         }
-        
-        // --- END UPDATED COMMENTS SYSTEM ---
 
         // --- ADMIN MODAL & REPORTS ---
         window.openWriteModal = function() {
@@ -2554,8 +2424,6 @@ window.cancelReply = function() {
             const isAdmin = window.currentUser && window.currentUser.uid === ADMIN_UID;
             
             document.getElementById('profileEditBtn').style.display = isMe ? 'flex' : 'none';
-            
-            // বি.দ্র: এখান থেকে document.getElementById('logoutBtn')... লাইনটি সরিয়ে ফেলা হয়েছে।
             
             const followBtn = document.getElementById('profileFollowBtn');
             const savedBtn = document.getElementById('profileSavedViewBtn');
@@ -2736,15 +2604,9 @@ window.cancelReply = function() {
             const imgEl = document.getElementById('detailMainImg');
             if(post.image) { imgEl.src = post.image; imgEl.style.display = 'block'; } else imgEl.style.display = 'none';
             const likeBtn = document.getElementById('detailLikeBtn');
-            
-            // Detail view also needs live updates
-            likeBtn.id = `detail-like-btn-${key}`; // unique id for manual updates if needed, though toggleReaction handles active
-            // For simplicity in detail view, we just hook up the click. Live updates handle button state via listener.
-            // Note: detail view buttons are tricky with IDs. We will manually update it or rely on the same logic if we passed ID.
-            // Simplest is to bind the click.
+            likeBtn.id = `detail-like-btn-${key}`; 
             likeBtn.onclick = () => toggleReaction(key, 'like');
             
-            // Initial State for Detail Button (Optimistic)
              if(window.currentUser) {
                 get(ref(db, `reactions/${key}/${window.currentUser.uid}`)).then(snap => {
                     const type = snap.val();
@@ -2825,47 +2687,38 @@ window.cancelReply = function() {
             document.getElementById('sideDrawer').classList.remove('open');
             document.getElementById('drawerOverlay').classList.remove('open');
         };
-     // হেডারে সার্চ টগল করার ফাংশন
-        // ১. ইউটিউব স্টাইল সার্চ টগল ফাংশন
+     
         window.toggleHeaderSearch = function(show) {
             const defaultHead = document.getElementById('defaultHeader');
             const searchHead = document.getElementById('searchHeader');
             const searchInput = document.getElementById('headerSearchBar');
 
             if (show) {
-                // সার্চ মোড চালু
                 defaultHead.style.display = 'none';
                 searchHead.style.display = 'flex';
-                searchInput.focus(); // সাথে সাথে কিবোর্ড আসবে
+                searchInput.focus(); 
             } else {
-                // সার্চ মোড বন্ধ (ব্যাক বাটন চাপলে)
                 defaultHead.style.display = 'flex';
                 searchHead.style.display = 'none';
-                searchInput.value = ''; // লেখা মুছে যাবে
-                filterPosts(''); // সব পোস্ট আবার ফিরে আসবে
+                searchInput.value = ''; 
+                filterPosts(''); 
             }
         };
 
-        // ২. সার্চ ফিল্টার ফাংশন (লাইভ সার্চ)
         window.filterPosts = function(query) {
-            // ইনপুট না থাকলে সব পোস্ট দেখাও
             if (!query) {
                 document.getElementById('headerSearchClearBtn').style.display = 'none';
                 renderFeed(window.allPosts);
                 return;
             }
 
-            // লেখা থাকলে 'X' বাটন দেখাও
             document.getElementById('headerSearchClearBtn').style.display = 'block';
 
-            // ছোট হাতের অক্ষরে রূপান্তর (Case Insensitive)
             const q = query.toLowerCase();
 
-            // ফিল্টার লজিক
             const filtered = window.allPosts.filter(p => {
                 const title = (p.title || "").toLowerCase();
                 const author = (p.author || "").toLowerCase();
-                // HTML ট্যাগ রিমুভ করে শুধু টেক্সট সার্চ করবে
                 const content = (p.content || "").replace(/<[^>]*>/g, "").toLowerCase(); 
                 
                 return title.includes(q) || author.includes(q) || content.includes(q);
@@ -2874,34 +2727,28 @@ window.cancelReply = function() {
             renderFeed(filtered);
         };
 
-        // ৩. সার্চ ক্লিয়ার ফাংশন
         window.clearSearchHeader = function() {
             const input = document.getElementById('headerSearchBar');
             input.value = '';
             input.focus();
-            filterPosts(''); // সব পোস্ট রিসেট
+            filterPosts(''); 
         };
-      // ১. কিবোর্ড ওপেন হলে নিচের মেনু লুকানোর লজিক
+
         const bottomNav = document.querySelector('.bottom-nav');
         const allInputs = document.querySelectorAll('input, textarea');
 
         allInputs.forEach(input => {
-            // যখন কোনো বক্সে ট্যাপ করবেন (কিবোর্ড আসবে)
             input.addEventListener('focus', () => {
                 bottomNav.style.display = 'none'; 
             });
 
-            // যখন বক্স থেকে বের হবেন (কিবোর্ড যাবে)
             input.addEventListener('blur', () => {
-                // একটু দেরি করে আসবে যাতে এনিমেশন স্মুথ হয়
                 setTimeout(() => {
                     bottomNav.style.display = 'flex'; 
                 }, 200);
             });
         });
 
-        // ২. নতুন তৈরি হওয়া (ডাইনামিক) ইনপুটের জন্যও এটি কাজ করানোর জন্য
-        // (যেমন কমেন্ট বক্স বা সার্চ বার যা পরে তৈরি হয়)
         document.addEventListener('focusin', function(e) {
             if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
                 bottomNav.style.display = 'none';
@@ -2915,130 +2762,94 @@ window.cancelReply = function() {
                 }, 200);
             }
         });
-// --- MENTION SYSTEM LOGIC ---
-        // --- IMPROVED MENTION SYSTEM LOGIC ---
 
-let mentionQuery = "";
-// window.mentionedUids আগেই আপনার কোডে গ্লোবাল ভেরিয়েবল হিসেবে আছে, তাই নতুন করে ডিক্লেয়ার করার দরকার নেই।
+        // --- MENTION SYSTEM LOGIC ---
+        let mentionQuery = "";
 
-// ১. ইনপুট হ্যান্ডলার (সঠিকভাবে @ ডিটেক্ট করার জন্য)
-window.handleMentionInput = function(e) {
-    const input = e.target;
-    const text = input.value;
-    const cursor = input.selectionStart; // কার্সার কোথায় আছে
+        window.handleMentionInput = function(e) {
+            const input = e.target;
+            const text = input.value;
+            const cursor = input.selectionStart; 
 
-    // কার্সারের আগের অংশটুকু নিই
-    const textBeforeCursor = text.slice(0, cursor);
-    
-    // শেষ শব্দটি বের করি (স্পেস বা লাইন ব্রেক দিয়ে ভাগ করে)
-    const words = textBeforeCursor.split(/\s+/);
-    const lastWord = words[words.length - 1];
+            const textBeforeCursor = text.slice(0, cursor);
+            const words = textBeforeCursor.split(/\s+/);
+            const lastWord = words[words.length - 1];
 
-    // যদি শেষ শব্দটি '@' দিয়ে শুরু হয় এবং অন্তত ১টি অক্ষর থাকে (যেমন: @a)
-    if (lastWord.startsWith('@')) {
-        mentionQuery = lastWord.substring(1); // '@' বাদ দিয়ে নামটুকু (query)
-        
-        // লিস্ট দেখানো শুরু করুন
-        showMentionSuggestions(mentionQuery);
-    } else {
-        // শর্ত না মিললে লিস্ট লুকিয়ে ফেলুন
-        document.getElementById('mentionList').style.display = 'none';
-    }
-};
+            if (lastWord.startsWith('@')) {
+                mentionQuery = lastWord.substring(1); 
+                showMentionSuggestions(mentionQuery);
+            } else {
+                document.getElementById('mentionList').style.display = 'none';
+            }
+        };
 
-// ২. সাজেস্টশন দেখানো (ডাটাবেস লজিক ফিক্স)
-// ২. সাজেস্টশন দেখানো (ফিক্সড ভার্সন)
-window.showMentionSuggestions = function(searchText) {
-    const list = document.getElementById('mentionList');
-    
-    // টেক্সট না থাকলে বা খালি হলে লিস্ট লুকান
-    if(!searchText || searchText.length === 0) {
-        list.style.display = 'none';
-        return;
-    }
+        window.showMentionSuggestions = function(searchText) {
+            const list = document.getElementById('mentionList');
+            
+            if(!searchText || searchText.length === 0) {
+                list.style.display = 'none';
+                return;
+            }
 
-    const usersRef = ref(db, 'users');
-    
-    // ডাটাবেস থেকে নাম খোঁজার সঠিক নিয়ম
-    // লক্ষ্য করুন: আমি আর্গুমেন্টের নাম 'query' থেকে বদলে 'searchText' করেছি যাতে ফাংশনের সাথে সংঘর্ষ না হয়
-    get(query(usersRef, orderByChild('displayName'), startAt(searchText), endAt(searchText + "\uf8ff"), limitToFirst(10)))
-    .then(snap => {
-        const data = snap.val();
-        
-        // ডাটা না থাকলে
-        if (!data) {
-            list.style.display = 'none';
-            return;
-        }
+            const usersRef = ref(db, 'users');
+            
+            get(query(usersRef, orderByChild('displayName'), startAt(searchText), endAt(searchText + "\uf8ff"), limitToFirst(10)))
+            .then(snap => {
+                const data = snap.val();
+                if (!data) {
+                    list.style.display = 'none';
+                    return;
+                }
 
-        const matches = Object.entries(data).map(([uid, u]) => ({uid, ...u}));
+                const matches = Object.entries(data).map(([uid, u]) => ({uid, ...u}));
+                const finalMatches = matches.filter(u => 
+                    u.displayName && u.displayName.toLowerCase().includes(searchText.toLowerCase())
+                );
 
-        // ছোট হাতের/বড় হাতের অক্ষর সমস্যা এড়াতে ফিল্টারিং
-        const finalMatches = matches.filter(u => 
-            u.displayName && u.displayName.toLowerCase().includes(searchText.toLowerCase())
-        );
+                if (finalMatches.length > 0) {
+                    list.style.display = 'flex';
+                    list.innerHTML = finalMatches.map(u => `
+                        <div class="mention-item" onclick="selectMention('${u.displayName}', '${u.uid}')">
+                            <img src="${u.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="mention-avatar">
+                            <div style="display:flex; flex-direction:column;">
+                                <span class="mention-name">${u.displayName}</span>
+                                ${u.isVerified ? '<span style="font-size:10px; color:#1877f2;">Verified</span>' : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    list.style.display = 'none';
+                }
+            }).catch(err => {
+                console.error("Error finding users:", err);
+            });
+        };
 
-        if (finalMatches.length > 0) {
-            list.style.display = 'flex';
-            list.innerHTML = finalMatches.map(u => `
-                <div class="mention-item" onclick="selectMention('${u.displayName}', '${u.uid}')">
-                    <img src="${u.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="mention-avatar">
-                    <div style="display:flex; flex-direction:column;">
-                        <span class="mention-name">${u.displayName}</span>
-                        ${u.isVerified ? '<span style="font-size:10px; color:#1877f2;">Verified</span>' : ''}
-                    </div>
-                </div>
-            `).join('');
-        } else {
-            list.style.display = 'none';
-        }
-    }).catch(err => {
-        console.error("Error finding users:", err);
-    });
-};
+        window.selectMention = function(name, uid) {
+            const input = document.getElementById('sheetInput');
+            const fullText = input.value;
+            const cursor = input.selectionStart; 
+            
+            const textBefore = fullText.slice(0, cursor);
+            const textAfter = fullText.slice(cursor);
+            const lastAtPos = textBefore.lastIndexOf('@');
+            
+            if (lastAtPos === -1) return;
 
-// এই হেল্পার ফাংশনটি 'showMentionSuggestions' এর ভেতরে 'query' ফাংশনটি ব্যবহারের জন্য
-// আপনার ইমপোর্টে 'query', 'orderByChild', 'startAt', 'endAt', 'limitToFirst' থাকতে হবে।
-// যদি না থাকে, নিচের ইমপোর্ট লাইনটি স্ক্রিপ্টের শুরুতে আপডেট করুন:
-// import { ..., query, orderByChild, startAt, endAt, limitToFirst } from "...firebase-database.js";
-
-
-// ৩. মেনশন সিলেক্ট করা (টেক্সট রিপ্লেস করা)
-// ৩. মেনশন সিলেক্ট করা (সঠিক এবং ফাইনাল কোড)
-window.selectMention = function(name, uid) {
-    const input = document.getElementById('sheetInput');
-    const fullText = input.value;
-    const cursor = input.selectionStart; // কার্সার পজিশন
-    
-    // কার্সারের আগের অংশটুকু নিই
-    const textBefore = fullText.slice(0, cursor);
-    const textAfter = fullText.slice(cursor);
-    
-    // কার্সারের ঠিক আগের '@' চিহ্নটি খুঁজে বের করি
-    const lastAtPos = textBefore.lastIndexOf('@');
-    
-    // '@' না পাওয়া গেলে বা ভুল হলে ফিরে যাবে (নিরাপত্তা)
-    if (lastAtPos === -1) return;
-
-    // নতুন টেক্সট: (@ এর আগের অংশ) + (@নাম) + (স্পেস) + (কার্সারের পরের অংশ)
-    const newText = textBefore.substring(0, lastAtPos) + `@${name} ` + textAfter;
-    
-    input.value = newText;
-    
-    // মেনশন লিস্ট বন্ধ করি
-    document.getElementById('mentionList').style.display = 'none';
-    
-    // কার্সারকে নামের শেষে নিয়ে যাই এবং ফোকাস করি
-    const newCursorPos = lastAtPos + name.length + 2; // @ + name + space
-    input.focus();
-    input.setSelectionRange(newCursorPos, newCursorPos);
-    
-    // UID সংরক্ষণ করি (নোটিফিকেশনের জন্য)
-    if(!window.mentionedUids) window.mentionedUids = [];
-    if(!window.mentionedUids.includes(uid)) {
-        window.mentionedUids.push(uid);
-    }
-};
+            const newText = textBefore.substring(0, lastAtPos) + `@${name} ` + textAfter;
+            
+            input.value = newText;
+            document.getElementById('mentionList').style.display = 'none';
+            
+            const newCursorPos = lastAtPos + name.length + 2; 
+            input.focus();
+            input.setSelectionRange(newCursorPos, newCursorPos);
+            
+            if(!window.mentionedUids) window.mentionedUids = [];
+            if(!window.mentionedUids.includes(uid)) {
+                window.mentionedUids.push(uid);
+            }
+        };
     </script>
 </body>
 </html>
