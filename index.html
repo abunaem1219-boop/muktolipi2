@@ -2164,9 +2164,12 @@ window.openCommentsSheet = (key) => {
 
         // 2. Render Single Comment Bubble (Reused for Parent & Child)
         // 2. Render Single Comment Bubble (Reused for Parent & Child)
+// 2. Render Single Comment Bubble (Reused for Parent & Child)
 async function renderCommentBubble(c, isReply) {
-    let isVerified = c.isVerified === undefined ? false : c.isVerified;
+    // ব্যাজ চেক করা হচ্ছে
+    let isVerified = c.isVerified === true;
     const badgeHtml = getVerifiedBadge(isVerified);
+    
     const userImg = c.userImg || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
     const timeAgo = getRelativeTime(c.timestamp);
     
@@ -2177,10 +2180,10 @@ async function renderCommentBubble(c, isReply) {
         const reacts = Object.values(c.reactions);
         reactionCount = reacts.length;
         if(reactionCount > 0) {
-                const type = reacts[reacts.length-1].type; 
-                const style = getReactionStyle(type);
-                if(type === 'like') topReactionIcon = '<i class="fas fa-thumbs-up" style="color:#1877f2"></i>';
-                else topReactionIcon = `<img src="${style.icon}" style="width:10px; height:10px;">`;
+             const type = reacts[reacts.length-1].type; 
+             const style = getReactionStyle(type);
+             if(type === 'like') topReactionIcon = '<i class="fas fa-thumbs-up" style="color:#1877f2"></i>';
+             else topReactionIcon = `<img src="${style.icon}" style="width:10px; height:10px;">`;
         }
     }
     
@@ -2192,24 +2195,22 @@ async function renderCommentBubble(c, isReply) {
     let btnText = "Like";
     let btnStyle = "";
     if(myReaction) {
-            const s = getReactionStyle(myReaction.type);
-            btnText = s.text;
-            btnStyle = `color:${s.color};`;
+         const s = getReactionStyle(myReaction.type);
+         btnText = s.text;
+         btnStyle = `color:${s.color};`;
     }
 
-    // --- পরিবর্তন এখানে (Start Change) ---
-    // যদি isReply সত্য হয়, তাহলে 'reply-style' ক্লাস যুক্ত হবে
+    // রিপ্লাই স্টাইল ক্লাস
     const wrapperClass = isReply ? 'comment-wrapper reply-style' : 'comment-wrapper';
-    // --- পরিবর্তন শেষ (End Change) ---
     
     // Reaction Box HTML
     const reactionBoxHTML = `
     <div class="reaction-box" 
-            id="reaction-dock-${c.key}"
-            ontouchmove="handleReactionMove(event, this)" 
-            ontouchend="handleCommentReactionRelease(event, '${window.currentPostId}', '${c.key}', this)"
-            onmousemove="handleReactionMove(event, this)"
-            onmouseleave="this.classList.remove('show')">
+         id="reaction-dock-${c.key}"
+         ontouchmove="handleReactionMove(event, this)" 
+         ontouchend="handleCommentReactionRelease(event, '${window.currentPostId}', '${c.key}', this)"
+         onmousemove="handleReactionMove(event, this)"
+         onmouseleave="this.classList.remove('show')">
         <div class="reaction-item" data-type="like" onclick="handleCommentReactionClick(event, 'like', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.like}" class="reaction-img"></div>
         <div class="reaction-item" data-type="love" onclick="handleCommentReactionClick(event, 'love', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.love}" class="reaction-img"></div>
         <div class="reaction-item" data-type="care" onclick="handleCommentReactionClick(event, 'care', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.care}" class="reaction-img"></div>
@@ -2219,19 +2220,26 @@ async function renderCommentBubble(c, isReply) {
         <div class="reaction-item" data-type="angry" onclick="handleCommentReactionClick(event, 'angry', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.angry}" class="reaction-img"></div>
     </div>`;
 
+    // মূল HTML (এখানেই onclick এবং badge যুক্ত করা হয়েছে)
     let html = `
     <div class="${wrapperClass}" id="comment-wrap-${c.key}">
-        <img src="${userImg}" class="comment-avatar">
+        <!-- ছবিতে ক্লিক করলে প্রোফাইলে যাবে -->
+        <img src="${userImg}" class="comment-avatar" onclick="closeBottomSheet(); viewUserProfile('${c.uid}')" style="cursor:pointer;">
+        
         <div class="comment-content-box">
             <div class="comment-bubble">
-                <span class="comment-author-name">${c.author} ${badgeHtml}</span>
+                <!-- নামে ক্লিক করলে প্রোফাইলে যাবে + ব্যাজ যোগ করা হলো -->
+                <span class="comment-author-name" onclick="closeBottomSheet(); viewUserProfile('${c.uid}')">
+                    ${c.author} ${badgeHtml}
+                </span>
+                
                 <span class="comment-text">${formatPostContent(c.text)}</span>
                 ${reactionCount > 0 ? `<div class="comment-reaction-badge">${topReactionIcon} ${reactionCount}</div>` : ''}
             </div>
             <div class="comment-actions">
                 <div class="action-btn-wrapper">
-                        ${reactionBoxHTML}
-                        <button class="c-action-btn" id="comment-like-btn-${c.key}"
+                     ${reactionBoxHTML}
+                     <button class="c-action-btn" id="comment-like-btn-${c.key}"
                         style="${btnStyle}"
                         onmousedown="startCommentPress(event, '${c.key}', this)" 
                         onmouseup="endCommentPress(event, '${window.currentPostId}', '${c.key}', this)"
@@ -2239,7 +2247,7 @@ async function renderCommentBubble(c, isReply) {
                         ontouchend="endCommentPress(event, '${window.currentPostId}', '${c.key}', this)"
                         oncontextmenu="return false;">
                         ${btnText}
-                        </button>
+                     </button>
                 </div>
                 <button class="c-action-btn" onclick="startReply('${c.key}', '${c.author}')">Reply</button>
                 <span>${timeAgo}</span>
