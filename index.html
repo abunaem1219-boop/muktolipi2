@@ -39,7 +39,8 @@ html
     </script>
 
     <style>
-        :root { 
+       
+ :root { 
             --bg-color: #f4f7f6; 
             --glass-bg: rgba(255, 255, 255, 0.95);
             --glass-border: 1px solid rgba(255, 255, 255, 0.8);
@@ -64,8 +65,7 @@ html
             --msg-rcv-bg: #e4e6eb;
             --msg-rcv-text: #050505;
             
-            /* Comment Specifics */
-            --comment-bubble-bg: #f0f2f5;
+            /* Comment Specifics */            --comment-bubble-bg: #f0f2f5;
         }
         .dark-theme { 
             --bg-color: #1a1a1a; 
@@ -353,7 +353,7 @@ html
     margin-top: 5px;
     border-left: 2px solid #e4e6eb; /* ফেসবুকের মতো একটি হালকা দাগ */
     padding-left: 10px;
-    display: flex; /* ডিফল্টভাবে লুকানো থাকবে, JS দিয়ে খোলা হবে */
+    display: none; /* ডিফল্টভাবে লুকানো থাকবে, JS দিয়ে খোলা হবে */
     flex-direction: column;
     gap: 8px;
 }
@@ -622,6 +622,60 @@ html
             padding: 15px; text-align: center; font-size: 11px; color: var(--secondary-text);
             border-top: 1px solid var(--border-color);
         }
+        /* Mention List Style */
+.mention-dropdown {
+    position: absolute;
+    bottom: 60px; /* ইনপুটের উপরে দেখাবে */
+    left: 10px;
+    width: 250px;
+    background: var(--glass-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: var(--shadow-card);
+    max-height: 200px;
+    overflow-y: auto;
+    display: none; /* শুরুতে লুকানো */
+    flex-direction: column;
+    z-index: 3000;
+    backdrop-filter: blur(10px);
+}
+
+.mention-item {
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border-color);
+    transition: 0.2s;
+}
+
+.mention-item:hover {
+    background: rgba(24, 119, 242, 0.1);
+}
+
+.mention-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.mention-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+/* মেনশন করা নাম নীল দেখানোর জন্য */
+.mentioned-link {
+    color: var(--primary-color);
+    font-weight: bold;
+    text-decoration: none;
+    background: rgba(24, 119, 242, 0.1);
+    padding: 0 4px;
+    border-radius: 4px;
+}
     </style>
 </head>
 <body>
@@ -935,6 +989,7 @@ html
             <div class="sheet-drag-handle"></div>
             <h3 id="sheetTitle" style="text-align:center; margin:10px 0; font-size:16px;">Title</h3>
             <div id="sheetBody" class="sheet-body"></div>
+            <div id="mentionList" class="mention-dropdown"></div> 
 
             <!-- Footer with Input (Used for Comments) -->
             <div id="sheetFooter" style="padding:10px 15px; border-top:1px solid var(--border-color); display:none; gap:10px;">
@@ -1162,8 +1217,15 @@ html
 
         window.formatPostContent = function(text) {
             if (!text) return '';
+            // লিংক ফরম্যাট
             let formatted = text.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" style="color:var(--primary-color); text-decoration:underline;" onclick="event.stopPropagation()">$1</a>');
+            // হ্যাসট্যাগ ফরম্যাট
             formatted = formatted.replace(/#(\w+)/g, '<span class="hashtag" onclick="event.stopPropagation(); filterPosts(\'#$1\')">#$1</span>');
+            // মেনশন ফরম্যাট (@Name) - এটি প্রোফাইলে নিয়ে যাবে
+            formatted = formatted.replace(/@([\w\u0980-\u09FF\s]+)/g, function(match, name) {
+                // আমরা নাম দিয়ে সার্চ করে প্রোফাইল লিংক করতে পারি, আপাতত নীল করছি
+                return `<span class="mentioned-link">${match}</span>`;
+            });
             return formatted;
         };
 
@@ -2058,109 +2120,120 @@ html
 
         // 1. Open Comments Sheet
       // 1. Open Comments Sheet (Updated Logic)
-window.openCommentsSheet = (key) => {
-    if(!checkAuth()) return;
-    
-    document.getElementById('sheetTitle').innerText = 'মন্তব্য';
-    document.getElementById('sheetBody').innerHTML = '<p style="text-align:center; padding:20px;">লোড হচ্ছে...</p>';
-    document.getElementById('sheetFooter').style.display = 'flex';
-    document.getElementById('universalBottomSheet').classList.add('active');
-    
-    // রিসেট
-    cancelReply(); 
-    window.currentPostId = key;
-
-    // ডাটাবেস থেকে কমেন্ট আনা
-    onValue(ref(db, 'comments/'+key), async snap => {
-        const data = snap.val();
-        if(!data) { 
-            document.getElementById('sheetBody').innerHTML = '<p style="text-align:center; color:var(--secondary-text); padding:20px;">কোনো মন্তব্য নেই। আপনিই প্রথম মন্তব্য করুন!</p>'; 
-            return; 
-        }
-        
-        // কমেন্ট প্রসেসিং
-        const allComments = Object.entries(data).map(([k,v]) => ({key:k, ...v}));
-        window.currentPostComments = allComments; 
-        
-        // প্যারেন্ট এবং চাইল্ড আলাদা করা
-        const parents = allComments.filter(c => !c.parentId).sort((a,b) => b.timestamp - a.timestamp);
-        const children = allComments.filter(c => c.parentId);
-
-        let html = '<div class="comment-container" style="padding-bottom:80px;">'; // নিচে জায়গা রাখা হলো
-        
-        for (const p of parents) {
-            // প্যারেন্ট রেন্ডার (isReply = false)
-            html += await renderCommentBubble(p, false); 
+// 1. Open Comments Sheet (Updated with Mention System)
+        window.openCommentsSheet = (key) => {
+            if(!checkAuth()) return;
             
-            // এই প্যারেন্টের চাইল্ড/রিপ্লে খোঁজা
-            const myChildren = children.filter(c => c.parentId === p.key).sort((a,b) => a.timestamp - b.timestamp);
+            document.getElementById('sheetTitle').innerText = 'মন্তব্য';
+            document.getElementById('sheetBody').innerHTML = '<p style="text-align:center; padding:20px;">লোড হচ্ছে...</p>';
+            document.getElementById('sheetFooter').style.display = 'flex';
+            document.getElementById('universalBottomSheet').classList.add('active');
             
-            // রিপ্লাই থাকলে তা সরাসরি দেখানো হবে (display: flex)
-            if (myChildren.length > 0) {
-                html += `<div id="replies-${p.key}" class="reply-indent" style="display:flex;">`; 
-                for(const child of myChildren) {
-                     // চাইল্ড রেন্ডার (isReply = true)
-                     html += await renderCommentBubble(child, true);
+            // রিসেট
+            cancelReply(); 
+            window.currentPostId = key;
+            window.mentionedUids = []; // মেনশন লিস্ট রিসেট
+
+            // ইনপুটে মেনশন লিসেনার যুক্ত করা
+            const inputEl = document.getElementById('sheetInput');
+            inputEl.oninput = (e) => window.handleMentionInput(e);
+
+            // ডাটাবেস থেকে কমেন্ট আনা (আগের লজিকই থাকছে)
+            onValue(ref(db, 'comments/'+key), async snap => {
+                const data = snap.val();
+                if(!data) { 
+                    document.getElementById('sheetBody').innerHTML = '<p style="text-align:center; color:var(--secondary-text); padding:20px;">কোনো মন্তব্য নেই। আপনিই প্রথম মন্তব্য করুন!</p>'; 
+                    return; 
                 }
-                html += `</div>`;
-            }
-        }
+                
+                const allComments = Object.entries(data).map(([k,v]) => ({key:k, ...v}));
+                window.currentPostComments = allComments; 
+                
+                const parents = allComments.filter(c => !c.parentId).sort((a,b) => b.timestamp - a.timestamp);
+                const children = allComments.filter(c => c.parentId);
 
-        html += '</div>';
-        document.getElementById('sheetBody').innerHTML = html;
-    });
+                let html = '<div class="comment-container" style="padding-bottom:80px;">';
+                
+                for (const p of parents) {
+                    html += await renderCommentBubble(p, false); 
+                    const myChildren = children.filter(c => c.parentId === p.key).sort((a,b) => a.timestamp - b.timestamp);
+                    if (myChildren.length > 0) {
+                        html += `<div id="replies-${p.key}" class="reply-indent" style="display:flex;">`; 
+                        for(const child of myChildren) {
+                             html += await renderCommentBubble(child, true);
+                        }
+                        html += `</div>`;
+                    }
+                }
+                html += '</div>';
+                document.getElementById('sheetBody').innerHTML = html;
+            });
 
-    // সাবমিট বাটন লজিক (Dataset ব্যবহার করে)
-    const sendBtn = document.getElementById('sheetSendBtn');
-    
-    // আগের ইভেন্ট রিমুভ করে নতুন করে বসানো (ডুপ্লিকেট কমেন্ট রোধ করতে)
-    const newBtn = sendBtn.cloneNode(true);
-    sendBtn.parentNode.replaceChild(newBtn, sendBtn);
-    
-    newBtn.onclick = () => {
-        const inputEl = document.getElementById('sheetInput');
-        const txt = inputEl.value.trim();
-        const parentId = inputEl.dataset.parentId || null; // ইনপুট থেকে প্যারেন্ট আইডি নেওয়া হচ্ছে
+            // সাবমিট বাটন লজিক (Updated for Mention Notification)
+            const sendBtn = document.getElementById('sheetSendBtn');
+            const newBtn = sendBtn.cloneNode(true);
+            sendBtn.parentNode.replaceChild(newBtn, sendBtn);
+            
+            newBtn.onclick = () => {
+                const inputEl = document.getElementById('sheetInput');
+                const txt = inputEl.value.trim();
+                const parentId = inputEl.dataset.parentId || null; 
 
-        if(!txt) return;
-        
-        get(ref(db, `users/${window.currentUser.uid}/isVerified`)).then(snap => {
-            const isVerified = snap.val() === true;
-            const myAvatar = window.currentUser.photoURL; 
+                if(!txt) return;
+                
+                get(ref(db, `users/${window.currentUser.uid}/isVerified`)).then(snap => {
+                    const isVerified = snap.val() === true;
+                    const myAvatar = window.currentUser.photoURL; 
 
-            const commentData = { 
-                text: txt, 
-                author: window.currentUser.displayName, 
-                uid: window.currentUser.uid,
-                userImg: myAvatar,
-                timestamp: Date.now(), 
-                parentId: parentId,  // এখানে সঠিক আইডি যাচ্ছে
-                isVerified: isVerified,
-                reactions: {}
+                    const commentData = { 
+                        text: txt, 
+                        author: window.currentUser.displayName, 
+                        uid: window.currentUser.uid,
+                        userImg: myAvatar,
+                        timestamp: Date.now(), 
+                        parentId: parentId,  
+                        isVerified: isVerified,
+                        reactions: {}
+                    };
+                    
+                    push(ref(db, 'comments/'+key), commentData);
+
+                    // --- মেনশন নোটিফিকেশন পাঠানো ---
+                    if (window.mentionedUids.length > 0) {
+                        window.mentionedUids.forEach(uid => {
+                            if(uid !== window.currentUser.uid) {
+                                // স্পেশাল নোটিফিকেশন
+                                push(ref(db, `notifications/${uid}`), { 
+                                    type: 'mention', // নতুন টাইপ
+                                    postId: key, 
+                                    sender: window.currentUser.displayName, 
+                                    senderImg: myAvatar, 
+                                    read: false, 
+                                    timestamp: Date.now(),
+                                    text: `আপনাকে একটি কমেন্টে মেনশন করেছেন`
+                                });
+                            }
+                        });
+                        window.mentionedUids = []; // রিসেট
+                    }
+
+                    // সাধারণ নোটিফিকেশন লজিক
+                    const post = window.allPosts.find(p => p.key === key);
+                    if (parentId) {
+                        const parentComm = window.currentPostComments.find(c => c.key === parentId);
+                        if(parentComm && parentComm.uid && parentComm.uid !== window.currentUser.uid && !window.mentionedUids.includes(parentComm.uid)) {
+                             sendNotification(parentComm.uid, 'reply', key);
+                        }
+                    } else {
+                        if(post && post.uid && post.uid !== window.currentUser.uid && !window.mentionedUids.includes(post.uid)) { 
+                            sendNotification(post.uid, 'comment', key); 
+                        }
+                    }
+                });
+
+                cancelReply();
             };
-            
-            push(ref(db, 'comments/'+key), commentData);
-
-            // নোটিফিকেশন লজিক
-            const post = window.allPosts.find(p => p.key === key);
-            if (parentId) {
-                // রিপ্লাই নোটিফিকেশন
-                const parentComm = window.currentPostComments.find(c => c.key === parentId);
-                if(parentComm && parentComm.uid && parentComm.uid !== window.currentUser.uid) {
-                     sendNotification(parentComm.uid, 'reply', key);
-                }
-            } else {
-                // কমেন্ট নোটিফিকেশন
-                if(post && post.uid && post.uid !== window.currentUser.uid) { 
-                    sendNotification(post.uid, 'comment', key); 
-                }
-            }
-        });
-
-        // বক্স খালি করা
-        cancelReply();
-    };
-};
+        };
 
         // 2. Render Single Comment Bubble (Reused for Parent & Child)
         // 2. Render Single Comment Bubble (Reused for Parent & Child)
@@ -2858,6 +2931,74 @@ window.cancelReply = function() {
                 }, 200);
             }
         });
+// --- MENTION SYSTEM LOGIC ---
+        let mentionQuery = "";
+        let mentionedUids = []; // যারা মেনশন হয়েছে তাদের UID জমা রাখবে
+
+        window.handleMentionInput = function(e) {
+            const input = e.target;
+            const text = input.value;
+            const cursor = input.selectionStart;
+            
+            // কার্সারের আগের শব্দ চেক করা
+            const textBeforeCursor = text.slice(0, cursor);
+            const lastWord = textBeforeCursor.split(/\s+/).pop();
+
+            if (lastWord.startsWith('@') && lastWord.length > 1) {
+                mentionQuery = lastWord.substring(1); // @ বাদ দিয়ে নাম
+                showMentionSuggestions(mentionQuery);
+            } else {
+                document.getElementById('mentionList').style.display = 'none';
+            }
+        };
+
+        window.showMentionSuggestions = function(query) {
+            const list = document.getElementById('mentionList');
+            // ইউজার সার্চ করা (এখানে সিম্পল লজিক ব্যবহার করা হয়েছে)
+            // প্রফেশনাল অ্যাপে সার্ভার সাইড সার্চ লাগে, এখানে আমরা লোকাল ভেরিয়েবল বা ফলোয়ার লিস্ট চেক করতে পারি
+            // অথবা ডাটাবেস থেকে ১০ জন ইউজার আনবো
+            
+            const usersRef = query(ref(db, 'users'), orderByKey(), limitToLast(20));
+            get(usersRef).then(snap => {
+                const data = snap.val();
+                if (!data) return;
+                
+                const matches = Object.entries(data).filter(([uid, u]) => 
+                    u.displayName.toLowerCase().includes(query.toLowerCase())
+                );
+
+                if (matches.length > 0) {
+                    list.style.display = 'flex';
+                    list.innerHTML = matches.map(([uid, u]) => `
+                        <div class="mention-item" onclick="selectMention('${u.displayName}', '${uid}')">
+                            <img src="${u.photoURL}" class="mention-avatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+                            <span class="mention-name">${u.displayName}</span>
+                        </div>
+                    `).join('');
+                } else {
+                    list.style.display = 'none';
+                }
+            });
+        };
+
+        window.selectMention = function(name, uid) {
+            const input = document.getElementById('sheetInput');
+            const text = input.value;
+            const cursor = input.selectionStart;
+            const textBefore = text.slice(0, cursor);
+            const textAfter = text.slice(cursor);
+            
+            // @query রিপ্লেস করে @Full Name বসানো
+            const lastAtPos = textBefore.lastIndexOf('@');
+            const newText = textBefore.substring(0, lastAtPos) + `@${name} ` + textAfter;
+            
+            input.value = newText;
+            document.getElementById('mentionList').style.display = 'none';
+            input.focus();
+            
+            // মেনশন করা ইউজারের UID সংরক্ষণ (নোটিফিকেশনের জন্য)
+            if(!mentionedUids.includes(uid)) mentionedUids.push(uid);
+        };
     </script>
 </body>
 </html>
