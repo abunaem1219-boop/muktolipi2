@@ -623,35 +623,33 @@ html
             border-top: 1px solid var(--border-color);
         }
         /* Mention List Style */
+/* Mention List Style Update */
 .mention-dropdown {
     position: absolute;
-    bottom: 60px; /* ইনপুটের উপরে দেখাবে */
-    left: 10px;
-    width: 250px;
-    background: var(--glass-bg);
+    bottom: 70px; /* ইনপুটের একটু উপরে */
+    left: 15px;
+    right: 15px; /* পুরো চওড়া জুড়ে থাকবে */
+    background: var(--sheet-bg); /* ব্যাকগ্রাউন্ড কালার ঠিক করা */
     border: 1px solid var(--border-color);
-    border-radius: 10px;
-    box-shadow: var(--shadow-card);
+    border-radius: 12px;
+    box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
     max-height: 200px;
     overflow-y: auto;
-    display: none; /* শুরুতে লুকানো */
+    display: none;
     flex-direction: column;
-    z-index: 3000;
-    backdrop-filter: blur(10px);
+    z-index: 9999; /* সবার উপরে থাকার জন্য */
 }
 
 .mention-item {
-    padding: 10px;
+    padding: 12px;
     display: flex;
     align-items: center;
     gap: 10px;
     cursor: pointer;
     border-bottom: 1px solid var(--border-color);
-    transition: 0.2s;
 }
-
 .mention-item:hover {
-    background: rgba(24, 119, 242, 0.1);
+    background: rgba(24, 119, 242, 0.05);
 }
 
 .mention-avatar {
@@ -1124,7 +1122,9 @@ html
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, push, set, onValue, update, remove, get, query, orderByKey, limitToLast, endBefore, equalTo, orderByChild, onChildAdded, onDisconnect, runTransaction, off } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, push, set, onValue, update, remove, get, query, orderByKey, limitToLast, endBefore, equalTo, orderByChild, onChildAdded, onDisconnect, runTransaction, off,
+startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্যই যোগ করবেন
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const ADMIN_UID = "Pg5ko76Pu8Zf4ja9MMzEJRLDMYs1"; 
@@ -2932,73 +2932,132 @@ window.cancelReply = function() {
             }
         });
 // --- MENTION SYSTEM LOGIC ---
-        let mentionQuery = "";
-        let mentionedUids = []; // যারা মেনশন হয়েছে তাদের UID জমা রাখবে
+        // --- IMPROVED MENTION SYSTEM LOGIC ---
 
-        window.handleMentionInput = function(e) {
-            const input = e.target;
-            const text = input.value;
-            const cursor = input.selectionStart;
-            
-            // কার্সারের আগের শব্দ চেক করা
-            const textBeforeCursor = text.slice(0, cursor);
-            const lastWord = textBeforeCursor.split(/\s+/).pop();
+let mentionQuery = "";
+// window.mentionedUids আগেই আপনার কোডে গ্লোবাল ভেরিয়েবল হিসেবে আছে, তাই নতুন করে ডিক্লেয়ার করার দরকার নেই।
 
-            if (lastWord.startsWith('@') && lastWord.length > 1) {
-                mentionQuery = lastWord.substring(1); // @ বাদ দিয়ে নাম
-                showMentionSuggestions(mentionQuery);
-            } else {
-                document.getElementById('mentionList').style.display = 'none';
-            }
-        };
+// ১. ইনপুট হ্যান্ডলার (সঠিকভাবে @ ডিটেক্ট করার জন্য)
+window.handleMentionInput = function(e) {
+    const input = e.target;
+    const text = input.value;
+    const cursor = input.selectionStart; // কার্সার কোথায় আছে
 
-        window.showMentionSuggestions = function(query) {
-            const list = document.getElementById('mentionList');
-            // ইউজার সার্চ করা (এখানে সিম্পল লজিক ব্যবহার করা হয়েছে)
-            // প্রফেশনাল অ্যাপে সার্ভার সাইড সার্চ লাগে, এখানে আমরা লোকাল ভেরিয়েবল বা ফলোয়ার লিস্ট চেক করতে পারি
-            // অথবা ডাটাবেস থেকে ১০ জন ইউজার আনবো
-            
-            const usersRef = query(ref(db, 'users'), orderByKey(), limitToLast(20));
-            get(usersRef).then(snap => {
-                const data = snap.val();
-                if (!data) return;
-                
-                const matches = Object.entries(data).filter(([uid, u]) => 
-                    u.displayName.toLowerCase().includes(query.toLowerCase())
-                );
+    // কার্সারের আগের অংশটুকু নিই
+    const textBeforeCursor = text.slice(0, cursor);
+    
+    // শেষ শব্দটি বের করি (স্পেস বা লাইন ব্রেক দিয়ে ভাগ করে)
+    const words = textBeforeCursor.split(/\s+/);
+    const lastWord = words[words.length - 1];
 
-                if (matches.length > 0) {
-                    list.style.display = 'flex';
-                    list.innerHTML = matches.map(([uid, u]) => `
-                        <div class="mention-item" onclick="selectMention('${u.displayName}', '${uid}')">
-                            <img src="${u.photoURL}" class="mention-avatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
-                            <span class="mention-name">${u.displayName}</span>
-                        </div>
-                    `).join('');
-                } else {
-                    list.style.display = 'none';
-                }
-            });
-        };
+    // যদি শেষ শব্দটি '@' দিয়ে শুরু হয় এবং অন্তত ১টি অক্ষর থাকে (যেমন: @a)
+    if (lastWord.startsWith('@')) {
+        mentionQuery = lastWord.substring(1); // '@' বাদ দিয়ে নামটুকু (query)
+        
+        // লিস্ট দেখানো শুরু করুন
+        showMentionSuggestions(mentionQuery);
+    } else {
+        // শর্ত না মিললে লিস্ট লুকিয়ে ফেলুন
+        document.getElementById('mentionList').style.display = 'none';
+    }
+};
 
-        window.selectMention = function(name, uid) {
-            const input = document.getElementById('sheetInput');
-            const text = input.value;
-            const cursor = input.selectionStart;
-            const textBefore = text.slice(0, cursor);
-            const textAfter = text.slice(cursor);
-            
-            // @query রিপ্লেস করে @Full Name বসানো
-            const lastAtPos = textBefore.lastIndexOf('@');
-            const newText = textBefore.substring(0, lastAtPos) + `@${name} ` + textAfter;
-            
-            input.value = newText;
-            document.getElementById('mentionList').style.display = 'none';
-            input.focus();
-            
-            // মেনশন করা ইউজারের UID সংরক্ষণ (নোটিফিকেশনের জন্য)
-            if(!mentionedUids.includes(uid)) mentionedUids.push(uid);
-        };
+// ২. সাজেস্টশন দেখানো (ডাটাবেস লজিক ফিক্স)
+window.showMentionSuggestions = function(query) {
+    const list = document.getElementById('mentionList');
+    
+    // ছোট কুয়েরি হলে সার্চ করার দরকার নেই
+    if(query.length === 0) {
+        list.style.display = 'none';
+        return;
+    }
+
+    // ফিক্স: limitToLast(20) সরিয়ে আমরা displayName দিয়ে সার্চ করবো
+    // দ্রষ্টব্য: Firebase এ 'LIKE' সার্চ নেই, তাই আমরা startAt ব্যবহার করতে পারি অথবা
+    // সব ইউজার লোড না করে ভালো উপায় হলো 'followers' বা 'following' লিস্ট চেক করা।
+    // কিন্তু সহজ সমাধানের জন্য আমরা 'users' টেবিল থেকে নাম অনুযায়ী আনবো।
+    
+    const usersRef = ref(db, 'users');
+    
+    // আমরা ডাটাবেস থেকে সব ইউজার এনে ফিল্টার করবো না (এটা স্লো হবে)।
+    // আমরা orderByChild ব্যবহার করবো।
+    
+    // বি:দ্র: ভালো পারফরমেন্সের জন্য Firebase Rules এ "users": { ".indexOn": ["displayName"] } থাকা উচিত।
+    
+    get(queryRef(usersRef, orderByChild('displayName'), startAt(query), endAt(query + "\uf8ff"), limitToFirst(10)))
+    .then(snap => {
+        const data = snap.val();
+        
+        // ডাটা না থাকলে বা লোড না হলে
+        if (!data) {
+            list.style.display = 'none';
+            return;
+        }
+
+        const matches = Object.entries(data).map(([uid, u]) => ({uid, ...u}));
+
+        // ক্লায়েন্ট সাইড ফিল্টারিং (Case Insensitive সার্চের জন্য)
+        // Firebase Case Sensitive, তাই আমরা যা পেয়েছি তা আবার চেক করে নিচ্ছি
+        const finalMatches = matches.filter(u => 
+            u.displayName && u.displayName.toLowerCase().includes(query.toLowerCase())
+        );
+
+        if (finalMatches.length > 0) {
+            list.style.display = 'flex';
+            list.innerHTML = finalMatches.map(u => `
+                <div class="mention-item" onclick="selectMention('${u.displayName}', '${u.uid}')">
+                    <img src="${u.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="mention-avatar">
+                    <div style="display:flex; flex-direction:column;">
+                        <span class="mention-name">${u.displayName}</span>
+                        ${u.isVerified ? '<span style="font-size:10px; color:#1877f2;">Verified</span>' : ''}
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            list.style.display = 'none';
+        }
+    }).catch(err => {
+        console.error("Error finding users:", err);
+    });
+};
+
+// এই হেল্পার ফাংশনটি 'showMentionSuggestions' এর ভেতরে 'query' ফাংশনটি ব্যবহারের জন্য
+// আপনার ইমপোর্টে 'query', 'orderByChild', 'startAt', 'endAt', 'limitToFirst' থাকতে হবে।
+// যদি না থাকে, নিচের ইমপোর্ট লাইনটি স্ক্রিপ্টের শুরুতে আপডেট করুন:
+// import { ..., query, orderByChild, startAt, endAt, limitToFirst } from "...firebase-database.js";
+
+
+// ৩. মেনশন সিলেক্ট করা (টেক্সট রিপ্লেস করা)
+window.selectMention = function(name, uid) {
+    const input = document.getElementById('sheetInput');
+    const fullText = input.value;
+    const cursor = input.selectionStart;
+    
+    const textBefore = fullText.slice(0, cursor);
+    const textAfter = fullText.slice(cursor);
+    
+    // শেষ '@' এর পজিশন খুঁজে বের করা
+    const lastAtPos = textBefore.lastIndexOf('@');
+    
+    // নতুন টেক্সট তৈরি: আগের অংশ + @নাম + স্পেস + পরের অংশ
+    const newText = textBefore.substring(0, lastAtPos) + `@${name} ` + textAfter;
+    
+    input.value = newText;
+    
+    // মেনশন লিস্ট বন্ধ করা
+    document.getElementById('mentionList').style.display = 'none';
+    
+    // কার্সারকে নামের শেষে নিয়ে যাওয়া
+    const newCursorPos = lastAtPos + name.length + 2; // @ + name + space
+    input.focus();
+    input.setSelectionRange(newCursorPos, newCursorPos);
+    
+    // UID সংরক্ষণ করা (নোটিফিকেশনের জন্য)
+    if(!window.mentionedUids) window.mentionedUids = [];
+    if(!window.mentionedUids.includes(uid)) {
+        window.mentionedUids.push(uid);
+    }
+};
     </script>
 </body>
 </html>
