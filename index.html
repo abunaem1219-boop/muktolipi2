@@ -624,21 +624,7 @@ html
         }
         /* Mention List Style */
 /* Mention List Style Update */
-.mention-dropdown {
-    position: absolute;
-    bottom: 70px; /* ইনপুটের একটু উপরে */
-    left: 15px;
-    right: 15px; /* পুরো চওড়া জুড়ে থাকবে */
-    background: var(--sheet-bg); /* ব্যাকগ্রাউন্ড কালার ঠিক করা */
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
-    max-height: 200px;
-    overflow-y: auto;
-    display: none;
-    flex-direction: column;
-    z-index: 9999; /* সবার উপরে থাকার জন্য */
-}
+else if(n.type === 'mention') text = `আপনাকে একটি কমেন্টে মেনশন করেছেন 🔔`;
 
 .mention-item {
     padding: 12px;
@@ -1360,7 +1346,7 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
             if(type === 'like') messageText = `${window.currentUser.displayName} আপনার পোস্টে লাইক দিয়েছেন ❤️`;
             else if(type === 'comment') messageText = `${window.currentUser.displayName} আপনার পোস্টে মন্তব্য করেছেন 💬`;
             else if(type === 'reply') messageText = `${window.currentUser.displayName} আপনার মন্তব্যের উত্তর দিয়েছেন ↩️`;
-
+            else if(n.type === 'mention') text = `আপনাকে একটি কমেন্টে মেনশন করেছেন 🔔`;
             const options = {
                 method: 'POST',
                 headers: {
@@ -2132,7 +2118,7 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
             // রিসেট
             cancelReply(); 
             window.currentPostId = key;
-            window.mentionedUids = []; // মেনশন লিস্ট রিসেট
+            windowedUids = []; // মেনশন লিস্ট রিসেট
 
             // ইনপুটে মেনশন লিসেনার যুক্ত করা
             const inputEl = document.getElementById('sheetInput');
@@ -2963,32 +2949,25 @@ window.handleMentionInput = function(e) {
 };
 
 // ২. সাজেস্টশন দেখানো (ডাটাবেস লজিক ফিক্স)
-window.showMentionSuggestions = function(query) {
+// ২. সাজেস্টশন দেখানো (ফিক্সড ভার্সন)
+window.showMentionSuggestions = function(searchText) {
     const list = document.getElementById('mentionList');
     
-    // ছোট কুয়েরি হলে সার্চ করার দরকার নেই
-    if(query.length === 0) {
+    // টেক্সট না থাকলে বা খালি হলে লিস্ট লুকান
+    if(!searchText || searchText.length === 0) {
         list.style.display = 'none';
         return;
     }
 
-    // ফিক্স: limitToLast(20) সরিয়ে আমরা displayName দিয়ে সার্চ করবো
-    // দ্রষ্টব্য: Firebase এ 'LIKE' সার্চ নেই, তাই আমরা startAt ব্যবহার করতে পারি অথবা
-    // সব ইউজার লোড না করে ভালো উপায় হলো 'followers' বা 'following' লিস্ট চেক করা।
-    // কিন্তু সহজ সমাধানের জন্য আমরা 'users' টেবিল থেকে নাম অনুযায়ী আনবো।
-    
     const usersRef = ref(db, 'users');
     
-    // আমরা ডাটাবেস থেকে সব ইউজার এনে ফিল্টার করবো না (এটা স্লো হবে)।
-    // আমরা orderByChild ব্যবহার করবো।
-    
-    // বি:দ্র: ভালো পারফরমেন্সের জন্য Firebase Rules এ "users": { ".indexOn": ["displayName"] } থাকা উচিত।
-    
-    get(queryRef(usersRef, orderByChild('displayName'), startAt(query), endAt(query + "\uf8ff"), limitToFirst(10)))
+    // ডাটাবেস থেকে নাম খোঁজার সঠিক নিয়ম
+    // লক্ষ্য করুন: আমি আর্গুমেন্টের নাম 'query' থেকে বদলে 'searchText' করেছি যাতে ফাংশনের সাথে সংঘর্ষ না হয়
+    get(query(usersRef, orderByChild('displayName'), startAt(searchText), endAt(searchText + "\uf8ff"), limitToFirst(10)))
     .then(snap => {
         const data = snap.val();
         
-        // ডাটা না থাকলে বা লোড না হলে
+        // ডাটা না থাকলে
         if (!data) {
             list.style.display = 'none';
             return;
@@ -2996,10 +2975,9 @@ window.showMentionSuggestions = function(query) {
 
         const matches = Object.entries(data).map(([uid, u]) => ({uid, ...u}));
 
-        // ক্লায়েন্ট সাইড ফিল্টারিং (Case Insensitive সার্চের জন্য)
-        // Firebase Case Sensitive, তাই আমরা যা পেয়েছি তা আবার চেক করে নিচ্ছি
+        // ছোট হাতের/বড় হাতের অক্ষর সমস্যা এড়াতে ফিল্টারিং
         const finalMatches = matches.filter(u => 
-            u.displayName && u.displayName.toLowerCase().includes(query.toLowerCase())
+            u.displayName && u.displayName.toLowerCase().includes(searchText.toLowerCase())
         );
 
         if (finalMatches.length > 0) {
