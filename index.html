@@ -1674,14 +1674,22 @@ html
         window.handleReactionRelease = function(e, key, container) {
             if (pressTimer) clearTimeout(pressTimer);
             const activeItem = container.querySelector('.reaction-item.active');
+            
+            // শুধুমাত্র যদি ড্র্যাগ করে (Active) সিলেক্ট করা হয়, তখনই এখান থেকে কাজ করবে
             if (activeItem) {
                 const type = activeItem.dataset.type;
                 const src = activeItem.querySelector('img').src;
                 performFlyingAnimation(activeItem, key, src);
                 toggleReaction(key, type);
+                
+                // কাজ শেষ, তাই বক্স বন্ধ করছি
+                container.classList.remove('show');
+                container.querySelectorAll('.reaction-item').forEach(i => i.classList.remove('active'));
             }
-            container.classList.remove('show');
-            container.querySelectorAll('.reaction-item').forEach(i => i.classList.remove('active'));
+            
+            // যদি ড্র্যাগ না করে সাধারণ ট্যাপ করা হয়, তাহলে বক্সটি এখানে বন্ধ হবে না।
+            // সেটা handleReactionClick ফাংশন সামলাবে।
+            
             isLongPress = false;
         };
 
@@ -2237,13 +2245,21 @@ html
         window.handleCommentReactionRelease = function(e, postId, commentId, container) {
             if(commentPressTimer) clearTimeout(commentPressTimer);
             const activeItem = container.querySelector('.reaction-item.active');
+            
+            // শুধুমাত্র যদি ড্র্যাগ করে (Active) সিলেক্ট করা হয়
             if(activeItem) {
                 const type = activeItem.dataset.type;
                 const src = activeItem.querySelector('img').src;
                 performFlyingAnimation(activeItem, commentId, src);
                 updateCommentReactionDB(postId, commentId, type);
+                
+                // কাজ শেষ, তাই বক্স বন্ধ করছি
+                container.classList.remove('show');
+                container.querySelectorAll('.reaction-item').forEach(i => i.classList.remove('active'));
             }
-            container.classList.remove('show');
+            
+            // সাধারণ ট্যাপের ক্ষেত্রে বক্স খোলা থাকবে যাতে ক্লিক ইভেন্ট কাজ করতে পারে
+            
             isCommentLongPress = false;
         };
 
