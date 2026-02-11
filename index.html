@@ -624,7 +624,6 @@ html
         }
         /* Mention List Style */
 /* Mention List Style Update */
-else if(n.type === 'mention') text = `আপনাকে একটি কমেন্টে মেনশন করেছেন 🔔`;
 
 .mention-item {
     padding: 12px;
@@ -1382,7 +1381,7 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
                     if(n.type === 'like') text = `আপনার পোস্টে লাইক দিয়েছেন ❤️`;
                     else if(n.type === 'comment') text = `আপনার পোস্টে মন্তব্য করেছেন 💬`;
                     else if(n.type === 'reply') text = `আপনার মন্তব্যের উত্তর দিয়েছেন ↩️`;
-                    
+                    else if(n.type === 'mention') text = `আপনাকে একটি কমেন্টে মেনশন করেছেন 🔔`;
                     return `
                     <div class="notif-item ${!n.read ? 'unread' : ''}" onclick="handleNotifClick('${n.key}', '${n.postId}')">
                         <img src="${n.senderImg}" class="notif-avatar">
@@ -2118,8 +2117,7 @@ startAt, endAt, limitToFirst  // <--- এই লাইনটি অবশ্য�
             // রিসেট
             cancelReply(); 
             window.currentPostId = key;
-            windowedUids = []; // মেনশন লিস্ট রিসেট
-
+            window.mentionedUids = []; // সঠিক বানান
             // ইনপুটে মেনশন লিসেনার যুক্ত করা
             const inputEl = document.getElementById('sheetInput');
             inputEl.oninput = (e) => window.handleMentionInput(e);
@@ -3006,31 +3004,36 @@ window.showMentionSuggestions = function(searchText) {
 
 
 // ৩. মেনশন সিলেক্ট করা (টেক্সট রিপ্লেস করা)
+// ৩. মেনশন সিলেক্ট করা (সঠিক এবং ফাইনাল কোড)
 window.selectMention = function(name, uid) {
     const input = document.getElementById('sheetInput');
     const fullText = input.value;
-    const cursor = input.selectionStart;
+    const cursor = input.selectionStart; // কার্সার পজিশন
     
+    // কার্সারের আগের অংশটুকু নিই
     const textBefore = fullText.slice(0, cursor);
     const textAfter = fullText.slice(cursor);
     
-    // শেষ '@' এর পজিশন খুঁজে বের করা
+    // কার্সারের ঠিক আগের '@' চিহ্নটি খুঁজে বের করি
     const lastAtPos = textBefore.lastIndexOf('@');
     
-    // নতুন টেক্সট তৈরি: আগের অংশ + @নাম + স্পেস + পরের অংশ
+    // '@' না পাওয়া গেলে বা ভুল হলে ফিরে যাবে (নিরাপত্তা)
+    if (lastAtPos === -1) return;
+
+    // নতুন টেক্সট: (@ এর আগের অংশ) + (@নাম) + (স্পেস) + (কার্সারের পরের অংশ)
     const newText = textBefore.substring(0, lastAtPos) + `@${name} ` + textAfter;
     
     input.value = newText;
     
-    // মেনশন লিস্ট বন্ধ করা
+    // মেনশন লিস্ট বন্ধ করি
     document.getElementById('mentionList').style.display = 'none';
     
-    // কার্সারকে নামের শেষে নিয়ে যাওয়া
+    // কার্সারকে নামের শেষে নিয়ে যাই এবং ফোকাস করি
     const newCursorPos = lastAtPos + name.length + 2; // @ + name + space
     input.focus();
     input.setSelectionRange(newCursorPos, newCursorPos);
     
-    // UID সংরক্ষণ করা (নোটিফিকেশনের জন্য)
+    // UID সংরক্ষণ করি (নোটিফিকেশনের জন্য)
     if(!window.mentionedUids) window.mentionedUids = [];
     if(!window.mentionedUids.includes(uid)) {
         window.mentionedUids.push(uid);
