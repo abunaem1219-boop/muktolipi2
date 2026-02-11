@@ -619,6 +619,9 @@ html
             <button class="icon-btn" onclick="closeDrawer()"><i class="fas fa-times"></i></button>
         </div>
         <div class="drawer-menu">
+        <div class="drawer-item" id="drawerLogoutBtn" onclick="logoutFunc(); closeDrawer();" style="display:none; color:#e74c3c;">
+                <i class="fas fa-sign-out-alt"></i> লগআউট
+            </div>
             <div class="drawer-item" onclick="toggleTheme(); closeDrawer();">
                 <i class="fas fa-moon"></i> ডার্ক মোড
             </div>
@@ -659,31 +662,53 @@ html
     <!-- Main App Structure -->
 
     <!-- Top Sticky Header -->
+   <!-- Top Sticky Header (Updated with Search) -->
+   <!-- Top Sticky Header (YouTube Style Search) -->
     <div class="sticky-controls" id="mainHeader">
-        <div style="display:flex; align-items:center; gap: 5px;">
-            <!-- Hamburger Menu Button -->
-            <button class="icon-btn" onclick="openDrawer()">
-                <i class="fas fa-bars"></i>
-            </button>
+        
+        <!-- ১. স্বাভাবিক অবস্থায় (Normal Header) -->
+        <div id="defaultHeader" style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+            <div style="display:flex; align-items:center; gap: 5px;">
+                <button class="icon-btn" onclick="openDrawer()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="header-title-block" onclick="handleSecretTap()">
+                    <span class="app-logo-text">মুক্তলিপি</span>
+                </div>
+            </div>
             
-            <!-- SECRET ADMIN TAP TARGET (PRESERVED) -->
-            <div class="header-title-block" onclick="handleSecretTap()">
-                <span class="app-logo-text">মুক্তলিপি</span>
+            <div style="display:flex; gap:5px;">
+                <button class="icon-btn" onclick="toggleHeaderSearch(true)">
+                    <i class="fas fa-search"></i>
+                </button>
+                <button class="icon-btn" onclick="navTo('chatList')">
+                    <i class="fab fa-facebook-messenger"></i>
+                    <span id="msgBadge" class="badge">0</span>
+                </button>
+                <button class="icon-btn" onclick="showNotifications()">
+                    <i class="fas fa-bell"></i>
+                    <span id="notifBadge" class="badge">0</span>
+                </button>
             </div>
         </div>
-        
-        <div style="display:flex; gap:5px;">
-            <!-- Chat Icon -->
-            <button class="icon-btn" onclick="navTo('chatList')">
-                <i class="fab fa-facebook-messenger"></i>
-                <span id="msgBadge" class="badge">0</span>
+
+        <!-- ২. সার্চ মোড (Search Header) -->
+        <div id="searchHeader" style="display:none; width:100%; align-items:center; gap:10px;">
+            <button class="icon-btn" onclick="toggleHeaderSearch(false)">
+                <i class="fas fa-arrow-left"></i>
             </button>
-            <!-- Notifications -->
-            <button class="icon-btn" onclick="showNotifications()">
-                <i class="fas fa-bell"></i>
-                <span id="notifBadge" class="badge">0</span>
+            
+            <!-- সার্চ ইনপুট -->
+            <input type="text" id="headerSearchBar" placeholder="এখানে খুঁজুন..." 
+                   style="flex:1; margin:0; border-radius:20px; background:rgba(0,0,0,0.05); border:none; height:40px; padding-left:15px;" 
+                   oninput="filterPosts(this.value)">
+            
+            <!-- ক্লিয়ার বাটন (শুরুতে লুকানো থাকবে) -->
+            <button class="icon-btn" id="headerSearchClearBtn" onclick="clearSearchHeader()" style="display:none;">
+                <i class="fas fa-times"></i>
             </button>
         </div>
+
     </div>
 
     <!-- LOGIN MODAL (Gatekeeper) -->
@@ -762,29 +787,18 @@ html
                 <p id="dateText" class="date-text">আজকের দিনটি আপনার ভালো কাটুক</p>
             </div>
 
-            <!-- Banner Image -->
-            <div class="header-banner-container">
-                <img src="my_banner2.jpg" class="header-banner">
-                <div class="banner-text">মনের কথা, মুক্ত ভাষায়</div>
-            </div>
-
             <!-- Stories / Top Writers -->
             <div id="storiesBar" class="stories-container">
                 <!-- Injected via JS -->
             </div>
 
-            <!-- Search -->
-            <div class="search-wrapper">
-                <input type="text" id="searchBar" placeholder="লেখা বা লেখক খুঁজুন..." oninput="filterPosts(this.value)">
-                <button class="search-clear" id="searchClearBtn" onclick="clearSearch()"><i class="fas fa-times"></i></button>
-            </div>
+          
 
             <!-- Tabs -->
             <div class="category-tabs">
                 <button class="cat-btn active" onclick="filterCategory('সব', this)">সব</button>
                 <button class="cat-btn" onclick="filterCategory('জনপ্রিয়', this)"><i class="fas fa-fire"></i> জনপ্রিয়</button>
-                <button class="cat-btn" onclick="filterCategory('গল্প', this)">গল্প</button>
-                <button class="cat-btn" onclick="filterCategory('কবিতা', this)">কবিতা</button>
+                <button class="cat-btn" onclick="filterCategory('গল্প', this)">গল্প</button>                <button class="cat-btn" onclick="filterCategory('কবিতা', this)">কবিতা</button>
                 <button class="cat-btn" onclick="filterCategory('ডায়েরি', this)">ডায়েরি</button>
                 <button class="cat-btn" onclick="filterCategory('ইসলামিক', this)">ইসলামিক</button>
                 <button class="cat-btn" onclick="filterCategory('অন্যান্য', this)">অন্যান্য</button>
@@ -861,9 +875,6 @@ html
                 <!-- Content injected here -->
             </div>
 
-            <button id="logoutBtn" class="btn" onclick="logoutFunc()" style="background:rgba(231, 76, 60, 0.1); color:#e74c3c; margin-top:30px;">লগআউট</button>
-        </div>
-
     </div>
 
     <!-- Sticky Player -->
@@ -895,9 +906,9 @@ html
         <button class="nav-center-btn" onclick="openWriteModal()">
             <i class="fas fa-pen-nib"></i>
         </button>
-        <button class="nav-item" onclick="showToast('গ্যালারি ফিচার শীঘ্রই আসছে...')">
-            <i class="fas fa-images"></i> গ্যালারি
-        </button>
+       <button class="nav-item" onclick="showToast('অ্যাপ স্টোর শীঘ্রই আসছে...')">
+    <i class="fas fa-store"></i> অ্যাপ স্টোর
+</button>
         <button class="nav-item" onclick="navTo('profile', this)">
             <i class="fas fa-user"></i>প্রোফাইল
         </button>
@@ -1239,10 +1250,16 @@ html
         window.logoutFunc = () => signOut(auth).then(() => { showToast("লগআউট হয়েছে"); window.location.href = window.location.origin; });
 
         function updateAuthUI(user) {
+            const drawerLogout = document.getElementById('drawerLogoutBtn');
             if(user) {
                 document.getElementById('userAvatar').src = user.photoURL;
                 document.getElementById('userName').innerText = user.displayName;
                 document.getElementById('submitBtn').disabled = false;
+                // মেনুতে লগআউট বাটন দেখাও
+                if(drawerLogout) drawerLogout.style.display = 'flex';
+            } else {
+                // মেনু থেকে লগআউট বাটন লুকাও
+                if(drawerLogout) drawerLogout.style.display = 'none';
             }
         }
 
@@ -2409,12 +2426,14 @@ html
             if(window.blockedUsers.includes(uid)) { return showToast("You have blocked this user."); }
             navTo('profile'); loadProfile(uid);
         };
-        window.loadProfile = function(targetUid) {
+      window.loadProfile = function(targetUid) {
             const params = new URLSearchParams(window.location.search);
             const urlUid = params.get('uid');
             const uid = targetUid || urlUid || (window.currentUser ? window.currentUser.uid : null);
             currentlyViewingUid = uid;
+            
             if(!uid) { document.getElementById('profileNameDisplay').innerText = "অতিথি"; return; }
+            
             if(window.blockedUsers.includes(uid)) {
                 document.getElementById('profileNameDisplay').innerText = "Blocked User";
                 document.getElementById('profileBioDisplay').innerText = "You have blocked this user.";
@@ -2422,37 +2441,61 @@ html
                 document.getElementById('profilePic').src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
                 return;
             }
+
             if(history.pushState) { const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?uid=' + uid; window.history.pushState({path:newurl},'',newurl); }
+            
             const isMe = window.currentUser && window.currentUser.uid === uid;
             const isAdmin = window.currentUser && window.currentUser.uid === ADMIN_UID;
+            
             document.getElementById('profileEditBtn').style.display = isMe ? 'flex' : 'none';
-            document.getElementById('logoutBtn').style.display = isMe ? 'block' : 'none';
+            
+            // বি.দ্র: এখান থেকে document.getElementById('logoutBtn')... লাইনটি সরিয়ে ফেলা হয়েছে।
+            
             const followBtn = document.getElementById('profileFollowBtn');
             const savedBtn = document.getElementById('profileSavedViewBtn');
             const msgBtn = document.getElementById('profileMsgBtn');
             const existingVerifyBtn = document.getElementById('adminVerifyBtn');
+            
             if(existingVerifyBtn) existingVerifyBtn.remove();
-            if (isMe) { followBtn.style.display = 'none'; msgBtn.style.display = 'none'; if(savedBtn) savedBtn.style.display = 'flex'; } 
-            else {
-                followBtn.style.display = 'block'; msgBtn.style.display = 'flex'; if(savedBtn) savedBtn.style.display = 'none';
-                if (window.currentUser) { get(ref(db, `followers/${uid}/${window.currentUser.uid}`)).then(snap => { if (snap.exists()) { followBtn.classList.add('following'); followBtn.innerText = 'Follow'; } else { followBtn.classList.remove('following'); followBtn.innerText = 'Follow'; } }); }
+            
+            if (isMe) { 
+                followBtn.style.display = 'none'; 
+                msgBtn.style.display = 'none'; 
+                if(savedBtn) savedBtn.style.display = 'flex'; 
+            } else {
+                followBtn.style.display = 'block'; 
+                msgBtn.style.display = 'flex'; 
+                if(savedBtn) savedBtn.style.display = 'none';
+                
+                if (window.currentUser) { 
+                    get(ref(db, `followers/${uid}/${window.currentUser.uid}`)).then(snap => { 
+                        if (snap.exists()) { followBtn.classList.add('following'); followBtn.innerText = 'Follow'; } 
+                        else { followBtn.classList.remove('following'); followBtn.innerText = 'Follow'; } 
+                    }); 
+                }
             }
+            
             get(ref(db, `followers/${uid}`)).then(snap => { const count = snap.exists() ? Object.keys(snap.val()).length : 0; document.getElementById('statFollowers').innerText = count; });
+            
             get(ref(db, 'users/' + uid)).then(snap => {
                 const data = snap.val() || {};
                 document.getElementById('profilePic').src = data.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
                 document.getElementById('profileNameDisplay').innerHTML = `${data.displayName || "Unknown"} ${getVerifiedBadge(data.isVerified)}`;
                 document.getElementById('profileBioDisplay').innerText = data.bio || "";
+                
                 if (data.coverPhoto) { document.getElementById('profileCover').style.background = `url(${data.coverPhoto}) center/cover no-repeat`; }
                 else { document.getElementById('profileCover').style.background = 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'; }
+                
                 let socialHtml = '';
                 if(data.fbLink) socialHtml += `<a href="${data.fbLink}" target="_blank" class="social-link-btn"><i class="fab fa-facebook"></i></a>`;
                 if(data.instaLink) socialHtml += `<a href="${data.instaLink}" target="_blank" class="social-link-btn"><i class="fab fa-instagram"></i></a>`;
                 document.getElementById('profileSocialLinks').innerHTML = socialHtml;
+                
                 if (isAdmin && !isMe) {
                     const btn = document.createElement('button'); btn.id = 'adminVerifyBtn'; btn.className = 'btn-profile-action'; btn.style.display = 'flex'; btn.style.color = data.isVerified ? '#e74c3c' : '#1877f2'; btn.innerHTML = data.isVerified ? '<i class="fas fa-times-circle"></i> আন-ভেরিফাই' : '<i class="fas fa-check-circle"></i> ভেরিফাই করুন'; btn.onclick = () => toggleVerification(uid, data.isVerified);
                     document.getElementById('profileActionContainer').appendChild(btn);
                 }
+                
                 get(query(ref(db, 'posts'), orderByChild('uid'), equalTo(uid), limitToLast(20))).then(postSnap => {
                      const userPosts = postSnap.val() ? Object.values(postSnap.val()) : [];
                      document.getElementById('statPosts').innerText = userPosts.length;
@@ -2460,6 +2503,7 @@ html
                      window.currentUserProfilePosts = Object.entries(postSnap.val() || {}).map(([k,v]) => ({key:k, ...v})).reverse();
                      switchProfileTab('posts', document.querySelector('.p-tab-btn.active'));
                 });
+                
                 if(isMe) {
                     document.getElementById('editProfileImgPreview').src = data.photoURL;
                     document.getElementById('editDisplayName').value = data.displayName || "";
@@ -2675,7 +2719,96 @@ html
             document.getElementById('sideDrawer').classList.remove('open');
             document.getElementById('drawerOverlay').classList.remove('open');
         };
+     // হেডারে সার্চ টগল করার ফাংশন
+        // ১. ইউটিউব স্টাইল সার্চ টগল ফাংশন
+        window.toggleHeaderSearch = function(show) {
+            const defaultHead = document.getElementById('defaultHeader');
+            const searchHead = document.getElementById('searchHeader');
+            const searchInput = document.getElementById('headerSearchBar');
 
+            if (show) {
+                // সার্চ মোড চালু
+                defaultHead.style.display = 'none';
+                searchHead.style.display = 'flex';
+                searchInput.focus(); // সাথে সাথে কিবোর্ড আসবে
+            } else {
+                // সার্চ মোড বন্ধ (ব্যাক বাটন চাপলে)
+                defaultHead.style.display = 'flex';
+                searchHead.style.display = 'none';
+                searchInput.value = ''; // লেখা মুছে যাবে
+                filterPosts(''); // সব পোস্ট আবার ফিরে আসবে
+            }
+        };
+
+        // ২. সার্চ ফিল্টার ফাংশন (লাইভ সার্চ)
+        window.filterPosts = function(query) {
+            // ইনপুট না থাকলে সব পোস্ট দেখাও
+            if (!query) {
+                document.getElementById('headerSearchClearBtn').style.display = 'none';
+                renderFeed(window.allPosts);
+                return;
+            }
+
+            // লেখা থাকলে 'X' বাটন দেখাও
+            document.getElementById('headerSearchClearBtn').style.display = 'block';
+
+            // ছোট হাতের অক্ষরে রূপান্তর (Case Insensitive)
+            const q = query.toLowerCase();
+
+            // ফিল্টার লজিক
+            const filtered = window.allPosts.filter(p => {
+                const title = (p.title || "").toLowerCase();
+                const author = (p.author || "").toLowerCase();
+                // HTML ট্যাগ রিমুভ করে শুধু টেক্সট সার্চ করবে
+                const content = (p.content || "").replace(/<[^>]*>/g, "").toLowerCase(); 
+                
+                return title.includes(q) || author.includes(q) || content.includes(q);
+            });
+
+            renderFeed(filtered);
+        };
+
+        // ৩. সার্চ ক্লিয়ার ফাংশন
+        window.clearSearchHeader = function() {
+            const input = document.getElementById('headerSearchBar');
+            input.value = '';
+            input.focus();
+            filterPosts(''); // সব পোস্ট রিসেট
+        };
+      // ১. কিবোর্ড ওপেন হলে নিচের মেনু লুকানোর লজিক
+        const bottomNav = document.querySelector('.bottom-nav');
+        const allInputs = document.querySelectorAll('input, textarea');
+
+        allInputs.forEach(input => {
+            // যখন কোনো বক্সে ট্যাপ করবেন (কিবোর্ড আসবে)
+            input.addEventListener('focus', () => {
+                bottomNav.style.display = 'none'; 
+            });
+
+            // যখন বক্স থেকে বের হবেন (কিবোর্ড যাবে)
+            input.addEventListener('blur', () => {
+                // একটু দেরি করে আসবে যাতে এনিমেশন স্মুথ হয়
+                setTimeout(() => {
+                    bottomNav.style.display = 'flex'; 
+                }, 200);
+            });
+        });
+
+        // ২. নতুন তৈরি হওয়া (ডাইনামিক) ইনপুটের জন্যও এটি কাজ করানোর জন্য
+        // (যেমন কমেন্ট বক্স বা সার্চ বার যা পরে তৈরি হয়)
+        document.addEventListener('focusin', function(e) {
+            if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                bottomNav.style.display = 'none';
+            }
+        });
+        
+        document.addEventListener('focusout', function(e) {
+            if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                setTimeout(() => {
+                    bottomNav.style.display = 'flex';
+                }, 200);
+            }
+        });
     </script>
 </body>
 </html>
