@@ -1738,6 +1738,8 @@ html
                 'like': { text: 'Like', color: '#1877f2', icon: reactionAssets.like }, 
                 'love': { text: 'Love', color: '#e74c3c', icon: reactionAssets.love },
                 'care': { text: 'Care', color: '#f7b928', icon: reactionAssets.care },
+                'haha': { text: 'Haha', color: '#f7b928', icon: reactionAssets.haha }, // নতুন যুক্ত করা হয়েছে
+                'wow':  { text: 'Wow',  color: '#f7b928', icon: reactionAssets.wow },  // নতুন যুক্ত করা হয়েছে
                 'sad':  { text: 'Sad',  color: '#f7b928', icon: reactionAssets.sad },
                 'angry':{ text: 'Angry',color: '#e74c3c', icon: reactionAssets.angry }
             };
@@ -1923,6 +1925,8 @@ html
                     <div class="reaction-item" data-type="like" onclick="handleReactionClick(event, 'like', '${post.key}')"><img src="${reactionAssets.like}" class="reaction-img" onerror="window.imgError(this)"></div>
                     <div class="reaction-item" data-type="love" onclick="handleReactionClick(event, 'love', '${post.key}')"><img src="${reactionAssets.love}" class="reaction-img" onerror="window.imgError(this)"></div>
                     <div class="reaction-item" data-type="care" onclick="handleReactionClick(event, 'care', '${post.key}')"><img src="${reactionAssets.care}" class="reaction-img" onerror="window.imgError(this)"></div>
+                    <div class="reaction-item" data-type="haha" onclick="handleReactionClick(event, 'haha', '${post.key}')"><img src="${reactionAssets.haha}" class="reaction-img" onerror="window.imgError(this)"></div>
+                    <div class="reaction-item" data-type="wow" onclick="handleReactionClick(event, 'wow', '${post.key}')"><img src="${reactionAssets.wow}" class="reaction-img" onerror="window.imgError(this)"></div>
                     <div class="reaction-item" data-type="sad" onclick="handleReactionClick(event, 'sad', '${post.key}')"><img src="${reactionAssets.sad}" class="reaction-img" onerror="window.imgError(this)"></div>
                     <div class="reaction-item" data-type="angry" onclick="handleReactionClick(event, 'angry', '${post.key}')"><img src="${reactionAssets.angry}" class="reaction-img" onerror="window.imgError(this)"></div>
                 </div>`;
@@ -2155,6 +2159,8 @@ html
                 <div class="reaction-item" data-type="like" onclick="handleCommentReactionClick(event, 'like', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.like}" class="reaction-img"></div>
                 <div class="reaction-item" data-type="love" onclick="handleCommentReactionClick(event, 'love', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.love}" class="reaction-img"></div>
                 <div class="reaction-item" data-type="care" onclick="handleCommentReactionClick(event, 'care', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.care}" class="reaction-img"></div>
+                <div class="reaction-item" data-type="haha" onclick="handleCommentReactionClick(event, 'haha', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.haha}" class="reaction-img"></div>
+                <div class="reaction-item" data-type="wow" onclick="handleCommentReactionClick(event, 'wow', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.wow}" class="reaction-img"></div>
                 <div class="reaction-item" data-type="sad" onclick="handleCommentReactionClick(event, 'sad', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.sad}" class="reaction-img"></div>
                 <div class="reaction-item" data-type="angry" onclick="handleCommentReactionClick(event, 'angry', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.angry}" class="reaction-img"></div>
             </div>`;
