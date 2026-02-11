@@ -10,7 +10,7 @@ html
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="apple-touch-icon" href="icon.png">
     <link rel="manifest" href="manifest.json">    
-    <meta name="theme-color" content="#1877f2">
+    <meta name="teme-color" content="#1877f2">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="description" content="মনের কথা, মুক্ত ভাষায়- মুক্তলিপি ডায়েরি">
 
@@ -18,7 +18,7 @@ html
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Galada&family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Serif+Bengali:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.ss">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -265,13 +265,42 @@ html
         .reaction-box.show .reaction-item:nth-child(3) { animation-delay: 0.11s; }
         .reaction-box.show .reaction-item:nth-child(4) { animation-delay: 0.14s; }
         .reaction-box.show .reaction-item:nth-child(5) { animation-delay: 0.17s; }
-        .reaction-box.show .reaction-item:nth-child(6) { animation-delay: 0.20s; }
-        .reaction-box.show .reaction-item:nth-child(7) { animation-delay: 0.23s; }
         @keyframes slideUpFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         .flying-emoji { position: fixed; z-index: 9999; width: 40px; height: 40px; pointer-events: none; transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1); }
         .btn-bounce { animation: rubberBand 0.6s; }
         @keyframes rubberBand { 0% { transform: scale(1); } 30% { transform: scale(1.25, 0.75); } 40% { transform: scale(0.75, 1.25); } 50% { transform: scale(1.15, 0.85); } 65% { transform: scale(0.95, 1.05); } 75% { transform: scale(1.05, 0.95); } 100% { transform: scale(1); } }
+
+        /* Reaction Summary Styles */
+        .reaction-summary-bar {
+            display: flex; align-items: center; gap: 5px; margin-bottom: 8px; font-size: 12px; color: var(--secondary-text); cursor: pointer;
+        }
+        .reaction-icons-stack { display: flex; align-items: center; }
+        .reaction-icons-stack img {
+            width: 16px; height: 16px; border: 2px solid var(--sheet-bg); border-radius: 50%; margin-right: -4px;
+        }
+
+        /* Who Reacted Modal */
+        .who-reacted-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 3100; display: none;
+            justify-content: center; align-items: center;
+        }
+        .who-reacted-content {
+            background: var(--sheet-bg); width: 90%; max-width: 400px; max-height: 80vh;
+            border-radius: 15px; overflow: hidden; display: flex; flex-direction: column;
+            box-shadow: var(--shadow-card);
+        }
+        .who-reacted-header {
+            padding: 15px; border-bottom: 1px solid var(--border-color);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .who-reacted-list { padding: 0 15px; overflow-y: auto; flex: 1; }
+        .reaction-user-item {
+            display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border-color);
+        }
+        .reaction-user-item:last-child { border-bottom: none; }
+        .reaction-user-emoji { margin-left: auto; font-size: 18px; }
 
         /* ---------------------------------------------------- */
         /* --- FACEBOOK STYLE COMMENTS (FIXED NESTING) --- */
@@ -610,6 +639,20 @@ html
     <div id="readingProgress"></div>
     <div id="toast" class="toast-box"><i class="fas fa-info-circle"></i> <span id="toastMsg">Notification</span></div>
     <div id="offlineBanner"><i class="fas fa-wifi"></i> ইন্টারনেট সংযোগ নেই। অফলাইন মোড চলছে।</div>
+
+    <!-- Who Reacted Modal -->
+    <div id="whoReactedModal" class="who-reacted-modal" onclick="document.getElementById('whoReactedModal').style.display='none'">
+        <div class="who-reacted-content" onclick="event.stopPropagation()">
+            <div class="who-reacted-header">
+                <h3 style="margin:0; font-size:16px;">Who Reacted</h3>
+                <button onclick="document.getElementById('whoReactedModal').style.display='none'" style="background:none; border:none; font-size:20px; color:var(--text-color); cursor:pointer;"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="whoReactedList" class="who-reacted-list">
+                <!-- User items injected here -->
+                <div style="text-align:center; padding:20px; color:var(--secondary-text);">Loading...</div>
+            </div>
+        </div>
+    </div>
 
     <!-- Main App Structure -->
 
@@ -998,7 +1041,7 @@ html
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, push, set, onValue, update, remove, get, query, orderByKey, limitToLast, endBefore, equalTo, orderByChild, onChildAdded, onDisconnect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, push, set, onValue, update, remove, get, query, orderByKey, limitToLast, endBefore, equalTo, orderByChild, onChildAdded, onDisconnect, runTransaction, off } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const ADMIN_UID = "Pg5ko76Pu8Zf4ja9MMzEJRLDMYs1"; 
@@ -1020,10 +1063,32 @@ html
 
         window.allPosts = []; 
         window.allComments = {}; 
-        window.db = db; window.ref = ref; window.push = push; window.set = set; window.update = update; window.remove = remove;
+        window.db = db; window.ref = ref; window.push = push; window.set = set; window.update = update; window.remove = remove; window.runTransaction = runTransaction;
         window.currentUser = null;
         window.blockedUsers = []; 
         window.userVerificationCache = {}; 
+        
+        // --- NEW REACTION CONSTANTS ---
+        window.reactionEmojiMap = {
+            like: "👍",
+            love: "❤️",
+            care: "🤗",
+            sad: "😢",
+            angry: "😡"
+        };
+
+        const reactionAssets = {
+            like: 'like.gif',
+            love: 'love.gif',
+            care: 'care.gif',
+            haha: 'haha.gif', // kept for fallback or legacy
+            wow: 'wow.gif',   // kept for fallback
+            sad: 'sad.gif',
+            angry: 'angry.gif',
+            
+            staticLike: 'far fa-thumbs-up', 
+            solidLike: 'fas fa-thumbs-up'
+        };
 
         // Basic bad word filter (Client side)
         const BAD_WORDS = ["খারাপ", "গালাগালি", "অশ্লীল", "কুত্তা", "শয়তান", "ফালতু", "haram", "kharap", "gali"];
@@ -1047,21 +1112,6 @@ html
         let commentPressTimer = null;
         let isCommentLongPress = false;
 
-        // --- ASSETS: FACEBOOK REACTION GIFS (MASTER SOLUTION V2 - JSDelivr) ---
-        const reactionAssets = {
-            like: 'like.gif',
-            love: 'love.gif',
-            care: 'care.gif',
-            haha: 'haha.gif',
-            wow: 'wow.gif',
-            sad: 'sad.gif',
-            angry: 'angry.gif',
-            
-            // Static Icons
-            staticLike: 'far fa-thumbs-up', 
-            solidLike: 'fas fa-thumbs-up'
-        };
-
         // Fallback function for broken GIFs
         window.imgError = function(image) {
             image.onerror = ""; 
@@ -1070,8 +1120,6 @@ html
                 like: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Facebook_Like_2016.svg/100px-Facebook_Like_2016.svg.png',
                 love: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Facebook_Love_2016.svg/100px-Facebook_Love_2016.svg.png',
                 care: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Facebook_Care_Reaction.png/100px-Facebook_Care_Reaction.png',
-                haha: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Facebook_Haha_2016.svg/100px-Facebook_Haha_2016.svg.png',
-                wow: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Facebook_Wow_2016.svg/100px-Facebook_Wow_2016.svg.png',
                 sad: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Facebook_Sad_2016.svg/100px-Facebook_Sad_2016.svg.png',
                 angry: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Facebook_Angry_2016.svg/100px-Facebook_Angry_2016.svg.png'
             };
@@ -1112,10 +1160,10 @@ html
         };
 
         window.getVerifiedBadge = function(isVerified) {
-    return isVerified ? `<i class="fas fa-certificate verified-badge" style="color: #1877f2; position: relative;">
-        <i class="fas fa-check" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 10px; color: white;"></i>
-    </i>` : '';
-};
+            return isVerified ? `<i class="fas fa-certificate verified-badge" style="color: #1877f2; position: relative;">
+                <i class="fas fa-check" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 10px; color: white;"></i>
+            </i>` : '';
+        };
 
         window.fetchBlockedUsers = function(uid) {
             return get(ref(db, `users/${uid}/blockedUsers`)).then(snap => {
@@ -1563,11 +1611,11 @@ html
             viewUserProfile(targetUid); loadStoryFeed(); 
         };
 
-        // --- FACEBOOK STYLE REACTION LOGIC ---
+        // --- FACEBOOK STYLE REACTION LOGIC (UPDATED) ---
         let pressTimer = null;
         let isLongPress = false;
         
-        window.startLongPress = function(e, key, likes, btn) {
+        window.startLongPress = function(e, key, btn) {
             if(!checkAuth()) return;
             isLongPress = false;
             pressTimer = setTimeout(() => {
@@ -1577,11 +1625,12 @@ html
             }, 500);
         };
 
-        window.endLongPress = function(e, key, likes, btn) {
+        window.endLongPress = function(e, key, btn) {
             if (pressTimer) clearTimeout(pressTimer);
             if (!isLongPress) {
                 document.querySelectorAll('.reaction-box').forEach(b => b.classList.remove('show'));
-                handleLike(key, likes, btn); 
+                // Short press: Default to like toggle
+                toggleReaction(key, 'like');
             }
             isLongPress = false;
         };
@@ -1629,7 +1678,7 @@ html
                 const type = activeItem.dataset.type;
                 const src = activeItem.querySelector('img').src;
                 performFlyingAnimation(activeItem, key, src);
-                selectReactionLogic(type, key);
+                toggleReaction(key, type);
             }
             container.classList.remove('show');
             container.querySelectorAll('.reaction-item').forEach(i => i.classList.remove('active'));
@@ -1641,7 +1690,7 @@ html
             const target = e.currentTarget;
             const src = target.querySelector('img').src;
             performFlyingAnimation(target, key, src);
-            selectReactionLogic(type, key);
+            toggleReaction(key, type);
             target.closest('.reaction-box').classList.remove('show');
         };
 
@@ -1674,37 +1723,167 @@ html
             }, 600);
         }
 
-        function selectReactionLogic(type, key) {
-            const myReaction = { type: type, timestamp: Date.now() };
-            localStorage.setItem('REACTION_' + key, JSON.stringify(myReaction));
-            const btn = document.querySelector(`#post-${key} .action-btn.like-btn`);
-            const alreadyLiked = localStorage.getItem('LIKED_' + key);
-            if(!alreadyLiked) {
-                handleLike(key, null, btn, type); 
-            } else {
-                updateLikeVisual(btn, key);
-            }
-        }
+        // --- NEW REAL-TIME REACTION LOGIC ---
 
         function getReactionStyle(type) {
             const map = {
                 'like': { text: 'Like', color: '#1877f2', icon: reactionAssets.like }, 
                 'love': { text: 'Love', color: '#e74c3c', icon: reactionAssets.love },
-                'haha': { text: 'Haha', color: '#f7b928', icon: reactionAssets.haha },
-                'wow':  { text: 'Wow',  color: '#f7b928', icon: reactionAssets.wow },
+                'care': { text: 'Care', color: '#f7b928', icon: reactionAssets.care },
                 'sad':  { text: 'Sad',  color: '#f7b928', icon: reactionAssets.sad },
-                'angry':{ text: 'Angry',color: '#e74c3c', icon: reactionAssets.angry },
-                'care': { text: 'Care', color: '#e6683c', icon: reactionAssets.care }
+                'angry':{ text: 'Angry',color: '#e74c3c', icon: reactionAssets.angry }
             };
             return map[type] || { text: 'Like', color: '#1877f2', icon: reactionAssets.like }; 
         }
+
+        window.toggleReaction = function(postId, newType) {
+            if(!checkAuth()) return;
+            const uid = window.currentUser.uid;
+            const userReactionRef = ref(db, `reactions/${postId}/${uid}`);
+            
+            get(userReactionRef).then(snap => {
+                const currentType = snap.val();
+
+                if (currentType === newType) {
+                    // Remove reaction
+                    remove(userReactionRef);
+                    // Update Count
+                    runTransaction(ref(db, `reactionCount/${postId}/${currentType}`), (count) => {
+                        return (count || 0) > 0 ? count - 1 : 0;
+                    });
+                } else {
+                    // Set new reaction
+                    set(userReactionRef, newType);
+                    
+                    // Update Counts
+                    if (currentType) {
+                        // Decrement old
+                        runTransaction(ref(db, `reactionCount/${postId}/${currentType}`), (count) => {
+                            return (count || 0) > 0 ? count - 1 : 0;
+                        });
+                    } else {
+                        // New reaction, notify owner
+                        const post = window.allPosts.find(p => p.key === postId);
+                        if(post && post.uid && post.uid !== uid) { 
+                            sendNotification(post.uid, 'like', postId); 
+                        }
+                    }
+                    // Increment new
+                    runTransaction(ref(db, `reactionCount/${postId}/${newType}`), (count) => {
+                        return (count || 0) + 1;
+                    });
+                }
+            });
+        };
+
+        // UI Listener for specific post
+        function listenToPostReactions(postId) {
+            // 1. My Reaction
+            if(window.currentUser) {
+                const myReactionRef = ref(db, `reactions/${postId}/${window.currentUser.uid}`);
+                onValue(myReactionRef, (snap) => {
+                    const type = snap.val();
+                    updatePostButtonUI(postId, type);
+                });
+            }
+
+            // 2. Reaction Summary & Count
+            const countRef = ref(db, `reactionCount/${postId}`);
+            onValue(countRef, (snap) => {
+                const data = snap.val() || {};
+                updatePostSummaryUI(postId, data);
+            });
+        }
+
+        function updatePostButtonUI(postId, type) {
+            const btn = document.querySelector(`#post-${postId} .action-btn.like-btn`);
+            if(!btn) return;
+            
+            if(type) {
+                const style = getReactionStyle(type);
+                let iconHTML = '';
+                if(type === 'like') iconHTML = `<i class="${reactionAssets.solidLike}"></i>`;
+                else iconHTML = `<img src="${style.icon}" style="width:18px;height:18px;vertical-align:middle;">`;
+                
+                btn.innerHTML = `${iconHTML} <span class="count-text" style="margin-left:4px;">${style.text}</span>`;
+                btn.style.color = style.color;
+                btn.classList.add('liked');
+            } else {
+                btn.innerHTML = `<i class="${reactionAssets.staticLike}"></i> <span class="count-text" style="margin-left:4px;">Like</span>`;
+                btn.style.color = '';
+                btn.classList.remove('liked');
+            }
+        }
+
+        function updatePostSummaryUI(postId, counts) {
+            const summaryContainer = document.querySelector(`#summary-${postId}`);
+            if(!summaryContainer) return;
+
+            let total = 0;
+            const types = [];
+            for (const [type, count] of Object.entries(counts)) {
+                if(count > 0) {
+                    total += count;
+                    types.push({type, count});
+                }
+            }
+
+            // Sort types by count descending to show top icons
+            types.sort((a,b) => b.count - a.count);
+            const topTypes = types.slice(0, 3); // Top 3
+
+            let html = '';
+            if (total > 0) {
+                html += `<div class="reaction-icons-stack">`;
+                topTypes.forEach(t => {
+                    const style = getReactionStyle(t.type);
+                    html += `<img src="${style.icon}" onerror="this.style.display='none'">`;
+                });
+                html += `</div>`;
+                html += `<span>${total}</span>`;
+            }
+
+            summaryContainer.innerHTML = html;
+        }
+
+        window.openWhoReactedModal = function(postId) {
+            const modal = document.getElementById('whoReactedModal');
+            const list = document.getElementById('whoReactedList');
+            list.innerHTML = '<div style="text-align:center; padding:20px; color:var(--secondary-text);">Loading...</div>';
+            modal.style.display = 'flex';
+
+            get(ref(db, `reactions/${postId}`)).then(async snap => {
+                const data = snap.val();
+                if(!data) {
+                    list.innerHTML = '<div style="text-align:center; padding:20px; color:var(--secondary-text);">No reactions yet.</div>';
+                    return;
+                }
+
+                // Fetch user details
+                const reactionEntries = Object.entries(data); // [[uid, type], ...]
+                let html = '';
+                
+                for(const [uid, type] of reactionEntries) {
+                    const userSnap = await get(ref(db, `users/${uid}`));
+                    const user = userSnap.val() || { displayName: "Unknown User", photoURL: "https://cdn-icons-png.flaticon.com/512/149/149071.png" };
+                    const emoji = window.reactionEmojiMap[type] || "👍";
+                    
+                    html += `
+                    <div class="reaction-user-item" onclick="viewUserProfile('${uid}'); document.getElementById('whoReactedModal').style.display='none';">
+                        <img src="${user.photoURL}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
+                        <span style="font-weight:600; font-size:14px;">${user.displayName}</span>
+                        <span class="reaction-user-emoji">${emoji}</span>
+                    </div>`;
+                }
+                list.innerHTML = html;
+            });
+        };
 
         window.renderFeed = function(posts, targetId = 'feed') {
             const feed = document.getElementById(targetId);
             if(!posts || !posts.length) return feed.innerHTML = '<div style="text-align:center; padding:30px; width:100%;">কোনো পোস্ট নেই</div>';
 
             feed.innerHTML = posts.map(post => {
-                const liked = localStorage.getItem('LIKED_' + post.key);
                 let contentHTML = post.content || '';
                 let tempDiv = document.createElement("div");
                 tempDiv.innerHTML = contentHTML;
@@ -1720,32 +1899,11 @@ html
                 const authorImg = post.userImg || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
                 const commentCount = window.allComments[post.key] ? Object.keys(window.allComments[post.key]).length : 0;
                 const shareCount = parseInt(localStorage.getItem('SHARE_COUNT_' + post.key) || '0');
-                
-                let reactionData = JSON.parse(localStorage.getItem('REACTION_' + post.key) || 'null');
-                let displayIcon = `<i class="${reactionAssets.staticLike}"></i>`;
-                let displayColor = '';
-                let displayText = 'Like';
-                let btnClass = '';
-
-                if (liked) {
-                    btnClass = 'liked';
-                    if (reactionData) {
-                        const style = getReactionStyle(reactionData.type);
-                        if (reactionData.type === 'like') {
-                            displayIcon = `<i class="${reactionAssets.solidLike}"></i>`;
-                        } else {
-                            displayIcon = `<img src="${style.icon}" style="width:18px;height:18px;vertical-align:middle;">`;
-                        }
-                        displayColor = `color:${style.color}`;
-                        displayText = style.text;
-                    } else {
-                         displayIcon = `<i class="${reactionAssets.solidLike}"></i>`;
-                         displayColor = 'color:#1877f2';
-                    }
-                }
-
                 const isVerified = window.userVerificationCache[post.uid] === true;
                 const badgeHtml = getVerifiedBadge(isVerified);
+
+                // Initialize listeners for this post after rendering
+                setTimeout(() => listenToPostReactions(post.key), 0);
 
                 const reactionsHTML = `
                 <div class="reaction-box" 
@@ -1757,8 +1915,6 @@ html
                     <div class="reaction-item" data-type="like" onclick="handleReactionClick(event, 'like', '${post.key}')"><img src="${reactionAssets.like}" class="reaction-img" onerror="window.imgError(this)"></div>
                     <div class="reaction-item" data-type="love" onclick="handleReactionClick(event, 'love', '${post.key}')"><img src="${reactionAssets.love}" class="reaction-img" onerror="window.imgError(this)"></div>
                     <div class="reaction-item" data-type="care" onclick="handleReactionClick(event, 'care', '${post.key}')"><img src="${reactionAssets.care}" class="reaction-img" onerror="window.imgError(this)"></div>
-                    <div class="reaction-item" data-type="haha" onclick="handleReactionClick(event, 'haha', '${post.key}')"><img src="${reactionAssets.haha}" class="reaction-img" onerror="window.imgError(this)"></div>
-                    <div class="reaction-item" data-type="wow" onclick="handleReactionClick(event, 'wow', '${post.key}')"><img src="${reactionAssets.wow}" class="reaction-img" onerror="window.imgError(this)"></div>
                     <div class="reaction-item" data-type="sad" onclick="handleReactionClick(event, 'sad', '${post.key}')"><img src="${reactionAssets.sad}" class="reaction-img" onerror="window.imgError(this)"></div>
                     <div class="reaction-item" data-type="angry" onclick="handleReactionClick(event, 'angry', '${post.key}')"><img src="${reactionAssets.angry}" class="reaction-img" onerror="window.imgError(this)"></div>
                 </div>`;
@@ -1774,17 +1930,22 @@ html
                     ${post.image ? `<div class="post-img-container" onclick="openDetailView('${post.key}')"><img src="${post.image}" class="post-img" loading="lazy"></div>` : ''}
                     <h2 class="post-title" onclick="openDetailView('${post.key}')">${post.title}</h2>
                     <div class="content-preview">${displayContent}</div>
+                    
+                    <!-- Reaction Summary Container -->
+                    <div id="summary-${post.key}" class="reaction-summary-bar" onclick="openWhoReactedModal('${post.key}')">
+                        <!-- Filled by Realtime Listener -->
+                    </div>
+
                     <div class="interaction-bar">
                         <div class="action-btn-wrapper">
                             ${reactionsHTML}
-                            <button class="action-btn like-btn ${btnClass}" 
-                                style="${displayColor}"
-                                onmousedown="startLongPress(event, '${post.key}', ${post.likes||0}, this)" 
-                                onmouseup="endLongPress(event, '${post.key}', ${post.likes||0}, this)"
-                                ontouchstart="startLongPress(event, '${post.key}', ${post.likes||0}, this)"
-                                ontouchend="endLongPress(event, '${post.key}', ${post.likes||0}, this)"
+                            <button class="action-btn like-btn" 
+                                onmousedown="startLongPress(event, '${post.key}', this)" 
+                                onmouseup="endLongPress(event, '${post.key}', this)"
+                                ontouchstart="startLongPress(event, '${post.key}', this)"
+                                ontouchend="endLongPress(event, '${post.key}', this)"
                                 oncontextmenu="return false;">
-                                ${displayIcon} <span class="count-text" style="margin-left:4px;">${displayText} (${post.likes||0})</span>
+                                <i class="${reactionAssets.staticLike}"></i> <span class="count-text" style="margin-left:4px;">Like</span>
                             </button>
                         </div>
                         <button class="action-btn" onclick="event.stopPropagation(); openCommentsSheet('${post.key}');"><i class="far fa-comment"></i> <span class="count-text">${commentCount}</span></button>
@@ -1825,63 +1986,6 @@ html
             let count = parseInt(localStorage.getItem('SHARE_COUNT_' + key) || '0');
             count++; localStorage.setItem('SHARE_COUNT_' + key, count);
             const el = document.getElementById('shareCnt-' + key); if(el) el.innerText = count;
-        };
-
-        window.updateLikeVisual = function(btn, key) {
-            if(!btn) return;
-            const liked = localStorage.getItem('LIKED_' + key);
-            const reactionData = JSON.parse(localStorage.getItem('REACTION_' + key) || 'null');
-            const post = window.allPosts.find(p => p.key === key);
-            const count = post ? (post.likes || 0) : 0;
-
-            if (liked) {
-                btn.classList.add('liked');
-                if (reactionData) {
-                    const style = getReactionStyle(reactionData.type);
-                    let iconHTML = '';
-                    if(reactionData.type === 'like') iconHTML = `<i class="${reactionAssets.solidLike}"></i>`;
-                    else iconHTML = `<img src="${style.icon}" style="width:18px;height:18px;vertical-align:middle;">`;
-                    
-                    btn.innerHTML = `${iconHTML} <span class="count-text" style="margin-left:4px;">${style.text} (${count})</span>`;
-                    btn.style.color = style.color;
-                } else {
-                    btn.innerHTML = `<i class="${reactionAssets.solidLike}"></i> <span class="count-text" style="margin-left:4px;">Like (${count})</span>`;
-                    btn.style.color = '#1877f2';
-                }
-            } else {
-                btn.classList.remove('liked');
-                btn.innerHTML = `<i class="${reactionAssets.staticLike}"></i> <span class="count-text" style="margin-left:4px;">Like (${count})</span>`;
-                btn.style.color = '';
-            }
-        };
-
-        window.handleLike = (key, count, btn, type = null) => {
-            if(!checkAuth()) return;
-            const alreadyLiked = localStorage.getItem('LIKED_'+key);
-            let newCount = count || 0;
-            const post = window.allPosts.find(p => p.key === key);
-            
-            if (alreadyLiked) {
-                if (type) {
-                     updateLikeVisual(btn, key);
-                     return; 
-                }
-                newCount = Math.max(0, newCount - 1);
-                update(ref(db, 'posts/'+key), {likes: newCount});
-                localStorage.removeItem('LIKED_'+key); 
-                localStorage.removeItem('REACTION_'+key);
-            } else {
-                newCount = newCount + 1;
-                update(ref(db, 'posts/'+key), {likes: newCount});
-                localStorage.setItem('LIKED_'+key, true);
-                if(!type) type = 'like'; 
-                const myReaction = { type: type, timestamp: Date.now() };
-                localStorage.setItem('REACTION_' + key, JSON.stringify(myReaction));
-
-                if(post && post.uid && post.uid !== window.currentUser.uid) { sendNotification(post.uid, 'like', key); }
-            }
-            if(post) post.likes = newCount; 
-            if (btn) updateLikeVisual(btn, key);
         };
 
         // --- UPDATED COMMENTS SYSTEM (FB STYLE + NESTING FIX) ---
@@ -2042,7 +2146,7 @@ html
                  onmouseleave="this.classList.remove('show')">
                 <div class="reaction-item" data-type="like" onclick="handleCommentReactionClick(event, 'like', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.like}" class="reaction-img"></div>
                 <div class="reaction-item" data-type="love" onclick="handleCommentReactionClick(event, 'love', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.love}" class="reaction-img"></div>
-                <div class="reaction-item" data-type="haha" onclick="handleCommentReactionClick(event, 'haha', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.haha}" class="reaction-img"></div>
+                <div class="reaction-item" data-type="care" onclick="handleCommentReactionClick(event, 'care', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.care}" class="reaction-img"></div>
                 <div class="reaction-item" data-type="sad" onclick="handleCommentReactionClick(event, 'sad', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.sad}" class="reaction-img"></div>
                 <div class="reaction-item" data-type="angry" onclick="handleCommentReactionClick(event, 'angry', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.angry}" class="reaction-img"></div>
             </div>`;
@@ -2454,8 +2558,22 @@ html
             const imgEl = document.getElementById('detailMainImg');
             if(post.image) { imgEl.src = post.image; imgEl.style.display = 'block'; } else imgEl.style.display = 'none';
             const likeBtn = document.getElementById('detailLikeBtn');
-            likeBtn.onclick = () => handleLike(key, post.likes, likeBtn);
-            updateLikeVisual(likeBtn, key);
+            
+            // Detail view also needs live updates
+            likeBtn.id = `detail-like-btn-${key}`; // unique id for manual updates if needed, though toggleReaction handles active
+            // For simplicity in detail view, we just hook up the click. Live updates handle button state via listener.
+            // Note: detail view buttons are tricky with IDs. We will manually update it or rely on the same logic if we passed ID.
+            // Simplest is to bind the click.
+            likeBtn.onclick = () => toggleReaction(key, 'like');
+            
+            // Initial State for Detail Button (Optimistic)
+             if(window.currentUser) {
+                get(ref(db, `reactions/${key}/${window.currentUser.uid}`)).then(snap => {
+                    const type = snap.val();
+                    if(type) likeBtn.innerHTML = `<i class="fas fa-thumbs-up" style="color:#1877f2"></i> <span>Liked</span>`;
+                    else likeBtn.innerHTML = `<i class="far fa-heart"></i> <span>Like</span>`;
+                });
+            }
 
             document.getElementById('detailCommentBtn').onclick = () => openCommentsSheet(key);
             document.getElementById('detailShareBtn').onclick = () => openShareSheet(key);
