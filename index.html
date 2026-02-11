@@ -2057,96 +2057,110 @@ html
         }
 
         // 1. Open Comments Sheet
-        window.openCommentsSheet = (key) => {
-            if(!checkAuth()) return;
-            document.getElementById('sheetTitle').innerText = 'মন্তব্য';
-            document.getElementById('sheetBody').innerHTML = '<p style="text-align:center;">লোড হচ্ছে...</p>';
-            document.getElementById('sheetFooter').style.display = 'flex';
-            document.getElementById('universalBottomSheet').classList.add('active');
-            cancelReply(); 
+      // 1. Open Comments Sheet (Updated Logic)
+window.openCommentsSheet = (key) => {
+    if(!checkAuth()) return;
+    
+    document.getElementById('sheetTitle').innerText = 'মন্তব্য';
+    document.getElementById('sheetBody').innerHTML = '<p style="text-align:center; padding:20px;">লোড হচ্ছে...</p>';
+    document.getElementById('sheetFooter').style.display = 'flex';
+    document.getElementById('universalBottomSheet').classList.add('active');
+    
+    // রিসেট
+    cancelReply(); 
+    window.currentPostId = key;
+
+    // ডাটাবেস থেকে কমেন্ট আনা
+    onValue(ref(db, 'comments/'+key), async snap => {
+        const data = snap.val();
+        if(!data) { 
+            document.getElementById('sheetBody').innerHTML = '<p style="text-align:center; color:var(--secondary-text); padding:20px;">কোনো মন্তব্য নেই। আপনিই প্রথম মন্তব্য করুন!</p>'; 
+            return; 
+        }
+        
+        // কমেন্ট প্রসেসিং
+        const allComments = Object.entries(data).map(([k,v]) => ({key:k, ...v}));
+        window.currentPostComments = allComments; 
+        
+        // প্যারেন্ট এবং চাইল্ড আলাদা করা
+        const parents = allComments.filter(c => !c.parentId).sort((a,b) => b.timestamp - a.timestamp);
+        const children = allComments.filter(c => c.parentId);
+
+        let html = '<div class="comment-container" style="padding-bottom:80px;">'; // নিচে জায়গা রাখা হলো
+        
+        for (const p of parents) {
+            // প্যারেন্ট রেন্ডার (isReply = false)
+            html += await renderCommentBubble(p, false); 
             
-            // Set current post ID for submission
-            window.currentPostId = key;
-
-            onValue(ref(db, 'comments/'+key), async snap => {
-                const data = snap.val();
-                if(!data) { document.getElementById('sheetBody').innerHTML = '<p style="text-align:center; color:var(--secondary-text);">কোনো মন্তব্য নেই</p>'; return; }
-                
-                // Process comments: Separate Parents & Children
-                const allComments = Object.entries(data).map(([k,v]) => ({key:k, ...v}));
-                window.currentPostComments = allComments; 
-                
-                // Sorting: Newest Parents First
-                const parents = allComments.filter(c => !c.parentId).sort((a,b) => b.timestamp - a.timestamp);
-                const children = allComments.filter(c => c.parentId);
-
-                let html = '<div class="comment-container">';
-                
-                // --- FIX: Logic to render Nested Structure ---
-                for (const p of parents) {
-                    // Render the Parent Comment Bubble
-                    html += await renderCommentBubble(p, false); 
-                    
-                    // Find children for this specific parent
-                    const myChildren = children.filter(c => c.parentId === p.key).sort((a,b) => a.timestamp - b.timestamp);
-                    
-                    if (myChildren.length > 0) {
-                        html += `<div class="view-replies-link" id="view-replies-${p.key}" onclick="toggleReplies('${p.key}')">View ${myChildren.length} replies</div>`;
-                        html += `<div id="replies-${p.key}" class="reply-indent">`; // Hidden by default CSS
-                        for(const child of myChildren) {
-                             html += await renderCommentBubble(child, true);
-                        }
-                        html += `</div>`;
-                    }
+            // এই প্যারেন্টের চাইল্ড/রিপ্লে খোঁজা
+            const myChildren = children.filter(c => c.parentId === p.key).sort((a,b) => a.timestamp - b.timestamp);
+            
+            // রিপ্লাই থাকলে তা সরাসরি দেখানো হবে (display: flex)
+            if (myChildren.length > 0) {
+                html += `<div id="replies-${p.key}" class="reply-indent" style="display:flex;">`; 
+                for(const child of myChildren) {
+                     // চাইল্ড রেন্ডার (isReply = true)
+                     html += await renderCommentBubble(child, true);
                 }
+                html += `</div>`;
+            }
+        }
 
-                html += '</div>';
-                document.getElementById('sheetBody').innerHTML = html;
-            });
+        html += '</div>';
+        document.getElementById('sheetBody').innerHTML = html;
+    });
 
-            // Submission Logic
-            const sendBtn = document.getElementById('sheetSendBtn');
-            sendBtn.onclick = () => {
-                const txt = document.getElementById('sheetInput').value;
-                if(!txt) return;
-                
-                get(ref(db, `users/${window.currentUser.uid}/isVerified`)).then(snap => {
-                    const isVerified = snap.val() === true;
-                    const myAvatar = window.currentUser.photoURL; 
+    // সাবমিট বাটন লজিক (Dataset ব্যবহার করে)
+    const sendBtn = document.getElementById('sheetSendBtn');
+    
+    // আগের ইভেন্ট রিমুভ করে নতুন করে বসানো (ডুপ্লিকেট কমেন্ট রোধ করতে)
+    const newBtn = sendBtn.cloneNode(true);
+    sendBtn.parentNode.replaceChild(newBtn, sendBtn);
+    
+    newBtn.onclick = () => {
+        const inputEl = document.getElementById('sheetInput');
+        const txt = inputEl.value.trim();
+        const parentId = inputEl.dataset.parentId || null; // ইনপুট থেকে প্যারেন্ট আইডি নেওয়া হচ্ছে
 
-                    const commentData = { 
-                        text: txt, 
-                        author: window.currentUser.displayName, 
-                        uid: window.currentUser.uid,
-                        userImg: myAvatar,
-                        timestamp: Date.now(), 
-                        parentId: replyingToCommentId, 
-                        isVerified: isVerified,
-                        reactions: {}
-                    };
-                    
-                    push(ref(db, 'comments/'+key), commentData);
+        if(!txt) return;
+        
+        get(ref(db, `users/${window.currentUser.uid}/isVerified`)).then(snap => {
+            const isVerified = snap.val() === true;
+            const myAvatar = window.currentUser.photoURL; 
 
-                    // --- SMART NOTIFICATION LOGIC ---
-                    const post = window.allPosts.find(p => p.key === key);
-                    if (replyingToCommentId) {
-                        // Notify original comment author
-                        const parentComm = window.currentPostComments.find(c => c.key === replyingToCommentId);
-                        if(parentComm && parentComm.uid && parentComm.uid !== window.currentUser.uid) {
-                             sendNotification(parentComm.uid, 'reply', key);
-                        }
-                    } else {
-                        // Notify post author
-                        if(post && post.uid && post.uid !== window.currentUser.uid) { 
-                            sendNotification(post.uid, 'comment', key); 
-                        }
-                    }
-                });
-
-                document.getElementById('sheetInput').value = '';
-                cancelReply();
+            const commentData = { 
+                text: txt, 
+                author: window.currentUser.displayName, 
+                uid: window.currentUser.uid,
+                userImg: myAvatar,
+                timestamp: Date.now(), 
+                parentId: parentId,  // এখানে সঠিক আইডি যাচ্ছে
+                isVerified: isVerified,
+                reactions: {}
             };
-        };
+            
+            push(ref(db, 'comments/'+key), commentData);
+
+            // নোটিফিকেশন লজিক
+            const post = window.allPosts.find(p => p.key === key);
+            if (parentId) {
+                // রিপ্লাই নোটিফিকেশন
+                const parentComm = window.currentPostComments.find(c => c.key === parentId);
+                if(parentComm && parentComm.uid && parentComm.uid !== window.currentUser.uid) {
+                     sendNotification(parentComm.uid, 'reply', key);
+                }
+            } else {
+                // কমেন্ট নোটিফিকেশন
+                if(post && post.uid && post.uid !== window.currentUser.uid) { 
+                    sendNotification(post.uid, 'comment', key); 
+                }
+            }
+        });
+
+        // বক্স খালি করা
+        cancelReply();
+    };
+};
 
         // 2. Render Single Comment Bubble (Reused for Parent & Child)
         // 2. Render Single Comment Bubble (Reused for Parent & Child)
@@ -2251,18 +2265,28 @@ async function renderCommentBubble(c, isReply) {
             }
         };
 
-        window.startReply = function(commentId, authorName) {
-            replyingToCommentId = commentId;
-            const input = document.getElementById('sheetInput');
-            input.placeholder = `Replying to ${authorName}...`; input.focus();
-            document.getElementById('cancelReplyBtn').style.display = 'block';
-        };
-        window.cancelReply = function() {
-            replyingToCommentId = null;
-            const input = document.getElementById('sheetInput');
-            input.placeholder = "মন্তব্য লিখুন...";
-            document.getElementById('cancelReplyBtn').style.display = 'none';
-        };
+        // নতুন startReply ফাংশন
+window.startReply = function(commentId, authorName) {
+    // আইডিটি ইনপুট বক্সের ভেতরে সেভ করে রাখছি
+    const input = document.getElementById('sheetInput');
+    input.dataset.parentId = commentId; 
+    
+    input.placeholder = `Replying to ${authorName}...`;
+    input.focus();
+    
+    // ক্যানসেল বাটন দেখান
+    document.getElementById('cancelReplyBtn').style.display = 'block';
+};
+
+// নতুন cancelReply ফাংশন
+window.cancelReply = function() {
+    const input = document.getElementById('sheetInput');
+    input.dataset.parentId = ""; // আইডি ক্লিয়ার করা হলো
+    input.value = "";
+    
+    input.placeholder = "মন্তব্য লিখুন...";
+    document.getElementById('cancelReplyBtn').style.display = 'none';
+};
 
         // 4. Comment Reaction Logic (Attached to Window for Scope)
         window.startCommentPress = function(e, commentId, btn) {
