@@ -259,12 +259,14 @@ html
         .reaction-img { width: 100%; height: 100%; object-fit: contain; transform-origin: bottom center; transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1); pointer-events: none; }
         .reaction-item:hover .reaction-img, .reaction-item.active .reaction-img { transform: scale(1.6) translateY(-8px); }
         
-        .reaction-box.show .reaction-item { animation: slideUpFade 0.3s backwards; }
         .reaction-box.show .reaction-item:nth-child(1) { animation-delay: 0.05s; }
         .reaction-box.show .reaction-item:nth-child(2) { animation-delay: 0.08s; }
         .reaction-box.show .reaction-item:nth-child(3) { animation-delay: 0.11s; }
         .reaction-box.show .reaction-item:nth-child(4) { animation-delay: 0.14s; }
         .reaction-box.show .reaction-item:nth-child(5) { animation-delay: 0.17s; }
+        /* নিচের দুটি লাইন নতুন যুক্ত করতে হবে */
+        .reaction-box.show .reaction-item:nth-child(6) { animation-delay: 0.20s; }
+        .reaction-box.show .reaction-item:nth-child(7) { animation-delay: 0.23s; }
         @keyframes slideUpFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         .flying-emoji { position: fixed; z-index: 9999; width: 40px; height: 40px; pointer-events: none; transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1); }
@@ -1073,6 +1075,8 @@ html
             like: "👍",
             love: "❤️",
             care: "🤗",
+            haha: "😂", // নতুন
+            wow: "😮",  // নতুন
             sad: "😢",
             angry: "😡"
         };
@@ -1120,6 +1124,8 @@ html
                 like: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Facebook_Like_2016.svg/100px-Facebook_Like_2016.svg.png',
                 love: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Facebook_Love_2016.svg/100px-Facebook_Love_2016.svg.png',
                 care: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Facebook_Care_Reaction.png/100px-Facebook_Care_Reaction.png',
+                haha: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Facebook_Haha_2016.svg/100px-Facebook_Haha_2016.svg.png', // নতুন লিংক
+                wow: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Facebook_Wow_2016.svg/100px-Facebook_Wow_2016.svg.png',   // নতুন লিংক
                 sad: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Facebook_Sad_2016.svg/100px-Facebook_Sad_2016.svg.png',
                 angry: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Facebook_Angry_2016.svg/100px-Facebook_Angry_2016.svg.png'
             };
