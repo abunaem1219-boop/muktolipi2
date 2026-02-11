@@ -347,20 +347,35 @@ html
         }
         
         /* CSS FIX: Indentation for Replies */
-        .reply-indent { 
-            margin-left: 45px; 
-            display: none; 
-            flex-direction: column; 
-            gap: 10px; 
-            margin-top: 5px; 
-            border-left: 2px solid var(--border-color);
-            padding-left: 8px;
-        }
-        
-        .view-replies-link { margin-left: 54px; font-size: 13px; font-weight: 600; color: var(--secondary-text); cursor: pointer; margin-top: 5px; display: flex; align-items: center; gap: 5px; }
-        .view-replies-link:hover { text-decoration: underline; }
-        .view-replies-link::before { content: ""; display: inline-block; width: 20px; height: 1px; background: var(--secondary-text); vertical-align: middle; }
+        /* রিপ্লাই সেকশনের ইন্ডেন্টেশন এবং বাম পাশে দাগ */
+ .reply-indent {
+    margin-left: 48px; /* বাম থেকে একটু বেশি সরাবে */
+    margin-top: 5px;
+    border-left: 2px solid #e4e6eb; /* ফেসবুকের মতো একটি হালকা দাগ */
+    padding-left: 10px;
+    display: none; /* ডিফল্টভাবে লুকানো থাকবে, JS দিয়ে খোলা হবে */
+    flex-direction: column;
+    gap: 8px;
+}
 
+/* রিপ্লাইয়ের জন্য আলাদা স্টাইল */
+.comment-wrapper.reply-style .comment-avatar {
+    width: 24px;  /* প্যারেন্ট কমেন্টের চেয়ে ছবি ছোট হবে */
+    height: 24px;
+}
+
+.comment-wrapper.reply-style .comment-bubble {
+    padding: 6px 10px; /* বাবল একটু ছোট হবে */
+    background-color: #f0f2f5; 
+}
+
+.comment-wrapper.reply-style .comment-author-name {
+    font-size: 12px; /* নাম একটু ছোট */
+}
+
+.comment-wrapper.reply-style .comment-text {
+    font-size: 13px; /* টেক্সট একটু ছোট */
+}
         /* --- END COMMENTS CSS --- */
 
         /* Detail View */
@@ -2134,90 +2149,92 @@ html
         };
 
         // 2. Render Single Comment Bubble (Reused for Parent & Child)
-        async function renderCommentBubble(c, isReply) {
-            let isVerified = c.isVerified === undefined ? false : c.isVerified;
-            const badgeHtml = getVerifiedBadge(isVerified);
-            const userImg = c.userImg || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-            const timeAgo = getRelativeTime(c.timestamp);
-            
-            // Reaction Count Logic
-            let reactionCount = 0;
-            let topReactionIcon = '';
-            if (c.reactions) {
-                const reacts = Object.values(c.reactions);
-                reactionCount = reacts.length;
-                if(reactionCount > 0) {
-                     const type = reacts[reacts.length-1].type; 
-                     const style = getReactionStyle(type);
-                     if(type === 'like') topReactionIcon = '<i class="fas fa-thumbs-up" style="color:#1877f2"></i>';
-                     else topReactionIcon = `<img src="${style.icon}" style="width:10px; height:10px;">`;
-                }
-            }
-            
-            // My Reaction Status
-            let myReaction = null;
-            if(c.reactions && window.currentUser && c.reactions[window.currentUser.uid]) {
-                myReaction = c.reactions[window.currentUser.uid];
-            }
-            let btnText = "Like";
-            let btnStyle = "";
-            if(myReaction) {
-                 const s = getReactionStyle(myReaction.type);
-                 btnText = s.text;
-                 btnStyle = `color:${s.color};`;
-            }
-
-            // If it's a reply inside the indent container, we don't need margin-top on the wrapper itself usually, 
-            // but margin is handled by CSS gap in container.
-            const wrapperClass = 'comment-wrapper';
-            
-            // Reaction Box HTML
-            const reactionBoxHTML = `
-            <div class="reaction-box" 
-                 id="reaction-dock-${c.key}"
-                 ontouchmove="handleReactionMove(event, this)" 
-                 ontouchend="handleCommentReactionRelease(event, '${window.currentPostId}', '${c.key}', this)"
-                 onmousemove="handleReactionMove(event, this)"
-                 onmouseleave="this.classList.remove('show')">
-                <div class="reaction-item" data-type="like" onclick="handleCommentReactionClick(event, 'like', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.like}" class="reaction-img"></div>
-                <div class="reaction-item" data-type="love" onclick="handleCommentReactionClick(event, 'love', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.love}" class="reaction-img"></div>
-                <div class="reaction-item" data-type="care" onclick="handleCommentReactionClick(event, 'care', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.care}" class="reaction-img"></div>
-                <div class="reaction-item" data-type="haha" onclick="handleCommentReactionClick(event, 'haha', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.haha}" class="reaction-img"></div>
-                <div class="reaction-item" data-type="wow" onclick="handleCommentReactionClick(event, 'wow', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.wow}" class="reaction-img"></div>
-                <div class="reaction-item" data-type="sad" onclick="handleCommentReactionClick(event, 'sad', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.sad}" class="reaction-img"></div>
-                <div class="reaction-item" data-type="angry" onclick="handleCommentReactionClick(event, 'angry', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.angry}" class="reaction-img"></div>
-            </div>`;
-
-            let html = `
-            <div class="${wrapperClass}" id="comment-wrap-${c.key}">
-                <img src="${userImg}" class="comment-avatar">
-                <div class="comment-content-box">
-                    <div class="comment-bubble">
-                        <span class="comment-author-name">${c.author} ${badgeHtml}</span>
-                        <span class="comment-text">${formatPostContent(c.text)}</span>
-                        ${reactionCount > 0 ? `<div class="comment-reaction-badge">${topReactionIcon} ${reactionCount}</div>` : ''}
-                    </div>
-                    <div class="comment-actions">
-                        <div class="action-btn-wrapper">
-                             ${reactionBoxHTML}
-                             <button class="c-action-btn" id="comment-like-btn-${c.key}"
-                                style="${btnStyle}"
-                                onmousedown="startCommentPress(event, '${c.key}', this)" 
-                                onmouseup="endCommentPress(event, '${window.currentPostId}', '${c.key}', this)"
-                                ontouchstart="startCommentPress(event, '${c.key}', this)" 
-                                ontouchend="endCommentPress(event, '${window.currentPostId}', '${c.key}', this)"
-                                oncontextmenu="return false;">
-                                ${btnText}
-                             </button>
-                        </div>
-                        <button class="c-action-btn" onclick="startReply('${c.key}', '${c.author}')">Reply</button>
-                        <span>${timeAgo}</span>
-                    </div>
-                </div>
-            </div>`;
-
-            return html;
+        // 2. Render Single Comment Bubble (Reused for Parent & Child)
+async function renderCommentBubble(c, isReply) {
+    let isVerified = c.isVerified === undefined ? false : c.isVerified;
+    const badgeHtml = getVerifiedBadge(isVerified);
+    const userImg = c.userImg || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+    const timeAgo = getRelativeTime(c.timestamp);
+    
+    // Reaction Count Logic
+    let reactionCount = 0;
+    let topReactionIcon = '';
+    if (c.reactions) {
+        const reacts = Object.values(c.reactions);
+        reactionCount = reacts.length;
+        if(reactionCount > 0) {
+                const type = reacts[reacts.length-1].type; 
+                const style = getReactionStyle(type);
+                if(type === 'like') topReactionIcon = '<i class="fas fa-thumbs-up" style="color:#1877f2"></i>';
+                else topReactionIcon = `<img src="${style.icon}" style="width:10px; height:10px;">`;
         }
+    }
+    
+    // My Reaction Status
+    let myReaction = null;
+    if(c.reactions && window.currentUser && c.reactions[window.currentUser.uid]) {
+        myReaction = c.reactions[window.currentUser.uid];
+    }
+    let btnText = "Like";
+    let btnStyle = "";
+    if(myReaction) {
+            const s = getReactionStyle(myReaction.type);
+            btnText = s.text;
+            btnStyle = `color:${s.color};`;
+    }
+
+    // --- পরিবর্তন এখানে (Start Change) ---
+    // যদি isReply সত্য হয়, তাহলে 'reply-style' ক্লাস যুক্ত হবে
+    const wrapperClass = isReply ? 'comment-wrapper reply-style' : 'comment-wrapper';
+    // --- পরিবর্তন শেষ (End Change) ---
+    
+    // Reaction Box HTML
+    const reactionBoxHTML = `
+    <div class="reaction-box" 
+            id="reaction-dock-${c.key}"
+            ontouchmove="handleReactionMove(event, this)" 
+            ontouchend="handleCommentReactionRelease(event, '${window.currentPostId}', '${c.key}', this)"
+            onmousemove="handleReactionMove(event, this)"
+            onmouseleave="this.classList.remove('show')">
+        <div class="reaction-item" data-type="like" onclick="handleCommentReactionClick(event, 'like', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.like}" class="reaction-img"></div>
+        <div class="reaction-item" data-type="love" onclick="handleCommentReactionClick(event, 'love', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.love}" class="reaction-img"></div>
+        <div class="reaction-item" data-type="care" onclick="handleCommentReactionClick(event, 'care', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.care}" class="reaction-img"></div>
+        <div class="reaction-item" data-type="haha" onclick="handleCommentReactionClick(event, 'haha', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.haha}" class="reaction-img"></div>
+        <div class="reaction-item" data-type="wow" onclick="handleCommentReactionClick(event, 'wow', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.wow}" class="reaction-img"></div>
+        <div class="reaction-item" data-type="sad" onclick="handleCommentReactionClick(event, 'sad', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.sad}" class="reaction-img"></div>
+        <div class="reaction-item" data-type="angry" onclick="handleCommentReactionClick(event, 'angry', '${window.currentPostId}', '${c.key}')"><img src="${reactionAssets.angry}" class="reaction-img"></div>
+    </div>`;
+
+    let html = `
+    <div class="${wrapperClass}" id="comment-wrap-${c.key}">
+        <img src="${userImg}" class="comment-avatar">
+        <div class="comment-content-box">
+            <div class="comment-bubble">
+                <span class="comment-author-name">${c.author} ${badgeHtml}</span>
+                <span class="comment-text">${formatPostContent(c.text)}</span>
+                ${reactionCount > 0 ? `<div class="comment-reaction-badge">${topReactionIcon} ${reactionCount}</div>` : ''}
+            </div>
+            <div class="comment-actions">
+                <div class="action-btn-wrapper">
+                        ${reactionBoxHTML}
+                        <button class="c-action-btn" id="comment-like-btn-${c.key}"
+                        style="${btnStyle}"
+                        onmousedown="startCommentPress(event, '${c.key}', this)" 
+                        onmouseup="endCommentPress(event, '${window.currentPostId}', '${c.key}', this)"
+                        ontouchstart="startCommentPress(event, '${c.key}', this)" 
+                        ontouchend="endCommentPress(event, '${window.currentPostId}', '${c.key}', this)"
+                        oncontextmenu="return false;">
+                        ${btnText}
+                        </button>
+                </div>
+                <button class="c-action-btn" onclick="startReply('${c.key}', '${c.author}')">Reply</button>
+                <span>${timeAgo}</span>
+            </div>
+        </div>
+    </div>`;
+
+    return html;
+}
 
         // 3. Toggle Replies visibility
         window.toggleReplies = function(parentId) {
