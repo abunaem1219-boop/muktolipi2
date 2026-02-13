@@ -105,45 +105,261 @@ html
         #offlineBanner { display: none; background: #333; color: white; text-align: center; padding: 8px; font-size: 13px; position: sticky; top: 0; z-index: 1000; }
         .container { max-width: 800px; margin: 0 auto; padding: 70px 15px 10px 15px; min-height: 100vh;}
 
-        /* --- Dynamic Header & Stories --- */
+        /* --- Dynamic Header --- */
         .greeting-section { margin-bottom: 15px; padding: 0 5px; }
         .greeting-text { font-size: 22px; font-weight: 700; color: var(--primary-color); margin: 0; display: flex; align-items: center; gap: 8px; }
         .date-text { font-size: 13px; color: var(--secondary-text); margin-top: 2px; }
 
-        .stories-container {
-            display: flex; gap: 10px; overflow-x: auto; padding: 4px 4px 14px 4px;
-            margin-bottom: 10px; scrollbar-width: none;
+        /* ==========================================================================
+           🎯 FACEBOOK-STYLE STORY SYSTEM CSS (START)
+           ========================================================================== */
+        .fb-stories-wrapper {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 10px 4px 20px 4px; /* Bottom padding for shadow */
+            margin-bottom: 10px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
-        .stories-container::-webkit-scrollbar { display: none; }
-        .story-item { display: flex; flex-direction: column; align-items: center; min-width: 60px; cursor: pointer; }
+        .fb-stories-wrapper::-webkit-scrollbar { display: none; }
 
-        .story-ring {
-            width: 50px; height: 50px; border-radius: 50%; padding: 2px;
-            border: 2px solid transparent; 
-            background: transparent;
-            display: flex; align-items: center; justify-content: center; margin-bottom: 3px;
-            transition: transform 03s, border-color 0.3s;
+        /* Common Story Card Style */
+        .story-card {
             position: relative;
+            width: 110px;
+            height: 160px;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            background-color: var(--glass-bg);
         }
-        .story-ring.seen-gradient {
-            background: linear-gradient(var(--bg-color), var(--bg-color)) padding-box,
-                        linear-gradient(45deg, #bbb, #ddd) border-box;
-            border: 2px solid transparent;
-        }
-        .story-ring.active {
-            border: 3px solid #1877f2;
-            box-shadow: 0 0 8px rgba(24, 119, 242, 0.4);
-            animation: pulse-ring 2s infinite;
-        }
-        @keyframes pulse-ring {
-            0% { box-shadow: 0 0 0 0 rgba(24, 119, 242, 0.4); }
-            70% { box-shadow: 0 0 0 6px rgba(24, 119, 242, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(24, 119, 242, 0); }
-        }
-        .story-ring:active { transform: scale(0.9); }
-        .story-img { width: 100%; height: 100%; border-radius: 50%; border: 2px solid var(--bg-color); object-fit: cover; }
-        .story-name { font-size: 14px; max-width: 60px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-color); }
+        .story-card:active { transform: scale(0.96); }
 
+        /* Your Story Card Specifics */
+        .story-card.your-story .story-card-bg {
+            height: 65%;
+            width: 100%;
+            background-size: cover;
+            background-position: center;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .story-card.your-story .create-story-btn {
+            position: absolute;
+            bottom: 35px; /* Adjusted to overlap */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 34px;
+            height: 34px;
+            background: #1877f2;
+            border: 3px solid var(--sheet-bg);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            z-index: 5;
+        }
+        .story-card.your-story .story-label {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 35%; /* Rest of the height */
+            background: var(--sheet-bg);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+        /* Your Story Active Ring */
+        .your-story.active-story .create-story-btn {
+            background: transparent;
+            border: 3px solid #1877f2;
+            color: transparent; /* Hide plus */
+        }
+        .your-story.active-story .create-story-btn::after {
+            content: ''; /* Show existing story thumbnail logic if needed, but ring is enough */
+        }
+
+        /* Friends' Story Card Specifics */
+        .story-card.friend-story {
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        /* Dark overlay for text visibility */
+        .story-card.friend-story::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.7) 100%);
+            border-radius: 12px;
+        }
+        
+        /* Friend Profile Pic in Story Card */
+        .story-author-img {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 3px solid #1877f2; /* Blue for unseen */
+            object-fit: cover;
+            z-index: 2;
+        }
+        /* Unseen Gradient Ring Logic */
+        .story-card.friend-story[data-seen="false"] .story-author-img {
+             border: 3px solid transparent;
+             background: linear-gradient(#fff, #fff) padding-box,
+                         linear-gradient(45deg, #1877f2, #00c6ff) border-box;
+        }
+        /* Seen Ring */
+        .story-card.friend-story[data-seen="true"] .story-author-img {
+            border: 2px solid #ddd;
+        }
+
+        /* Green Dot (Active Status) */
+        .story-online-dot {
+            position: absolute;
+            top: 32px; /* Relative to card */
+            left: 32px; /* Relative to card */
+            width: 10px;
+            height: 10px;
+            background: #44b700;
+            border: 2px solid white;
+            border-radius: 50%;
+            z-index: 3;
+            display: none; /* JS will toggle */
+        }
+        .story-online-dot.active { display: block; }
+
+        .story-username {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+            z-index: 2;
+            width: 90%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .story-time {
+             position: absolute;
+             bottom: 24px;
+             left: 8px;
+             color: rgba(255,255,255,0.8);
+             font-size: 10px;
+             z-index: 2;
+             display: none; /* Optional detail */
+        }
+
+        /* --- Story Creator Modal --- */
+        .story-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--sheet-bg); z-index: 4000;
+            display: none; flex-direction: column;
+            animation: slideUp 0.3s ease-out;
+        }
+        .story-modal-header {
+            padding: 15px; border-bottom: 1px solid var(--border-color);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .story-options-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px;
+            margin-top: auto; margin-bottom: auto;
+        }
+        .story-option-card {
+            background: var(--bg-color); border-radius: 12px; padding: 30px 10px;
+            text-align: center; cursor: pointer; border: 1px solid var(--border-color);
+            transition: 0.2s;
+        }
+        .story-option-card:active { transform: scale(0.95); }
+        .story-option-icon { font-size: 30px; margin-bottom: 10px; display: block; }
+        .text-icon { color: #aa00ff; } .media-icon { color: #2ecc71; }
+
+        /* --- Text Story Editor --- */
+        #textStoryEditor {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #1877f2; display: none; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 4001;
+        }
+        .color-picker {
+            position: absolute; bottom: 80px; display: flex; gap: 10px;
+            overflow-x: auto; max-width: 90%; padding: 5px;
+        }
+        .color-dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid white; cursor: pointer; }
+        .story-text-input {
+            background: transparent; border: none; color: white; font-size: 24px;
+            text-align: center; width: 80%; outline: none; font-weight: bold;
+            font-family: var(--current-font); resize: none;
+        }
+
+        /* --- Full Screen Viewer --- */
+        .story-viewer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: black; z-index: 5000; display: none;
+            flex-direction: column;
+        }
+        .viewer-progress-container {
+            display: flex; gap: 4px; padding: 10px 10px 0 10px; z-index: 5002;
+        }
+        .progress-bar-bg {
+            flex: 1; height: 3px; background: rgba(255,255,255,0.3); border-radius: 2px; overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%; background: white; width: 0%; transition: width 0.1s linear;
+        }
+        .viewer-header {
+            display: flex; align-items: center; padding: 15px; color: white; z-index: 5002;
+        }
+        .viewer-content {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+        }
+        .viewer-media { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .viewer-text-bg {
+            width: 100%; height: 100%; display: flex; align-items: center;
+            justify-content: center; padding: 20px; text-align: center;
+            color: white; font-size: 24px; font-weight: bold;
+        }
+        .nav-tap-area {
+            position: absolute; top: 0; height: 100%; width: 30%; z-index: 5001;
+        }
+        .left-tap { left: 0; } .right-tap { right: 0; }
+        
+        .viewer-footer {
+            padding: 15px; display: flex; gap: 10px; align-items: center; z-index: 5002;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+        }
+        .story-reply-input {
+            flex: 1; background: transparent; border: 1px solid rgba(255,255,255,0.5);
+            border-radius: 25px; padding: 10px 15px; color: white; outline: none;
+        }
+        .story-reaction-btn { background: none; border: none; font-size: 24px; cursor: pointer; transition: 0.2s; }
+        .story-reaction-btn:active { transform: scale(1.3); }
+
+        /* Loading Spinner for Upload */
+        .story-loader {
+            position: absolute; top:50%; left:50%; transform:translate(-50%, -50%);
+            color: white; text-align: center; display: none; z-index: 4005;
+        }
+        /* ==========================================================================
+           🎯 FACEBOOK-STYLE STORY SYSTEM CSS (END)
+           ========================================================================== */
+
+        /* Existing Styles Restored Below */
         /* --- Masonry & Post Card --- */
         .masonry-feed { column-count: 2; column-gap: 15px; }
         @media (max-width: 500px) { .masonry-feed { column-count: 1; } }
@@ -1013,10 +1229,97 @@ html
                 <p id="dateText" class="date-text">আজকের দিনটি আপনার ভালো কাটুক</p>
             </div>
 
-            <!-- Stories / Top Writers -->
-            <div id="storiesBar" class="stories-container">
-                <!-- Injected via JS -->
+            <!-- ==========================================================================
+                 🎯 FACEBOOK-STYLE STORY SYSTEM HTML (START)
+                 ========================================================================== -->
+            
+            <div id="storiesBar" class="fb-stories-wrapper">
+                <!-- This section will be populated dynamically by JS -->
+                <div class="story-card your-story" onclick="openStoryCreator()">
+                    <div class="story-card-bg" id="yourStoryBg" style="background-image: url('https://cdn-icons-png.flaticon.com/512/149/149071.png')"></div>
+                    <div class="create-story-btn">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                    <span class="story-label">Create Story</span>
+                </div>
+                <!-- Friend stories will be injected here -->
             </div>
+
+            <!-- Story Creator Modal -->
+            <div id="storyCreatorModal" class="story-modal">
+                <div class="story-modal-header">
+                    <h3 style="margin:0;">Create Story</h3>
+                    <button onclick="closeStoryCreator()" style="border:none; background:none; font-size:24px; color:var(--text-color);">&times;</button>
+                </div>
+                <div class="story-options-grid">
+                    <div class="story-option-card" onclick="openTextStoryEditor()">
+                        <span class="story-option-icon text-icon"><i class="fas fa-font"></i></span>
+                        <span style="font-weight:600;">Text</span>
+                    </div>
+                    <div class="story-option-card" onclick="triggerMediaUpload('image')">
+                        <span class="story-option-icon media-icon"><i class="fas fa-image"></i></span>
+                        <span style="font-weight:600;">Photo</span>
+                    </div>
+                    <div class="story-option-card" onclick="triggerMediaUpload('video')">
+                        <span class="story-option-icon media-icon" style="color:#e74c3c;"><i class="fas fa-video"></i></span>
+                        <span style="font-weight:600;">Video</span>
+                    </div>
+                </div>
+                <input type="file" id="storyMediaInput" hidden>
+                <div class="story-loader" id="storyLoader">
+                    <i class="fas fa-spinner fa-spin" style="font-size:30px;"></i><br>Uploading...
+                </div>
+            </div>
+
+            <!-- Text Story Editor -->
+            <div id="textStoryEditor">
+                <button onclick="closeTextStoryEditor()" style="position:absolute; top:20px; left:20px; background:rgba(0,0,0,0.3); color:white; border:none; border-radius:50%; width:40px; height:40px; font-size:20px;">&times;</button>
+                <button onclick="postTextStory()" style="position:absolute; top:20px; right:20px; background:white; color:black; border:none; border-radius:20px; padding:10px 20px; font-weight:bold;">Share</button>
+                
+                <textarea id="storyTextInputField" class="story-text-input" placeholder="Start typing..." maxlength="200"></textarea>
+                
+                <div class="color-picker">
+                    <div class="color-dot" style="background:#1877f2" onclick="setStoryBg('#1877f2')"></div>
+                    <div class="color-dot" style="background:#e74c3c" onclick="setStoryBg('#e74c3c')"></div>
+                    <div class="color-dot" style="background:#9b59b6" onclick="setStoryBg('#9b59b6')"></div>
+                    <div class="color-dot" style="background:#2ecc71" onclick="setStoryBg('#2ecc71')"></div>
+                    <div class="color-dot" style="background:#f39c12" onclick="setStoryBg('#f39c12')"></div>
+                    <div class="color-dot" style="background:#34495e" onclick="setStoryBg('#34495e')"></div>
+                    <div class="color-dot" style="background:linear-gradient(45deg, #ff00cc, #333399)" onclick="setStoryBg('linear-gradient(45deg, #ff00cc, #333399)')"></div>
+                </div>
+            </div>
+
+            <!-- Story Viewer -->
+            <div id="storyViewerModal" class="story-viewer">
+                <div class="viewer-progress-container" id="viewerProgressBars"></div>
+                
+                <div class="viewer-header">
+                    <img id="viewerAuthorImg" src="" style="width:40px; height:40px; border-radius:50%; margin-right:10px; border:1px solid rgba(255,255,255,0.5);">
+                    <div style="flex:1;">
+                        <div id="viewerAuthorName" style="font-weight:bold; font-size:14px;"></div>
+                        <div id="viewerTime" style="font-size:11px; opacity:0.8;"></div>
+                    </div>
+                    <button onclick="closeStoryViewer()" style="background:none; border:none; color:white; font-size:24px;">&times;</button>
+                </div>
+                
+                <div class="viewer-content" id="viewerContentArea">
+                    <!-- Media or Text injected here -->
+                    <div class="nav-tap-area left-tap" onclick="prevStorySegment()"></div>
+                    <div class="nav-tap-area right-tap" onclick="nextStorySegment()"></div>
+                </div>
+                
+                <div class="viewer-footer">
+                    <input type="text" id="storyReplyInput" class="story-reply-input" placeholder="Send message...">
+                    <button onclick="sendStoryReply()" style="background:none; border:none; color:white; font-size:20px;"><i class="fas fa-paper-plane"></i></button>
+                    <button class="story-reaction-btn" onclick="reactToStory('love')">❤️</button>
+                    <button class="story-reaction-btn" onclick="reactToStory('haha')">😂</button>
+                    <button class="story-reaction-btn" onclick="reactToStory('wow')">😮</button>
+                </div>
+            </div>
+            
+            <!-- ==========================================================================
+                 🎯 FACEBOOK-STYLE STORY SYSTEM HTML (END)
+                 ========================================================================== -->
 
             <!-- Tabs -->
             <div class="category-tabs">
@@ -1246,7 +1549,7 @@ html
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, push, set, onValue, update, remove, get, query, orderByKey, limitToLast, endBefore, equalTo, orderByChild, onChildAdded, onDisconnect, runTransaction, off, startAt, endAt, limitToFirst } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, push, set, onValue, update, remove, get, query, orderByKey, limitToLast, endBefore, equalTo, orderByChild, onChildAdded, onDisconnect, runTransaction, off, startAt, endAt, limitToFirst, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, updateProfile, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const ADMIN_UID = "Pg5ko76Pu8Zf4ja9MMzEJRLDMYs1"; 
@@ -1265,6 +1568,11 @@ html
         const db = getDatabase(app);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
+
+        // --- CLOUDINARY CONFIGURATION ---
+        // REPLACE THESE WITH YOUR ACTUAL CLOUDINARY CREDENTIALS
+        const CLOUDINARY_CLOUD_NAME = "story_upload"; 
+        const CLOUDINARY_UPLOAD_PRESET = "stories"; 
 
         window.allPosts = []; 
         window.allComments = {}; 
@@ -1401,12 +1709,20 @@ html
                 initNotificationListener(user.uid);
                 initChatListener(user.uid); 
 
+                // --- PRESENCE SYSTEM (ONLINE STATUS) ---
                 const connectedRef = ref(db, '.info/connected');
                 const myStatusRef = ref(db, 'status/' + user.uid);
+                const myPresenceRef = ref(db, 'presence/' + user.uid); // New for Story
+
                 onValue(connectedRef, (snap) => {
                     if (snap.val() === true) {
+                        // Existing status logic
                         onDisconnect(myStatusRef).remove();
                         set(myStatusRef, { state: 'online', last_changed: Date.now() });
+
+                        // New Presence logic for Stories
+                        set(myPresenceRef, { online: true, lastSeen: serverTimestamp() });
+                        onDisconnect(myPresenceRef).set({ online: false, lastSeen: serverTimestamp() });
                     }
                 });
 
@@ -1414,6 +1730,13 @@ html
                     const params = new URLSearchParams(window.location.search);
                     if(!params.get('uid') || params.get('uid') === user.uid) loadProfile();
                 }
+
+                // Initial Story Load
+                if(document.getElementById('yourStoryBg')) {
+                     document.getElementById('yourStoryBg').style.backgroundImage = `url('${user.photoURL}')`;
+                }
+                loadFacebookStories();
+
             } else {
                 window.OneSignalDeferred.push(function(OneSignal) {
                     OneSignal.logout();
@@ -1426,7 +1749,6 @@ html
             }
 
             updateAuthUI(user);
-            loadStoryFeed();
         });
 
         window.performLogin = () => signInWithPopup(auth, provider).catch(console.error);
@@ -1454,7 +1776,416 @@ html
             }
         }
 
-        // --- AUTH FUNCTIONS (NEW) ---
+        /* ==========================================================================
+           🎯 FACEBOOK-STYLE STORY SYSTEM LOGIC (START)
+           ========================================================================== */
+        
+        let currentStoryViewerState = {
+            userId: null,
+            storyIndex: 0,
+            stories: [],
+            timerId: null,
+            paused: false
+        };
+
+        // --- 1. Story Fetching & Rendering ---
+        window.loadFacebookStories = function() {
+            if (!window.currentUser) return; // Wait for auth
+            
+            const storiesRef = ref(db, 'stories');
+            onValue(storiesRef, async (snapshot) => {
+                const allStoriesData = snapshot.val() || {};
+                const friendsContainer = document.getElementById('storiesBar');
+                
+                // Keep the "Your Story" card (first child)
+                const yourStoryCard = friendsContainer.firstElementChild;
+                friendsContainer.innerHTML = '';
+                friendsContainer.appendChild(yourStoryCard);
+
+                // Filter & Sort Stories
+                const now = Date.now();
+                const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+                
+                const validStories = []; // Array of user objects { uid, stories: [] }
+
+                // Check my own story
+                if(allStoriesData[window.currentUser.uid]) {
+                    const myStories = Object.entries(allStoriesData[window.currentUser.uid])
+                        .map(([k,v]) => ({id:k, ...v}))
+                        .filter(s => now - s.timestamp < TWENTY_FOUR_HOURS)
+                        .sort((a,b) => a.timestamp - b.timestamp);
+                    
+                    if(myStories.length > 0) {
+                        // Update Your Story UI
+                        yourStoryCard.classList.add('active-story');
+                        // On click, open viewer instead of creator
+                        yourStoryCard.onclick = () => openStoryViewer(window.currentUser.uid, 0);
+                        document.querySelector('.your-story .story-label').innerText = "Your Story";
+                    } else {
+                        yourStoryCard.classList.remove('active-story');
+                        yourStoryCard.onclick = openStoryCreator;
+                        document.querySelector('.your-story .story-label').innerText = "Create Story";
+                    }
+                }
+
+                // Process Friends' Stories
+                // Logic: Fetch friends/following list first? For now, fetch all stories (demo scale)
+                // In production: Filter by following list
+                for (const [uid, userStories] of Object.entries(allStoriesData)) {
+                    if (uid === window.currentUser.uid) continue;
+                    if (window.blockedUsers.includes(uid)) continue;
+
+                    const activeStories = Object.entries(userStories)
+                        .map(([k,v]) => ({id:k, ...v}))
+                        .filter(s => now - s.timestamp < TWENTY_FOUR_HOURS)
+                        .sort((a,b) => a.timestamp - b.timestamp);
+                    
+                    if (activeStories.length > 0) {
+                        validStories.push({ uid, stories: activeStories });
+                    }
+                }
+
+                // Render Friends' Cards
+                for (const userStoryData of validStories) {
+                    const userSnap = await get(ref(db, `users/${userStoryData.uid}`));
+                    if (!userSnap.exists()) continue;
+                    const user = userSnap.val();
+                    
+                    const lastStory = userStoryData.stories[userStoryData.stories.length - 1];
+                    const bgImage = lastStory.type === 'image' ? `url(${lastStory.content})` : 
+                                   (lastStory.type === 'video' ? `url(${user.photoURL})` : 'none'); // Video thumb fallback
+                    const bgColor = lastStory.type === 'text' ? lastStory.backgroundColor : '#333';
+                    
+                    // Check Seen Status (Local Logic)
+                    const seenKey = `SEEN_STORY_${userStoryData.uid}_${lastStory.id}`;
+                    const isSeen = localStorage.getItem(seenKey) === 'true';
+
+                    const card = document.createElement('div');
+                    card.className = 'story-card friend-story';
+                    card.setAttribute('data-uid', userStoryData.uid);
+                    card.setAttribute('data-seen', isSeen);
+                    
+                    if (lastStory.type === 'text') {
+                        card.style.background = bgColor;
+                    } else {
+                        card.style.backgroundImage = bgImage;
+                    }
+
+                    // Online Status Check
+                    let isOnline = false;
+                    const presenceSnap = await get(ref(db, `presence/${userStoryData.uid}`));
+                    if(presenceSnap.exists() && presenceSnap.val().online) isOnline = true;
+
+                    card.innerHTML = `
+                        <img src="${user.photoURL}" class="story-author-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+                        <div class="story-online-dot ${isOnline ? 'active' : ''}"></div>
+                        <span class="story-username">${user.displayName.split(' ')[0]}</span>
+                    `;
+                    
+                    card.onclick = () => openStoryViewer(userStoryData.uid, 0);
+                    friendsContainer.appendChild(card);
+                }
+            });
+        };
+
+        // --- 2. Story Creation System ---
+        window.openStoryCreator = function() {
+            if(!checkAuth()) return;
+            document.getElementById('storyCreatorModal').style.display = 'flex';
+        };
+        window.closeStoryCreator = () => document.getElementById('storyCreatorModal').style.display = 'none';
+
+        // Text Story
+        let textStoryBg = '#1877f2';
+        window.openTextStoryEditor = function() {
+            document.getElementById('textStoryEditor').style.display = 'flex';
+            setStoryBg('#1877f2'); // Default
+        };
+        window.closeTextStoryEditor = () => document.getElementById('textStoryEditor').style.display = 'none';
+        
+        window.setStoryBg = function(color) {
+            textStoryBg = color;
+            document.getElementById('textStoryEditor').style.background = color;
+        };
+
+        window.postTextStory = function() {
+            const text = document.getElementById('storyTextInputField').value.trim();
+            if (!text) return showToast("Please write something!");
+            
+            saveStoryToFirebase({
+                type: 'text',
+                content: text,
+                backgroundColor: textStoryBg
+            });
+            
+            closeTextStoryEditor();
+            closeStoryCreator();
+            document.getElementById('storyTextInputField').value = '';
+        };
+
+        // Media Story (Photo/Video)
+        window.triggerMediaUpload = function(type) {
+            const input = document.getElementById('storyMediaInput');
+            input.accept = type === 'image' ? "image/*" : "video/*";
+            input.onchange = (e) => handleMediaFile(e.target.files[0], type);
+            input.click();
+        };
+
+        window.handleMediaFile = async function(file, type) {
+            if (!file) return;
+            
+            // Size Check
+            if (type === 'image' && file.size > 10 * 1024 * 1024) return showToast("Image too large (Max 10MB)");
+            if (type === 'video' && file.size > 50 * 1024 * 1024) return showToast("Video too large (Max 50MB)");
+
+            document.getElementById('storyLoader').style.display = 'block';
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET); 
+            formData.append('cloud_name', CLOUDINARY_CLOUD_NAME);
+
+            try {
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                
+                if (data.secure_url) {
+                    saveStoryToFirebase({
+                        type: type,
+                        content: data.secure_url
+                    });
+                    document.getElementById('storyLoader').style.display = 'none';
+                    closeStoryCreator();
+                    showToast("Story Uploaded Successfully! ✅");
+                } else {
+                    throw new Error("Upload failed");
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('storyLoader').style.display = 'none';
+                showToast("Upload Failed ❌");
+            }
+        };
+
+        function saveStoryToFirebase(storyData) {
+            const newStoryRef = push(ref(db, `stories/${window.currentUser.uid}`));
+            set(newStoryRef, {
+                ...storyData,
+                timestamp: Date.now(),
+                views: {},
+                reactions: {}
+            });
+        }
+
+        // --- 3. Story Viewer System ---
+        window.openStoryViewer = async function(userId, startIndex = 0) {
+            const viewer = document.getElementById('storyViewerModal');
+            viewer.style.display = 'flex';
+            
+            // Fetch fresh data for this user
+            const snap = await get(ref(db, `stories/${userId}`));
+            const allStories = snap.val() || {};
+            const now = Date.now();
+            const stories = Object.entries(allStories)
+                .map(([k,v]) => ({id:k, ...v}))
+                .filter(s => now - s.timestamp < 24 * 60 * 60 * 1000)
+                .sort((a,b) => a.timestamp - b.timestamp);
+
+            if (stories.length === 0) return closeStoryViewer();
+
+            const userSnap = await get(ref(db, `users/${userId}`));
+            const user = userSnap.val();
+
+            currentStoryViewerState = {
+                userId: userId,
+                storyIndex: startIndex,
+                stories: stories,
+                userName: user.displayName,
+                userImg: user.photoURL,
+                timerId: null,
+                paused: false
+            };
+
+            renderViewerStory();
+        };
+
+        window.closeStoryViewer = function() {
+            document.getElementById('storyViewerModal').style.display = 'none';
+            clearInterval(currentStoryViewerState.timerId);
+            const video = document.querySelector('.viewer-media');
+            if(video && video.tagName === 'VIDEO') video.pause();
+        };
+
+        function renderViewerStory() {
+            const state = currentStoryViewerState;
+            const story = state.stories[state.storyIndex];
+            const contentArea = document.getElementById('viewerContentArea');
+            
+            // Header Update
+            document.getElementById('viewerAuthorName').innerText = state.userName;
+            document.getElementById('viewerAuthorImg').src = state.userImg;
+            document.getElementById('viewerTime').innerText = getRelativeTime(story.timestamp);
+
+            // Progress Bars
+            const progressContainer = document.getElementById('viewerProgressBars');
+            progressContainer.innerHTML = '';
+            state.stories.forEach((_, idx) => {
+                const barBg = document.createElement('div');
+                barBg.className = 'progress-bar-bg';
+                const barFill = document.createElement('div');
+                barFill.className = 'progress-bar-fill';
+                // Previous bars full, current empty (will animate), next empty
+                if (idx < state.storyIndex) barFill.style.width = '100%';
+                else if (idx > state.storyIndex) barFill.style.width = '0%';
+                
+                barBg.appendChild(barFill);
+                progressContainer.appendChild(barBg);
+            });
+
+            // Content
+            if (story.type === 'text') {
+                contentArea.innerHTML = `
+                    <div class="viewer-text-bg" style="background:${story.backgroundColor}">
+                        ${story.content}
+                    </div>
+                `;
+                startProgress(5000); // 5s for text
+            } else if (story.type === 'image') {
+                contentArea.innerHTML = `<img src="${story.content}" class="viewer-media">`;
+                startProgress(5000); // 5s for image
+            } else if (story.type === 'video') {
+                contentArea.innerHTML = `<video src="${story.content}" class="viewer-media" autoplay playsinline></video>`;
+                const video = contentArea.querySelector('video');
+                video.onloadedmetadata = () => startProgress(video.duration * 1000);
+                video.onended = nextStorySegment;
+            }
+
+            // Re-add nav taps
+            const leftTap = document.createElement('div'); leftTap.className = 'nav-tap-area left-tap'; leftTap.onclick = prevStorySegment;
+            const rightTap = document.createElement('div'); rightTap.className = 'nav-tap-area right-tap'; rightTap.onclick = nextStorySegment;
+            contentArea.appendChild(leftTap); contentArea.appendChild(rightTap);
+
+            // Mark as Seen (Local + Firebase View)
+            localStorage.setItem(`SEEN_STORY_${state.userId}_${story.id}`, 'true');
+            if (state.userId !== window.currentUser.uid) {
+                update(ref(db, `stories/${state.userId}/${story.id}/views/${window.currentUser.uid}`), { timestamp: Date.now() });
+                // Send Notification logic if needed
+            }
+        }
+
+        function startProgress(duration) {
+            clearInterval(currentStoryViewerState.timerId);
+            const currentBarFill = document.querySelectorAll('.progress-bar-fill')[currentStoryViewerState.storyIndex];
+            let startTime = Date.now();
+            
+            currentStoryViewerState.timerId = setInterval(() => {
+                if (currentStoryViewerState.paused) {
+                    startTime += 50; // Delay end time
+                    return;
+                }
+                const elapsed = Date.now() - startTime;
+                const percent = Math.min((elapsed / duration) * 100, 100);
+                currentBarFill.style.width = percent + '%';
+                
+                if (elapsed >= duration) {
+                    clearInterval(currentStoryViewerState.timerId);
+                    if (currentStoryViewerState.stories[currentStoryViewerState.storyIndex].type !== 'video') {
+                        nextStorySegment();
+                    }
+                }
+            }, 50);
+        }
+
+        window.nextStorySegment = function() {
+            if (currentStoryViewerState.storyIndex < currentStoryViewerState.stories.length - 1) {
+                currentStoryViewerState.storyIndex++;
+                renderViewerStory();
+            } else {
+                closeStoryViewer(); // Or go to next user
+            }
+        };
+
+        window.prevStorySegment = function() {
+            if (currentStoryViewerState.storyIndex > 0) {
+                currentStoryViewerState.storyIndex--;
+                renderViewerStory();
+            } else {
+                // Restart current or close
+                renderViewerStory();
+            }
+        };
+
+        // Pause on Hold logic
+        document.addEventListener('mousedown', (e) => {
+            if (e.target.closest('.viewer-content')) currentStoryViewerState.paused = true;
+        });
+        document.addEventListener('mouseup', () => currentStoryViewerState.paused = false);
+        document.addEventListener('touchstart', (e) => {
+            if (e.target.closest('.viewer-content')) currentStoryViewerState.paused = true;
+        });
+        document.addEventListener('touchend', () => currentStoryViewerState.paused = false);
+
+        // Interactions
+        window.reactToStory = function(type) {
+            const state = currentStoryViewerState;
+            const story = state.stories[state.storyIndex];
+            
+            // Animation
+            const btn = event.target;
+            btn.style.transform = "scale(1.5)";
+            setTimeout(() => btn.style.transform = "scale(1)", 200);
+
+            // Save to Firebase
+            push(ref(db, `stories/${state.userId}/${story.id}/reactions`), {
+                from: window.currentUser.uid,
+                type: type,
+                timestamp: Date.now()
+            });
+
+            // Notification
+            if (state.userId !== window.currentUser.uid) {
+                // Reuse existing sendNotification logic but simplified for Story
+                sendStoryNotification(state.userId, `Reacted ${window.reactionEmojiMap[type]} to your story`, story.id);
+            }
+        };
+
+        window.sendStoryReply = function() {
+            const input = document.getElementById('storyReplyInput');
+            const text = input.value.trim();
+            if (!text) return;
+            
+            const state = currentStoryViewerState;
+            // Send to Chat
+            const chatId = getChatId(window.currentUser.uid, state.userId);
+            const replyMsg = `Replied to your story: ${text}`;
+            
+            push(ref(db, `chats/${chatId}/messages`), { 
+                text: replyMsg, sender: window.currentUser.uid, timestamp: Date.now() 
+            });
+            update(ref(db, `user_chats/${window.currentUser.uid}/${state.userId}`), { lastMsg: "You: " + replyMsg, timestamp: Date.now() });
+            update(ref(db, `user_chats/${state.userId}/${window.currentUser.uid}`), { lastMsg: replyMsg, timestamp: Date.now(), unseenCount: 1 }); // Increment logic simplified
+
+            input.value = '';
+            showToast("Reply sent! 📨");
+        };
+
+        function sendStoryNotification(targetUid, msg, storyId) {
+             push(ref(db, `notifications/${targetUid}`), { 
+                type: 'story_reaction', 
+                postId: storyId, // Using postId field for storyId
+                sender: window.currentUser.displayName, 
+                senderImg: window.currentUser.photoURL, 
+                read: false, 
+                timestamp: Date.now() 
+            });
+        }
+        /* ==========================================================================
+           🎯 FACEBOOK-STYLE STORY SYSTEM LOGIC (END)
+           ========================================================================== */
+
         window.loadAuthBanners = function() {
             const bannerUrl = localStorage.getItem('my_banner2.jpg');
             if (bannerUrl) {
@@ -1932,7 +2663,8 @@ html
                     reachedEnd = true;
                     if(window.allPosts.length === 0) document.getElementById('feed').innerHTML = '<div style="text-align:center; padding:30px;">কোনো পোস্ট নেই</div>';
                     isLoadingPosts = false;
-                    loadStoryFeed(); return;
+                     // Stories are loaded separately
+                    return;
                 }
 
                 let newPosts = Object.entries(data).map(([key, val]) => ({ key, ...val }));
@@ -1958,7 +2690,7 @@ html
                    renderFeed(savedPosts);
                 } else { renderFeed(window.allPosts); }
 
-                loadStoryFeed(); updateGreeting(); isLoadingPosts = false;
+                updateGreeting(); isLoadingPosts = false;
             }).catch(err => { spinner.style.display = 'none'; isLoadingPosts = false; console.error(err); });
         };
         loadPostsChunk(true);
@@ -1980,50 +2712,6 @@ html
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             document.getElementById('dateText').innerText = new Date().toLocaleDateString('bn-BD', options);
         }
-
-        window.loadStoryFeed = function() {
-            if (!window.currentUser) { renderDefaultStories(); return; }
-            get(ref(db, 'following/' + window.currentUser.uid)).then(snap => {
-                const followingMap = snap.val();
-                if (!followingMap) { renderDefaultStories(); return; }
-                const uids = Object.keys(followingMap);
-                const safeUids = uids.filter(uid => !window.blockedUsers.includes(uid));
-                const promises = safeUids.map(uid => get(ref(db, 'users/' + uid)));
-                Promise.all(promises).then(snapshots => {
-                    const storyData = [];
-                    snapshots.forEach(userSnap => {
-                        if (userSnap.exists()) {
-                            const uData = userSnap.val();
-                            const uid = userSnap.key;
-                            const lastViewed = followingMap[uid].timestamp || 0;
-                            const lastPost = uData.lastPostTimestamp || 0;
-                            const isNew = lastPost > lastViewed;
-                            storyData.push({ uid: uid, name: uData.displayName, img: uData.photoURL, isNew: isNew, lastPost: lastPost, isVerified: uData.isVerified });
-                        }
-                    });
-                    storyData.sort((a, b) => { if (a.isNew && !b.isNew) return -1; if (!a.isNew && b.isNew) return 1; return b.lastPost - a.lastPost; });
-                    renderFollowStories(storyData);
-                });
-            });
-        };
-
-        function renderDefaultStories() {
-            const authors = {};
-            window.allPosts.forEach(p => { if(p.author && p.userImg && !authors[p.author] && !window.blockedUsers.includes(p.uid)) authors[p.author] = {img: p.userImg, uid: p.uid, isVerified: window.userVerificationCache[p.uid]}; });
-            const top = Object.entries(authors).slice(0, 10);
-            const html = top.map(([name, data]) => `<div class="story-item" onclick="viewUserProfile('${data.uid}')"><div class="story-ring seen-gradient"><img src="${data.img}" class="story-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"></div><span class="story-name">${name.split(' ')[0]} ${getVerifiedBadge(data.isVerified)}</span></div>`).join('');
-            document.getElementById('storiesBar').innerHTML = html || '<div style="padding:10px; font-size:12px; color:#999;">জনপ্রিয় লেখকদের গল্প এখানে আসবে...</div>';
-        }
-
-        function renderFollowStories(stories) {
-            const html = stories.map(s => { const ringClass = s.isNew ? 'story-ring active' : 'story-ring seen-gradient'; return `<div class="story-item" onclick="handleStoryClick('${s.uid}')"><div class="${ringClass}"><img src="${s.img}" class="story-img" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"></div><span class="story-name">${s.name.split(' ')[0]} ${getVerifiedBadge(s.isVerified)}</span></div>`}).join('');
-            document.getElementById('storiesBar').innerHTML = html;
-        }
-
-        window.handleStoryClick = function(targetUid) {
-            if (window.currentUser) { update(ref(db, `following/${window.currentUser.uid}/${targetUid}`), { timestamp: Date.now() }); }
-            viewUserProfile(targetUid); loadStoryFeed(); 
-        };
 
         // --- REACTION LOGIC ---
         let pressTimer = null;
@@ -2867,7 +3555,6 @@ html
                 btn.classList.add('following'); btn.innerText = 'Follow';
                 followersStat.innerText = parseInt(followersStat.innerText) + 1;
             }
-            setTimeout(loadStoryFeed, 1000);
         };
         window.switchProfileTab = function(tab, btn) {
             document.querySelectorAll('.p-tab-btn').forEach(b => b.classList.remove('active')); if(btn) btn.classList.add('active');
@@ -2924,7 +3611,8 @@ html
             if(page === 'home') {
                 feedView.style.display = 'block'; 
                  if(history.pushState) { const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname; window.history.pushState({path:newurl},'',newurl); }
-                filterCategory('সব', document.querySelector('.cat-btn')); loadStoryFeed();
+                filterCategory('সব', document.querySelector('.cat-btn'));
+                // Stories reload happens via realtime listener
             } else if(page === 'saved') { feedView.style.display = 'block'; filterCategory('সংরক্ষিত'); }
             else if(page === 'profile') { profileView.style.display = 'block'; }
         };
