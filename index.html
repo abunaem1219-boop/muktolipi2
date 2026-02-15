@@ -956,7 +956,7 @@
     display: none; /* ডিফল্টভাবে লুকানো থাকবে */
     background: linear-gradient(45deg, #ff00cc, #333399);
     color: white;
-    border: none;
+    border: flex;
     padding: 5px 12px;
     border-radius: 20px;
     font-size: 11px;
@@ -1040,8 +1040,7 @@
     <span class="app-logo-text">মুক্তলিপি</span>
 </div>
 
-<!-- নতুন বাটনটি এখানে পেস্ট করুন -->
-<button id="installAppBtn" class="install-btn-glow" onclick="installPWA()">
+<button id="installAppBtn" class="install-btn-glow" onclick="installPWA()" style="display: none;">
     <i class="fas fa-download"></i> INSTALL
 </button>
 <!-- বাটন শেষ -->
