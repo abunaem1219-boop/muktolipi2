@@ -1,18 +1,17 @@
-css
 :root { 
-    --bg-color: #f4f7f6; 
-    --glass-bg: rgba(255, 255, 255, 0.95);
-    --glass-border: 1px solid rgba(255, 255, 255, 0.8);
+    --bg-color: #f0f2f5; /* ফেসবুকের মত পারফেক্ট গ্রে ব্যাকগ্রাউন্ড */
+    --glass-bg: #ffffff; /* সলিড সাদা কার্ড */
+    --glass-border: 1px solid rgba(0, 0, 0, 0.08); /* বর্ডার সাদা থেকে হালকা কালো করা হলো */
     --glass-blur: blur(20px);
-    --text-color: #1c1e21; 
+    --text-color: #050505; 
     --primary-color: #1877f2;
     --gradient-primary: linear-gradient(135deg, #1877f2 0%, #00c6ff 100%);
-    --border-color: rgba(0,0,0,0.08); 
+    --border-color: rgba(0, 0, 0, 0.12); /* বর্ডার আরেকটু স্পষ্ট করা হলো */
     --secondary-text: #65676b; 
     --content-font-size: 16px;
     --highlight-color: #fff3cd;
-    --shadow-soft: 0 4px 15px rgba(0,0,0,0.05);
-    --shadow-card: 0 10px 30px -5px rgba(0, 0, 0, 0.08);
+    --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.06); /* ন্যাচারাল শ্যাডো */
+    --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.05); /* কার্ড যেন ভেসে থাকে */
     --safe-area-bottom: env(safe-area-inset-bottom);
     --current-font: 'Hind Siliguri', sans-serif;
     --sheet-bg: #ffffff;
@@ -84,7 +83,9 @@ body { font-family: var(--current-font); background: var(--bg-color); color: var
     position: relative; width: 110px; height: 160px; border-radius: 12px;
     overflow: hidden; cursor: pointer; flex-shrink: 0;
     transition: transform 0.2s, box-shadow 0.2s;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1); background-color: var(--glass-bg);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
+    background-color: var(--glass-bg);
+    border: 1px solid var(--border-color); /* এই লাইনটি যুক্ত করা হলো যাতে স্টোরিগুলো ব্যাকগ্রাউন্ডে মিশে না যায় */
 }
 .story-card:active { transform: scale(0.96); }
 
@@ -208,6 +209,7 @@ body { font-family: var(--current-font); background: var(--bg-color); color: var
     position: fixed; top: 0; left: 0; width: 100%; box-sizing: border-box; 
     z-index: 1100; background: var(--glass-bg); backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04); /* এই শ্যাডোটি হেডারকে পেজ থেকে আলাদা করবে */
 }
 .app-logo-text { font-family: 'Galada', cursive; font-size: 22px; color: var(--primary-color); margin-left: 0; }
 .icon-btn { cursor: pointer; font-size: 18px; background: none; border: none; color: var(--text-color); position: relative; padding: 8px; transition: transform 0.2s; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
@@ -223,7 +225,23 @@ body { font-family: var(--current-font); background: var(--bg-color); color: var
 
 .category-tabs { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; margin-bottom: 10px; }
 .category-tabs::-webkit-scrollbar { display: none; }
-.cat-btn { white-space: nowrap; padding: 8px 18px; border-radius: 20px; border: 1px solid transparent; background: var(--glass-bg); color: var(--text-color); cursor: pointer; font-size: 14px; transition: 0.3s; font-family: inherit; font-weight: 500; box-shadow: var(--shadow-soft); display: flex; align-items: center; gap: 6px; }
+.cat-btn { 
+    white-space: nowrap; 
+    padding: 8px 18px; 
+    border-radius: 20px; 
+    border: 1px solid var(--border-color); /* বর্ডার স্পষ্ট করা হলো */
+    background: var(--sheet-bg); 
+    color: var(--text-color); 
+    cursor: pointer; 
+    font-size: 14px; 
+    transition: 0.3s; 
+    font-family: inherit; 
+    font-weight: 500; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02); 
+    display: flex; 
+    align-items: center; 
+    gap: 6px; 
+}
 .cat-btn.active { background: var(--gradient-primary); color: white; border: none; box-shadow: 0 4px 12px rgba(24, 119, 242, 0.4); }
 
 .pinned-badge { position: absolute; top: 15px; right: 15px; color: #e74c3c; font-size: 16px; transform: rotate(45deg); z-index: 2; }
@@ -369,7 +387,22 @@ body { font-family: var(--current-font); background: var(--bg-color); color: var
 .btn-progress { background-size: 200% 100%; background-image: linear-gradient(to right, #2ecc71 50%, rgba(24, 119, 242, 0.1) 50%); transition: background-position 0.3s ease; color: var(--text-color); }
 .btn-progress.uploading { color: white; cursor: not-allowed; }
 
-input, select, textarea { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 12px; background: rgba(0,0,0,0.02); color: var(--text-color); font-family: inherit; box-sizing: border-box; outline: none; }
+input, select, textarea { 
+    width: 100%; 
+    padding: 12px; 
+    border: 1px solid var(--border-color); 
+    border-radius: 12px; 
+    background: rgba(0, 0, 0, 0.04); /* ব্যাকগ্রাউন্ড সামান্য গাঢ় করা হলো যাতে স্পষ্ট বোঝা যায় */
+    color: var(--text-color); 
+    font-family: inherit; 
+    box-sizing: border-box; 
+    outline: none; 
+    transition: 0.3s;
+}
+input:focus, textarea:focus {
+    border-color: var(--primary-color); /* টাইপ করার সময় বর্ডার নীল হবে */
+    background: transparent;
+}
 .btn { padding: 12px; border: none; border-radius: 12px; cursor: pointer; font-weight: 600; width: 100%; font-size: 15px; margin-top: 10px; }
 .btn-primary { background: var(--gradient-primary); color: white; box-shadow: 0 5px 15px rgba(24, 119, 242, 0.3); }
 
