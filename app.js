@@ -1641,7 +1641,10 @@ window.loadProfile = function(targetUid) {
     }
 
     get(ref(db, `followers/${uid}`)).then(snap => { const count = snap.exists() ? Object.keys(snap.val()).length : 0; document.getElementById('statFollowers').innerText = count; });
-
+// Followers Count
+    get(ref(db, `followers/${uid}`)).then(snap => { const count = snap.exists() ? Object.keys(snap.val()).length : 0; document.getElementById('statFollowers').innerText = count; });
+        // Following Count (নতুন যুক্ত করা হলো)
+    get(ref(db, `following/${uid}`)).then(snap => { const count = snap.exists() ? Object.keys(snap.val()).length : 0; document.getElementById('statFollowing').innerText = count; });
     get(ref(db, 'users/' + uid)).then(snap => {
         const data = snap.val() || {};
         document.getElementById('profilePic').src = data.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
