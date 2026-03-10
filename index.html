@@ -245,7 +245,7 @@
     </div>
 
     <!-- PROFILE EDIT MODAL -->
-    <div id="profileEditModal" class="modal-overlay" style="display: none;">
+    <div id="EditModal" class="modal-overlay" style="display: none;">
         <div class="modal-content glass-panel" style="width:100%; max-width:550px; padding:0;">
             <button class="modal-close-btn" onclick="closeProfileEdit()"><i class="fas fa-times"></i></button>
             <div class="modal-header" style="padding-top:20px;">
@@ -253,7 +253,7 @@
                 <p class="modal-subtitle">আপনার তথ্য আপডেট করুন</p>
             </div>
 
-            <div class="modal-body profile-edit-body" style="padding: 20px;">
+            <div class="modal-body -edit-body" style="padding: 20px;">
                 <!-- Cover Photo -->
                 <div class="edit-section">
                     <label class="section-label"><i class="fas fa-image"></i> কভার ফটো</label>
@@ -269,11 +269,11 @@
                 <!-- Profile Photo -->
                 <div class="edit-section">
                     <label class="section-label"><i class="fas fa-user-circle"></i> প্রোফাইল ছবি</label>
-                    <div class="profile-photo-preview-container">
-                        <img src="" id="profilePhotoPreview" alt="প্রোফাইল ছবি" class="profile-photo-preview" loading="lazy" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
-                        <button class="change-profile-btn" onclick="triggerProfileUpload()"><i class="fas fa-camera"></i></button>
+                    <div class="-photo-preview-container">
+                        <img src="" id="PhotoPreview" alt="প্রোফাইল ছবি" class="-photo-preview" loading="lazy" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+                        <button class="change--btn" onclick="triggerProfileUpload()"><i class="fas fa-camera"></i></button>
                     </div>
-                    <input type="file" id="profilePhotoInput" accept="image/*" style="display: none;" onchange="handleProfilePhotoSelect(event)">
+                    <input type="file" id="PhotoInput" accept="image/*" style="display: none;" onchange="handleProfilePhotoSelect(event)">
                 </div>
 
                 <!-- Name -->
@@ -298,7 +298,7 @@
                     <div class="social-input-group"><i class="fab fa-whatsapp social-icon" style="color: #25d366;"></i><input type="url" id="editWhatsapp" class="form-input" placeholder="WhatsApp লিংক"></div>
                 </div>
 
-                <button class="save-profile-btn" onclick="saveProfileChanges()"><i class="fas fa-save"></i> পরিবর্তন সংরক্ষণ করুন</button>
+                <button class="save--btn" onclick="saveProfileChanges()"><i class="fas fa-save"></i> পরিবর্তন সংরক্ষণ করুন</button>
             </div>
         </div>
     </div>
@@ -465,62 +465,68 @@
             </div>
         </div>
 
-        <!-- Profile View -->
+ <!-- Profile View -->
         <div id="profileView" class="view-section">
-            <div class="profile-cover" id="profileCover">
-                <div class="profile-pic-wrapper">
-                    <div class="profile-picture-container" style="position: relative;">
-                        <img id="profilePic" src="" loading="lazy" class="profile-pic-large" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
-                        <button id="mainProfileEditBtn" class="profile-edit-btn" onclick="openProfileEdit()" title="প্রোফাইল সম্পাদনা করুন" style="display:none;">
-                            <i class="fas fa-pencil-alt"></i>
-                        </button>
+            <div class="profile-header-card">
+                <!-- Cover Photo -->
+                <div class="profile-cover" id="profileCover"></div>
+                
+                <!-- Avatar & Name Area -->
+                <div class="profile-main-info">
+                    <div class="profile-pic-wrapper">
+                        <div class="profile-picture-container">
+                            <img id="profilePic" src="" loading="lazy" class="profile-pic-large" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+                            <button id="mainProfileEditBtn" class="profile-edit-btn" onclick="openProfileEdit()" style="display:none;">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-text-info">
+                        <h2 id="profileNameDisplay" class="profile-name">Name</h2>
+                        <div class="profile-follow-info">
+                            <span id="statFollowers" class="follow-count">0</span> ফলোয়ার • 
+                            <span id="statFollowing" class="follow-count">0</span> ফলোয়িং
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="profile-info">
-                <h2 id="profileNameDisplay" class="profile-name">Name</h2>
+                <!-- Bio -->
                 <div id="profileBioDisplay" class="profile-bio">Bio...</div>
-
+                
+                <!-- Social Links -->
                 <div class="social-links-display" id="socialLinksDisplay"></div>
 
+                <!-- Action Buttons -->
                 <div class="follow-container" id="profileActionContainer">
-                    <button id="profileFollowBtn" class="btn-follow" style="display:none;" onclick="toggleFollow()">Follow</button>
-                    <button id="profileMsgBtn" class="btn-profile-action" onclick="initChatFromProfile()">
+                    <button id="profileFollowBtn" class="btn-fb-action btn-primary-fb" style="display:none;" onclick="toggleFollow()">
+                        <i class="fas fa-user-plus"></i> Follow
+                    </button>
+                    <button id="profileMsgBtn" class="btn-fb-action btn-secondary-fb" onclick="initChatFromProfile()">
                         <i class="fab fa-facebook-messenger"></i> মেসেজ
                     </button>
-                    <button id="profileSavedViewBtn" class="btn-profile-action" onclick="navTo('saved')">
-                        <i class="fas fa-bookmark" style="color:#f39c12"></i> আমার সেভ করা পোস্ট
+                    <button id="profileSavedViewBtn" class="btn-fb-action btn-secondary-fb" onclick="navTo('saved')">
+                        <i class="fas fa-bookmark" style="color:#f39c12"></i> সেভ করা পোস্ট
                     </button>
                 </div>
-
-                <div id="profileSocialLinks" class="social-links"></div>
-            </div>
-
-            <div class="profile-stats-grid">
-                <div class="stat-card">
-                    <span id="statPosts" class="stat-val">0</span>
-                    <span class="stat-label">পোস্ট</span>
-                </div>
-                <div class="stat-card">
-                    <span id="statFollowers" class="stat-val">0</span>
-                    <span class="stat-label">ফলোয়ার</span>
-                </div>
-                <div class="stat-card">
-                    <span id="statLikes" class="stat-val">0</span>
-                    <span class="stat-label">লাইক</span>
+                
+                <!-- Extra Stats (Posts & Likes) -->
+                <div class="profile-extra-stats">
+                    <span><i class="fas fa-pen"></i> মোট পোস্ট: <strong id="statPosts">0</strong></span>
+                    <span><i class="fas fa-heart"></i> মোট লাইক: <strong id="statLikes">0</strong></span>
                 </div>
             </div>
 
+            <!-- Profile Tabs -->
             <div class="profile-tabs">
                 <button class="p-tab-btn active" onclick="switchProfileTab('posts', this)">লেখা</button>
                 <button class="p-tab-btn" onclick="switchProfileTab('drafts', this)">ড্রাফট</button>
                 <button class="p-tab-btn" onclick="switchProfileTab('saved', this)">সংরক্ষিত</button>
             </div>
 
+            <!-- Feed -->
             <div id="profileContentFeed" class="masonry-feed"></div>
         </div>
-    </div>
 
     <!-- Sticky Player -->
     <div id="stickyPlayer">
@@ -554,7 +560,7 @@
        <button class="nav-item" onclick="showToast('অ্যাপ স্টোর শীঘ্রই আসছে...')">
             <i class="fas fa-store"></i> অ্যাপ স্টোর
         </button>
-        <button class="nav-item" onclick="navTo('profile', this)">
+        <button class="nav-item" onclick="navTo('', this)">
             <i class="fas fa-user"></i>প্রোফাইল
         </button>
     </nav>
