@@ -341,31 +341,92 @@ body { font-family: var(--current-font); background: var(--bg-color); color: var
 .nav-center-btn { background: var(--gradient-primary); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; transform: translateY(-4px); box-shadow: 0 8px 20px rgba(24, 119, 242, 0.4); transition: transform 0.2s; }
 .nav-center-btn:active { transform: translateY(-2px) scale(0.95); }
 
+/* ==========================================
+   FACEBOOK STYLE PROFILE DESIGN
+   ========================================== */
 #profileView { display: none; padding-bottom: 20px; }
-.profile-cover { height: 160px; width: 100%; background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); border-radius: 0 0 25px 25px; position: relative; margin-bottom: 2px; box-shadow: var(--shadow-soft); background-size: cover; background-position: center; }
-.profile-pic-wrapper { position: absolute; bottom: -55px; left: 15%; transform: translateX(-50%); width: 100px; height: 100px; border-radius: 50%; padding: 3px; background: var(--bg-color); }
-.profile-pic-large { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color); }
-.edit-fab { position: absolute; bottom: 0; right: 0; background: var(--text-color); color: var(--bg-color); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg-color); cursor: pointer; font-size: 12px; }
-.profile-info { text-align: center; padding: 0 20px; margin-bottom: 10px; }
-.profile-name { font-size: 22px; font-weight: 700; margin: 0; color: var(--text-color); display: flex; align-items: center; justify-content: center; }
-.profile-bio { font-size: 14px; color: var(--secondary-text); margin: 5px 0 0; max-width: 400px; margin: 5px auto; }
-.follow-container { margin: 10px 0 15px 0; display:flex; justify-content:center; gap:10px; }
-.btn-follow, .btn-profile-action { padding: 8px 25px; border-radius: 20px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; border: none; background: rgba(0,0,0,0.05); color: var(--text-color); }
-.btn-follow.following { background: var(--primary-color); color: white; }
-.btn-follow.following:after { content: "ing"; }
-.btn-profile-action { display: none; align-items: center; gap: 8px; }
-.btn-profile-action:hover { background: rgba(0,0,0,0.1); }
-.profile-stats-grid { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; }
-.stat-card { background: var(--glass-bg); padding: 10px 20px; border-radius: 12px; text-align: center; box-shadow: var(--shadow-soft); border: var(--glass-border); min-width: 70px; }
-.stat-val { font-size: 18px; font-weight: 800; color: var(--primary-color); display: block; }
-.stat-label { font-size: 11px; color: var(--secondary-text); font-weight: 600; text-transform: uppercase; }
-.profile-tabs { display: flex; justify-content: center; gap: 5px; margin-bottom: 15px; background: rgba(0,0,0,0.03); padding: 5px; border-radius: 12px; width: fit-content; margin-left: auto; margin-right: auto; }
-.p-tab-btn { padding: 8px 20px; border-radius: 8px; border: none; background: none; font-size: 13px; font-weight: 600; color: var(--secondary-text); cursor: pointer; transition: 0.3s; }
-.p-tab-btn.active { background: var(--sheet-bg); color: var(--primary-color); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-.social-links { margin-top: 10px; display: flex; justify-content: center; gap: 15px; }
-.social-link-btn { font-size: 20px; color: var(--secondary-text); transition: 0.2s; }
-.social-link-btn:hover { color: var(--primary-color); transform: scale(1.1); }
 
+.profile-header-card { 
+    background: var(--glass-bg); 
+    border-radius: 0 0 15px 15px; 
+    box-shadow: var(--shadow-soft); 
+    margin-bottom: 15px; 
+    overflow: hidden; 
+    border: var(--glass-border); 
+}
+
+.profile-cover { 
+    height: 180px; 
+    width: 100%; 
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); 
+    background-size: cover; 
+    background-position: center; 
+    position: relative; 
+}
+
+.profile-main-info { 
+    display: flex; 
+    align-items: flex-end; 
+    padding: 0 15px; 
+    margin-top: -60px; 
+    gap: 15px; 
+    position: relative; 
+    z-index: 2; 
+    margin-bottom: 15px;
+}
+
+.profile-pic-wrapper { 
+    width: 120px; 
+    height: 120px; 
+    border-radius: 50%; 
+    padding: 4px; 
+    background: var(--glass-bg); /* ছবির চারপাশের সাদা/কালো বর্ডার */
+    flex-shrink: 0; 
+    position: relative; 
+}
+
+.profile-picture-container { width: 100%; height: 100%; border-radius: 50%; position: relative; }
+.profile-pic-large { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-color); }
+
+.profile-edit-btn { 
+    position: absolute; 
+    bottom: 5px; right: 0px; 
+    width: 32px; height: 32px; 
+    border-radius: 50%; 
+    background: var(--sheet-bg); 
+    color: var(--text-color); 
+    border: 1px solid var(--border-color); 
+    display: flex; align-items: center; justify-content: center; 
+    cursor: pointer; font-size: 14px; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+    z-index: 10; transition: 0.2s;
+}
+
+.profile-text-info { flex: 1; padding-bottom: 5px; }
+.profile-name { font-size: 22px; font-weight: 700; margin: 0 0 2px 0; color: var(--text-color); display: flex; align-items: center; gap: 5px; line-height: 1.2; }
+.profile-follow-info { font-size: 14px; color: var(--secondary-text); font-weight: 500; }
+.follow-count { color: var(--text-color); font-weight: 700; }
+
+.profile-bio { padding: 0 15px; font-size: 15px; color: var(--text-color); margin-bottom: 15px; line-height: 1.5; }
+
+.social-links-display { display: flex; gap: 10px; padding: 0 15px; margin-bottom: 15px; flex-wrap: wrap; }
+.social-link-btn { width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; text-decoration: none; transition: 0.2s; }
+
+.follow-container { display: flex; gap: 10px; padding: 0 15px 15px 15px; flex-wrap: wrap; border-bottom: 1px solid var(--border-color); }
+.btn-fb-action { flex: 1; min-width: 120px; padding: 10px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+.btn-primary-fb { background: var(--primary-color); color: white; }
+.btn-primary-fb.following { background: var(--msg-rcv-bg); color: var(--text-color); }
+.btn-secondary-fb { background: var(--msg-rcv-bg); color: var(--text-color); }
+.btn-fb-action:active { transform: scale(0.98); }
+
+.btn-profile-action { display: flex; align-items: center; gap: 8px; padding: 8px 15px; border-radius: 8px; background: var(--msg-rcv-bg); color: var(--text-color); border: none; font-weight: 600; cursor: pointer;} /* For Admin verify button */
+
+.profile-extra-stats { display: flex; justify-content: space-around; padding: 15px; font-size: 14px; color: var(--secondary-text); }
+.profile-extra-stats strong { color: var(--text-color); font-size: 16px; margin-left: 5px; }
+
+.profile-tabs { display: flex; justify-content: space-around; padding: 0; border-radius: 12px; margin-bottom: 15px; background: var(--glass-bg); box-shadow: var(--shadow-soft); border: var(--glass-border); overflow: hidden; }
+.p-tab-btn { flex: 1; padding: 15px 0; border-radius: 0; border: none; background: none; font-size: 15px; font-weight: 600; color: var(--secondary-text); cursor: pointer; transition: 0.3s; border-bottom: 3px solid transparent;}
+.p-tab-btn.active { color: var(--primary-color); border-bottom: 3px solid var(--primary-color); background: rgba(24, 119, 242, 0.05); }
 .bottom-sheet-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; opacity: 0; visibility: hidden; transition: 0.3s; backdrop-filter: blur(4px); }
 .bottom-sheet-overlay.active { opacity: 1; visibility: visible; }
 .sheet-content { position: fixed; bottom: 0; left: 0; width: 100%; max-height: 85vh; background: var(--sheet-bg); border-radius: 25px 25px 0 0; z-index: 2001; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1); display: flex; flex-direction: column; overflow: hidden; }
