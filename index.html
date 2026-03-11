@@ -245,13 +245,63 @@
     </div>
 
     <!-- PROFILE EDIT MODAL -->
-    <div id="EditModal" class="modal-overlay" style="display: none;">
+    <div id="profileEditModal" class="modal-overlay" style="display: none;">
         <div class="modal-content glass-panel" style="width:100%; max-width:550px; padding:0;">
             <button class="modal-close-btn" onclick="closeProfileEdit()"><i class="fas fa-times"></i></button>
             <div class="modal-header" style="padding-top:20px;">
                 <h2>প্রোফাইল সম্পাদনা করুন</h2>
                 <p class="modal-subtitle">আপনার তথ্য আপডেট করুন</p>
             </div>
+
+            <div class="modal-body profile-edit-body" style="padding: 20px;">
+                <!-- Cover Photo -->
+                <div class="edit-section">
+                    <label class="section-label"><i class="fas fa-image"></i> কভার ফটো</label>
+                    <div class="cover-photo-preview" id="coverPhotoPreview">
+                        <img src="" id="coverPhotoImg" alt="কভার ফটো" loading="lazy" onerror="this.src=''">
+                        <div class="cover-photo-overlay">
+                            <button class="change-cover-btn" onclick="triggerCoverUpload()"><i class="fas fa-camera"></i> পরিবর্তন করুন</button>
+                        </div>
+                    </div>
+                    <input type="file" id="coverPhotoInput" accept="image/*" style="display: none;" onchange="handleCoverPhotoSelect(event)">
+                </div>
+
+                <!-- Profile Photo -->
+                <div class="edit-section">
+                    <label class="section-label"><i class="fas fa-user-circle"></i> প্রোফাইল ছবি</label>
+                    <div class="profile-photo-preview-container">
+                        <img src="" id="profilePhotoPreview" alt="প্রোফাইল ছবি" class="profile-photo-preview" loading="lazy" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+                        <button class="change-profile-btn" onclick="triggerProfileUpload()"><i class="fas fa-camera"></i></button>
+                    </div>
+                    <input type="file" id="profilePhotoInput" accept="image/*" style="display: none;" onchange="handleProfilePhotoSelect(event)">
+                </div>
+
+                <!-- Name -->
+                <div class="edit-section">
+                    <label class="section-label"><i class="fas fa-signature"></i> নাম</label>
+                    <input type="text" id="editName" class="form-input" placeholder="আপনার নাম লিখুন">
+                </div>
+
+                <!-- Bio -->
+                <div class="edit-section">
+                    <label class="section-label"><i class="fas fa-align-left"></i> বায়ো</label>
+                    <textarea id="editBio" class="form-textarea" rows="4" placeholder="নিজের সম্পর্কে কিছু লিখুন..."></textarea>
+                    <span class="char-counter" id="bioCharCounter">0/150</span>
+                </div>
+
+                <!-- Social Links -->
+                <div class="edit-section">
+                    <label class="section-label"><i class="fas fa-share-alt"></i> সোশ্যাল মিডিয়া লিংক</label>
+                    <div class="social-input-group"><i class="fab fa-facebook social-icon" style="color: #1877f2;"></i><input type="url" id="editFacebook" class="form-input" placeholder="Facebook লিংক"></div>
+                    <div class="social-input-group"><i class="fab fa-youtube social-icon" style="color: #ff0000;"></i><input type="url" id="editYoutube" class="form-input" placeholder="YouTube লিংক"></div>
+                    <div class="social-input-group"><i class="fab fa-tiktok social-icon" style="color: #000000;"></i><input type="url" id="editTiktok" class="form-input" placeholder="TikTok লিংক"></div>
+                    <div class="social-input-group"><i class="fab fa-whatsapp social-icon" style="color: #25d366;"></i><input type="url" id="editWhatsapp" class="form-input" placeholder="WhatsApp লিংক"></div>
+                </div>
+
+                <button class="save-profile-btn" onclick="saveProfileChanges()"><i class="fas fa-save"></i> পরিবর্তন সংরক্ষণ করুন</button>
+            </div>
+        </div>
+    </div>
 
             <div class="modal-body -edit-body" style="padding: 20px;">
                 <!-- Cover Photo -->
@@ -560,7 +610,7 @@
        <button class="nav-item" onclick="showToast('অ্যাপ স্টোর শীঘ্রই আসছে...')">
             <i class="fas fa-store"></i> অ্যাপ স্টোর
         </button>
-        <button class="nav-item" onclick="navTo('', this)">
+        <button class="nav-item" onclick="navTo('profile', this)">
             <i class="fas fa-user"></i>প্রোফাইল
         </button>
     </nav>
