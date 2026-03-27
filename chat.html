@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>মেসেজ - মুক্তলিপি</title>
+    <link rel="icon" type="image/png" href="icon.png">
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Galada&family=Hind+Siliguri:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root { 
+            --bg-color: #f4f7f6; --glass-bg: rgba(255, 255, 255, 0.95);
+            --text-color: #1c1e21; --primary-color: #1877f2;
+            --border-color: rgba(0,0,0,0.08); --secondary-text: #65676b;
+            --msg-sent-bg: #1877f2; --msg-sent-text: #fff;
+            --msg-rcv-bg: #e4e6eb; --msg-rcv-text: #050505;
+        }
+        .dark-theme { 
+            --bg-color: #1a1a1a; --glass-bg: rgba(30, 30, 30, 0.95);
+            --text-color: #e4e6eb; --primary-color: #4595ff;
+            --border-color: rgba(255,255,255,0.1); --secondary-text: #b0b3b8;
+            --msg-sent-bg: #4595ff; --msg-sent-text: #000;
+            --msg-rcv-bg: #303030; --msg-rcv-text: #e4e6eb;
+        }
+        
+        body { font-family: 'Hind Siliguri', sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding: 0; overflow-x: hidden;}
+        
+        /* Chat Inbox Styles */
+        .header { display: flex; align-items: center; gap: 15px; padding: 15px; background: var(--glass-bg); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100;}
+        .header h2 { margin: 0; font-size: 20px; }
+        .back-btn { background: none; border: none; font-size: 20px; color: var(--text-color); cursor: pointer; }
+        
+        .chat-list-item { display: flex; gap: 10px; padding: 15px; background: var(--glass-bg); margin: 8px 10px; border-radius: 12px; align-items: center; cursor: pointer; border: 1px solid transparent; }
+        .chat-list-item.unread { border-left: 3px solid var(--primary-color); background: rgba(24, 119, 242, 0.05); }
+        .chat-avatar-wrapper { position: relative; width: 48px; height: 48px; }
+        .chat-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-color); }
+        .online-dot { position: absolute; bottom: 0; right: 0; width: 12px; height: 12px; background: #2ecc71; border-radius: 50%; border: 2px solid var(--glass-bg); display: none; }
+        .online-dot.active { display: block; }
+        .chat-info { flex: 1; overflow: hidden; }
+        .chat-name { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
+        .chat-preview { font-size: 13px; color: var(--secondary-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .chat-meta { font-size: 11px; color: var(--secondary-text); text-align: right; }
+
+        /* Chat Room Styles */
+        #chatRoomView { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 2500; display: none; flex-direction: column; }
+        .chat-messages-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; padding-bottom: 80px; }
+        .chat-input-bar { position: absolute; bottom: 0; left: 0; width: 100%; padding: 10px; background: var(--glass-bg); border-top: 1px solid var(--border-color); display: flex; gap: 10px; align-items: center; box-sizing: border-box;}
+        .chat-input-bar input { flex: 1; padding: 12px 15px; border-radius: 25px; border: 1px solid var(--border-color); outline: none; background: rgba(0,0,0,0.03); color: var(--text-color); font-family: inherit;}
+        
+        .msg-bubble { max-width: 75%; padding: 10px 14px; border-radius: 18px; font-size: 15px; line-height: 1.4; word-wrap: break-word; position: relative; }
+        .msg-sent { background: var(--msg-sent-bg); color: var(--msg-sent-text); align-self: flex-end; border-bottom-right-radius: 4px; }
+        .msg-received { background: var(--msg-rcv-bg); color: var(--msg-rcv-text); align-self: flex-start; border-bottom-left-radius: 4px; }
+        .msg-time { font-size: 10px; opacity: 0.7; text-align: right; margin-top: 4px; display: block;}
+
+        .typing-indicator { align-self: flex-start; background: var(--msg-rcv-bg); padding: 8px 12px; border-radius: 18px; display: none; align-items: center; gap: 3px; }
+        .dot { width: 6px; height: 6px; background: #888; border-radius: 50%; animation: typing 1.4s infinite ease-in-out both; }
+        .dot:nth-child(1) { animation-delay: -0.32s; } .dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+    </style>
+</head>
+<body>
+
+    <!-- Inbox View -->
+    <div id="inboxView">
+        <div class="header">
+            <button class="back-btn" onclick="window.location.href='index.html'"><i class="fas fa-arrow-left"></i></button>
+            <h2>মেসেজ</h2>
+        </div>
+        <div id="chatListContainer">
+            <div style="text-align:center; padding:50px; color:var(--secondary-text);">লোড হচ্ছে...</div>
+        </div>
+    </div>
+
+    <!-- Single Chat Room View -->
+    <div id="chatRoomView">
+        <div class="header">
+            <button class="back-btn" onclick="closeChatRoom()"><i class="fas fa-arrow-left"></i></button>
+            <div style="position: relative; width: 40px; height: 40px;">
+                <img id="chatRoomImg" src="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+            </div>
+            <div>
+                <div style="font-weight: 700; font-size: 16px;" id="chatRoomName">User</div>
+                <div style="font-size: 12px; color: var(--secondary-text);" id="chatRoomStatus">Offline</div>
+            </div>
+        </div>
+        <div id="chatMessages" class="chat-messages-area"></div>
+        <div class="typing-indicator" id="typingInd"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+        
+        <div class="chat-input-bar">
+            <input type="text" id="chatInput" placeholder="মেসেজ লিখুন...">
+            <button id="sendMsgBtn" style="background:var(--primary-color); color:white; border:none; width:45px; height:45px; border-radius:50%; cursor:pointer;"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <script type="module">
+        // Firebase Imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, push, onValue, update, remove, get, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // Your Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBZtycgadrngON2WEwvIE7ERPYxdkDVfFM",
+            authDomain: "muktolipidiary.firebaseapp.com",
+            databaseURL: "https://muktolipidiary-default-rtdb.firebaseio.com",
+            projectId: "muktolipidiary",
+            storageBucket: "muktolipidiary.firebasestorage.app",
+            messagingSenderId: "639103995400",
+            appId: "1:639103995400:web:13528e51c0e86080770bbd"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+
+        let currentUser = null;
+        let activeChatId = null;
+        let activeChatPartnerUid = null;
+        let typingTimeout = null;
+        let blockedUsers = [];
+
+        // Apply Theme
+        if(localStorage.getItem('userTheme') === 'dark') document.body.classList.add('dark-theme');
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                const snap = await get(ref(db, `users/${user.uid}/blockedUsers`));
+                if(snap.exists()) blockedUsers = Object.keys(snap.val());
+
+                // Check URL parameters for direct chat access (From Profile)
+                const params = new URLSearchParams(window.location.search);
+                const targetUid = params.get('targetUid');
+                
+                if(targetUid) {
+                    openChatRoom(targetUid);
+                } else {
+                    initChatListener(user.uid);
+                }
+            } else {
+                window.location.href = 'index.html'; // Redirect to login if not authenticated
+            }
+        });
+
+        function getChatId(uid1, uid2) { return uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`; }
+
+        function initChatListener(uid) {
+            onValue(ref(db, `user_chats/${uid}`), (snap) => {
+                const data = snap.val();
+                if(!data) {
+                    document.getElementById('chatListContainer').innerHTML = '<div style="text-align:center; padding:50px; color:var(--secondary-text);">আপনার ইনবক্স খালি</div>';
+                    return;
+                }
+                const chats = Object.entries(data).map(([targetUid, info]) => ({ targetUid, ...info }));
+                renderChatList(chats.sort((a,b) => b.timestamp - a.timestamp));
+            });
+        }
+
+        async function renderChatList(chats) {
+            const container = document.getElementById('chatListContainer');
+            let html = '';
+            for(const chat of chats) {
+                const userSnap = await get(ref(db, `users/${chat.targetUid}`));
+                const user = userSnap.val() || { displayName: 'User', photoURL: 'https://cdn-icons-png.flaticon.com/512/149/149071.png' };
+                const isOnline = (await get(ref(db, `status/${chat.targetUid}`))).exists();
+                
+                html += `
+                <div class="chat-list-item ${chat.unseenCount > 0 ? 'unread' : ''}" onclick="openChatRoom('${chat.targetUid}')">
+                    <div class="chat-avatar-wrapper">
+                        <img src="${user.photoURL}" class="chat-avatar">
+                        <div class="online-dot ${isOnline ? 'active' : ''}"></div>
+                    </div>
+                    <div class="chat-info">
+                        <div class="chat-name">${user.displayName}</div>
+                        <div class="chat-preview">${chat.lastMsg || 'Attachment'}</div>
+                    </div>
+                    <div class="chat-meta">
+                        <div>${new Date(chat.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
+                        ${chat.unseenCount > 0 ? `<div style="background:var(--primary-color); color:white; border-radius:50%; width:20px; height:20px; display:flex; align-items:center; justify-content:center; font-size:11px; margin-left:auto; margin-top:5px;">${chat.unseenCount}</div>` : ''}
+                    </div>
+                </div>`;
+            }
+            container.innerHTML = html;
+        }
+
+        window.openChatRoom = async function(targetUid) {
+            activeChatPartnerUid = targetUid;
+            activeChatId = getChatId(currentUser.uid, targetUid);
+
+            document.getElementById('inboxView').style.display = 'none';
+            document.getElementById('chatRoomView').style.display = 'flex';
+
+            const userSnap = await get(ref(db, `users/${targetUid}`));
+            const user = userSnap.val();
+            document.getElementById('chatRoomImg').src = user.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+            document.getElementById('chatRoomName').innerText = user.displayName;
+
+            const statusSnap = await get(ref(db, `status/${targetUid}`));
+            document.getElementById('chatRoomStatus').innerText = statusSnap.exists() ? 'Active Now' : 'Offline';
+
+            // Mark as read
+            update(ref(db, `user_chats/${currentUser.uid}/${targetUid}`), { unseenCount: 0 });
+
+            // Input state (Blocked checking)
+            const input = document.getElementById('chatInput');
+            const btn = document.getElementById('sendMsgBtn');
+            if (blockedUsers.includes(targetUid)) {
+                input.disabled = true; input.placeholder = "You have blocked this user.";
+                btn.style.opacity = 0.5; btn.style.pointerEvents = 'none';
+            } else {
+                input.disabled = false; input.placeholder = "মেসেজ লিখুন...";
+                btn.style.opacity = 1; btn.style.pointerEvents = 'auto';
+            }
+
+            // Load Messages
+            onValue(query(ref(db, `chats/${activeChatId}/messages`), limitToLast(50)), (snap) => {
+                const container = document.getElementById('chatMessages');
+                container.innerHTML = '';
+                if(snap.val()) {
+                    Object.entries(snap.val()).forEach(([key, msg]) => {
+                        const isMe = msg.sender === currentUser.uid;
+                        const div = document.createElement('div');
+                        div.className = `msg-bubble ${isMe ? 'msg-sent' : 'msg-received'}`;
+                        // Add link detection logic here if needed
+                        div.innerHTML = `${msg.text} <span class="msg-time">${new Date(msg.timestamp).toLocaleTimeString([],{hour:'2-digit', minute:'2-digit'})}</span>`;
+                        
+                        if(isMe) {
+                            div.oncontextmenu = (e) => { e.preventDefault(); confirmDeleteMessage(key); };
+                            let pressTimer;
+                            div.ontouchstart = () => { pressTimer = setTimeout(() => confirmDeleteMessage(key), 800); };
+                            div.ontouchend = () => clearTimeout(pressTimer);
+                        }
+                        container.appendChild(div);
+                    });
+                }
+                container.scrollTop = container.scrollHeight;
+            });
+
+            // Typing Indicator
+            onValue(ref(db, `chats/${activeChatId}/typing/${targetUid}`), snap => {
+                document.getElementById('typingInd').style.display = snap.val() ? 'flex' : 'none';
+                if(snap.val()) document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+            });
+        };
+
+        window.closeChatRoom = function() {
+            // If opened directly via URL (from profile), go back to index.html
+            const params = new URLSearchParams(window.location.search);
+            if(params.get('targetUid')) {
+                window.location.href = 'index.html';
+            } else {
+                document.getElementById('chatRoomView').style.display = 'none';
+                document.getElementById('inboxView').style.display = 'block';
+                activeChatPartnerUid = null;
+                activeChatId = null;
+            }
+        };
+
+        document.getElementById('sendMsgBtn').onclick = sendMessage;
+        document.getElementById('chatInput').addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') sendMessage();
+            update(ref(db, `chats/${activeChatId}/typing/${currentUser.uid}`), true);
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => update(ref(db, `chats/${activeChatId}/typing/${currentUser.uid}`), false), 2000);
+        });
+
+        function sendMessage() {
+            if(blockedUsers.includes(activeChatPartnerUid)) return;
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if(!text) return;
+            
+            const myUid = currentUser.uid;
+            const targetUid = activeChatPartnerUid;
+            
+            push(ref(db, `chats/${activeChatId}/messages`), { text: text, sender: myUid, timestamp: Date.now() });
+            update(ref(db, `user_chats/${myUid}/${targetUid}`), { lastMsg: "You: " + text, timestamp: Date.now() });
+            
+            const targetRef = ref(db, `user_chats/${targetUid}/${myUid}`);
+            get(targetRef).then(snap => {
+                const currentUnseen = (snap.val() && snap.val().unseenCount) || 0;
+                update(targetRef, { lastMsg: text, timestamp: Date.now(), unseenCount: currentUnseen + 1 });
+            });
+            
+            input.value = '';
+            update(ref(db, `chats/${activeChatId}/typing/${myUid}`), false);
+        }
+
+        window.confirmDeleteMessage = function(msgId) {
+             Swal.fire({
+                title: 'মেসেজ মুছতে চান?', showCancelButton: true, confirmButtonText: 'মুছুন', confirmButtonColor: '#e74c3c'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    remove(ref(db, `chats/${activeChatId}/messages/${msgId}`));
+                }
+            });
+        };
+    </script>
+</body>
+</html>
