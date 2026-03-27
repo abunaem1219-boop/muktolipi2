@@ -2615,6 +2615,13 @@
         };
 
 // --- REAL-TIME CHAT (শুধুমাত্র ম্যাসেজ ব্যাজ নোটিফিকেশনের জন্য) ---
+// প্রোফাইল থেকে সরাসরি চ্যাট পেজে যাওয়ার ফাংশন
+        window.initChatFromProfile = function() {
+            if(!checkAuth()) return;
+            const targetUid = currentlyViewingUid;
+            if(targetUid === window.currentUser.uid) return;
+            window.location.href = 'chat.html?targetUid=' + targetUid;
+        };
         function initChatListener(uid) {
             onValue(ref(db, `user_chats/${uid}`), (snap) => {
                 const data = snap.val();
