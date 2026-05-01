@@ -41,6 +41,13 @@
     </script>
 
     <style>
+.view-section {
+    animation: fadeSlideUp 0.4s ease-out forwards;
+}
+@keyframes fadeSlideUp {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
         :root { 
             --bg-color: #f4f7f6; 
             --glass-bg: rgba(255, 255, 255, 0.95);
@@ -1497,6 +1504,10 @@
         </div>
 
         <!-- Profile View -->
+<!-- App Store View -->
+        <div id="appStoreView" class="view-section" style="display: none; padding-top: 70px;">
+            <!-- appstore.html এর কোড এখানে লোড হবে -->
+        </div>
         <div id="profileView" class="view-section">
             <div class="profile-cover" id="profileCover"></div>
 
@@ -1581,7 +1592,7 @@
         <button class="nav-center-btn" onclick="openWriteModal()">
             <i class="fas fa-pen-nib"></i>
         </button>
-       <button class="nav-item" onclick="showToast('অ্যাপ স্টোর শীঘ্রই আসছে...')">
+       <button class="nav-item" onclick="navTo('appstore', this)" data-page="appstore">
             <i class="fas fa-store"></i> অ্যাপ স্টোর
         </button>
         <button class="nav-item" onclick="navTo('profile', this)">
@@ -3746,19 +3757,15 @@
         };
 
         // --- NAVIGATION ---
-        // --- NAVIGATION FUNCTION (UPDATED) ---
 window.navTo = function(page, btn, addToHistory = true) {
-    // 1. History Management
     if (addToHistory) {
         window.history.pushState({ page: page }, "", "?page=" + page);
     }
 
-    // Home Refresh Logic
     if (page === 'home') {
         const feedView = document.getElementById('feedView');
         if (feedView.style.display === 'block') {
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            // রিফ্রেশ লজিক যদি থাকে
             return;
         }
     }
@@ -3769,31 +3776,62 @@ window.navTo = function(page, btn, addToHistory = true) {
         loadProfile(window.currentUser.uid);
     }
 
-    // UI Updates
     document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
     else {
-        // বাটন অটোমেটিক অ্যাক্টিভ করা
         const targetBtn = document.querySelector(`.nav-item[onclick*="'${page}'"]`);
         if(targetBtn) targetBtn.classList.add('active');
     }
 
     closeDetailView();
+    
+    // সবগুলো ভিউ সিলেক্ট করা
     const feedView = document.getElementById('feedView');
     const profileView = document.getElementById('profileView');
-    
+    const appStoreView = document.getElementById('appStoreView'); 
 
-    feedView.style.display = 'none';
-    profileView.style.display = 'none';
+    // সব লুকিয়ে ফেলা
+    if(feedView) feedView.style.display = 'none';
+    if(profileView) profileView.style.display = 'none';
+    if(appStoreView) appStoreView.style.display = 'none'; 
     
+    // ক্লিক করা পেজটি শো করা
     if (page === 'home') {
-        feedView.style.display = 'block';
+        if(feedView) feedView.style.display = 'block';
         filterCategory('সব', document.querySelector('.cat-btn'));
     } else if (page === 'saved') {
-        feedView.style.display = 'block';
+        if(feedView) feedView.style.display = 'block';
         filterCategory('সংরক্ষিত');
     } else if (page === 'profile') {
-        profileView.style.display = 'block';
+        if(profileView) profileView.style.display = 'block';
+    } else if (page === 'appstore') { // অ্যাপ স্টোর সেকশন
+        if(appStoreView) {
+            appStoreView.style.display = 'block';
+            loadAppStoreFile(); // ফাইল কল করা হলো
+        }
+    }
+};
+
+// আলাদা ফাইল থেকে কোড নিয়ে আসার ফাংশন
+window.loadAppStoreFile = async function() {
+    const container = document.getElementById('appStoreView');
+    
+    // একবার লোড হয়ে গেলে আর লোড করবে না, যাতে পেজ স্মুথ থাকে
+    if (container.dataset.loaded) return; 
+    
+    // লোডিং আইকন দেখানো
+    container.innerHTML = '<div style="text-align:center; margin-top:100px;"><i class="fas fa-spinner fa-spin" style="font-size:40px; color:var(--primary-color);"></i></div>';
+
+    try {
+        // appstore.html ফাইলটি কল করা হচ্ছে
+        const response = await fetch('appstore.html');
+        if(!response.ok) throw new Error("ফাইল পাওয়া যায়নি");
+        
+        const data = await response.text();
+        container.innerHTML = data;
+        container.dataset.loaded = 'true'; // মার্ক করে রাখা হলো
+    } catch (e) {
+        container.innerHTML = '<div style="text-align:center; margin-top:100px; color:#e74c3c;"><i class="fas fa-exclamation-circle" style="font-size:40px;"></i><p>ফাইল লোড করতে সমস্যা হয়েছে!</p></div>';
     }
 };
 
