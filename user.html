@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NStore - 3D Neon App Store</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#9B5DE5">
+    <link rel="apple-touch-icon" href="https://i.ibb.co.com/fYHcdwPK/file-0000000025247206aa450c93ac9427ef-2.jpg">
+    <style>
+        :root {
+            --neon-purple: #9B5DE5; --neon-blue: #00BBF9; --soft-pink: #F15BB5;
+            --bg-gradient-start: #0A192F; --bg-gradient-end: #1B1B3A; --text-color: #F5F5F5;
+            --glass-bg: rgba(255, 255, 255, 0.08); --glass-border: rgba(255, 255, 255, 0.15);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end)); 
+            color: var(--text-color); 
+            overflow-x: hidden; 
+            min-height: 100vh; 
+        }
+        .app-container { 
+            max-width: 480px; 
+            margin: 0 auto; 
+            padding: 1.5rem 1rem; 
+            position: relative;
+        }
+        .screen { 
+            display: none; 
+            flex-direction: column; 
+            gap: 1.5rem; 
+            animation: fadeIn 0.4s ease-in-out; 
+            padding-bottom: 2rem;
+        }
+        .screen.active { 
+            display: flex; 
+        }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        
+        /* Fixed Header Alignment */
+        .top-bar { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            position: relative;
+            padding: 0.5rem 0;
+        }
+        .menu-toggle {
+            background: none; border: none; color: var(--text-color); font-size: 1.5rem; cursor: pointer; z-index: 2;
+        }
+        .logo { 
+            font-family: 'Orbitron', sans-serif; 
+            font-size: 1.6rem; 
+            text-shadow: 0 0 5px var(--soft-pink), 0 0 15px var(--neon-purple); 
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            z-index: 1;
+        }
+        .top-bar-icons { 
+            display: flex; align-items: center; gap: 1.2rem; font-size: 1.4rem; z-index: 2;
+        }
+        .notification-bell { position: relative; cursor: pointer; }
+        .notification-dot { 
+            position: absolute; top: -2px; right: -2px; width: 10px; height: 10px; 
+            background-color: var(--soft-pink); border-radius: 50%; box-shadow: 0 0 8px var(--soft-pink); display: none; 
+        }
+        .profile-avatar { 
+            width: 38px; height: 38px; border-radius: 50%; background-size: cover; 
+            border: 2px solid var(--glass-border); box-shadow: 0 0 10px var(--neon-blue); 
+        }
+        
+        /* Sidebar Menu */
+        .sidebar {
+            position: fixed; top: 0; left: 0; width: 280px; height: 100vh;
+            background: rgba(10, 25, 47, 0.95); backdrop-filter: blur(10px);
+            border-right: 1px solid var(--glass-border); padding: 1.5rem 1rem;
+            transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000; overflow-y: auto;
+        }
+        .sidebar.active { transform: translateX(0); }
+        .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--glass-border); }
+        .sidebar-logo { font-family: 'Orbitron', sans-serif; font-size: 1.5rem; text-shadow: 0 0 5px var(--soft-pink), 0 0 15px var(--neon-purple); }
+        .close-sidebar { background: none; border: none; color: var(--text-color); font-size: 1.5rem; cursor: pointer; }
+        .sidebar-menu { list-style: none; }
+        .sidebar-menu li { margin-bottom: 0.5rem; }
+        .sidebar-menu a { display: block; padding: 0.8rem 1rem; color: var(--text-color); text-decoration: none; border-radius: 10px; transition: all 0.3s ease; }
+        .sidebar-menu a:hover, .sidebar-menu a.active { background: var(--glass-bg); box-shadow: 0 0 10px var(--neon-purple); }
+        .sidebar-menu i { margin-right: 0.5rem; width: 20px; text-align: center; }
+        .submenu { list-style: none; margin-left: 1.5rem; margin-top: 0.5rem; display: none; }
+        .submenu.active { display: block; }
+        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(2px); z-index: 999; display: none; opacity: 0; transition: opacity 0.3s; }
+        .sidebar-overlay.active { display: block; opacity: 1; }
+        
+        /* Common Glass & Inputs */
+        .glass-card, .search-bar { 
+            background: var(--glass-bg); border: 1px solid var(--glass-border); 
+            border-radius: 20px; backdrop-filter: blur(12px); padding: 1rem 1.5rem; 
+        }
+        .search-bar { display: flex; align-items: center; gap: 1rem; }
+        .search-bar input { flex-grow: 1; background: transparent; border: none; outline: none; color: var(--text-color); font-size: 1rem; width: 100%; }
+        
+        .btn { padding: 0.8rem 1.5rem; border: none; border-radius: 15px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .btn-3d-neon { background: var(--neon-purple); color: white; box-shadow: inset 1px 1px 3px rgba(255,255,255,0.3), 0 0 12px var(--neon-purple); }
+        .btn-3d-neon:hover { transform: translateY(-2px); box-shadow: inset 1px 1px 3px rgba(255,255,255,0.3), 0 0 20px var(--neon-purple); }
+        .watch-ad-btn { background: #E2B714; color: #111; box-shadow: inset 1px 1px 3px rgba(255,255,255,0.6), 0 0 12px #E2B714; }
+        
+        h2.section-title { font-size: 1.3rem; text-shadow: 0 0 5px var(--neon-blue); margin: 0.5rem 0; letter-spacing: 0.5px; }
+        
+        /* Shimmer Skeletons */
+        @keyframes shimmer {
+            0% { background-position: -200px 0; }
+            100% { background-position: calc(200px + 100%) 0; }
+        }
+        .skeleton {
+            background-color: rgba(255,255,255,0.05);
+            background-image: linear-gradient(90deg, rgba(255,255,255,0) 0, rgba(255,255,255,0.1) 20%, rgba(255,255,255,0) 40%);
+            background-size: 200px 100%; background-repeat: no-repeat;
+            animation: shimmer 1.5s infinite linear; border-radius: 10px;
+        }
+
+        /* Responsive Grid fixes */
+        .app-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
+            gap: 1rem; 
+        }
+        .app-card { 
+            background: var(--glass-bg); border-radius: 20px; padding: 1rem; 
+            text-align: center; border: 1px solid var(--glass-border); cursor: pointer; transition: all 0.3s ease; display: flex; flex-direction: column; align-items: center;
+        }
+        .app-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); border-color: var(--neon-purple); }
+        .app-card img { width: 75px; height: 75px; border-radius: 18px; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .app-card h3 { font-size: 0.95rem; margin: 0.8rem 0 0.3rem 0; font-weight: 500; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .app-card p { font-size: 0.75rem; color: rgba(245,245,245,0.6); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; }
+
+        /* Featured Carousel */
+        .featured-carousel-container { position: relative; overflow: hidden; border-radius: 20px; height: 180px; }
+        .featured-carousel { display: flex; transition: transform 0.5s ease-in-out; height: 100%; }
+        .featured-card { 
+            flex: 0 0 100%; height: 100%; border-radius: 20px; background-size: cover; background-position: center; 
+            border: 1px solid var(--glass-border); box-shadow: 0 8px 25px rgba(0,0,0,0.3); cursor: pointer; position: relative;
+        }
+        .featured-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(10,25,47,0.95) 0%, rgba(10,25,47,0.2) 100%); border-radius: 20px; }
+        .featured-card-content { position: absolute; bottom: 0; left: 0; right: 0; padding: 1.2rem; color: white; z-index: 2; }
+        .featured-card h3 { font-size: 1.3rem; margin-bottom: 0.3rem; text-shadow: 0 2px 5px rgba(0,0,0,0.8); }
+        .featured-card p { font-size: 0.85rem; opacity: 0.9; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .carousel-dots { display: flex; justify-content: center; gap: 0.6rem; margin-top: 1rem; }
+        .carousel-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--glass-border); cursor: pointer; transition: all 0.3s ease; }
+        .carousel-dot.active { background: var(--neon-blue); transform: scale(1.3); box-shadow: 0 0 8px var(--neon-blue); }
+
+        /* Premium Play Store Details Layout */
+        #details-screen { padding: 0; gap: 0; }
+        #details-screen .back-button { position: absolute; top: 1.5rem; left: 1rem; font-size: 1.5rem; z-index: 10; cursor: pointer; background: rgba(0,0,0,0.5); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .details-banner { width: 100%; height: 220px; background-size: cover; background-position: center; position: relative; border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.4); }
+        .details-banner::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, var(--bg-gradient-start) 5%, transparent 100%); border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; }
+        
+        .details-header-content { display: flex; align-items: flex-end; padding: 0 1.5rem; transform: translateY(-30px); position: relative; z-index: 2; gap: 1.2rem; }
+        .details-icon { width: 90px; height: 90px; border-radius: 22px; object-fit: cover; border: 3px solid var(--bg-gradient-start); box-shadow: 0 8px 15px rgba(0,0,0,0.5); background: var(--bg-gradient-end); }
+        .details-title-group { padding-bottom: 5px; }
+        .details-title { font-size: 1.4rem; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.5); line-height: 1.2; margin-bottom: 5px; }
+        .dev-name { font-size: 0.9rem; color: var(--neon-blue); font-weight: 500; }
+
+        .details-stats-bar { display: flex; justify-content: space-evenly; align-items: center; padding: 0 1.5rem 1rem 1.5rem; margin-top: -15px; border-bottom: 1px solid var(--glass-border); }
+        .stat-item { text-align: center; font-size: 1rem; font-weight: 600; position: relative; }
+        .stat-item small { display: block; font-size: 0.7rem; color: rgba(255,255,255,0.6); font-weight: 400; margin-top: 3px; }
+        .stat-item:not(:last-child)::after { content: ''; position: absolute; right: -25px; top: 10%; height: 80%; width: 1px; background: var(--glass-border); }
+
+        .download-btn-container { padding: 1.5rem; position: relative; }
+        #download-btn { width: 100%; font-size: 1.1rem; padding: 1.2rem; border-radius: 18px; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; letter-spacing: 1px;}
+
+        /* Media / Screenshots Section */
+        .media-section { padding: 0 0 1.5rem 1.5rem; overflow: hidden; }
+        .media-scroll { display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 1rem; scrollbar-width: none; }
+        .media-scroll::-webkit-scrollbar { display: none; }
+        .media-item { flex: 0 0 auto; width: 140px; height: 250px; border-radius: 12px; object-fit: cover; border: 1px solid var(--glass-border); cursor: pointer; transition: transform 0.2s; background: var(--glass-bg); }
+        .media-item:hover { transform: scale(1.03); }
+        .media-video { flex: 0 0 auto; width: 260px; height: 150px; border-radius: 12px; border: 1px solid var(--glass-border); overflow: hidden; align-self: center; }
+        
+        /* About Section */
+        .about-section { margin: 0 1.5rem 1.5rem 1.5rem; padding: 1.2rem; }
+        .about-section h3 { font-size: 1.1rem; margin-bottom: 0.8rem; color: var(--text-color); font-weight: 600; }
+        .description-area { font-size: 0.85rem; line-height: 1.6; color: rgba(255,255,255,0.8); position: relative; overflow: hidden; max-height: 80px; transition: max-height 0.4s ease; }
+        .description-area.expanded { max-height: 1000px; }
+        .read-more-btn { background: none; border: none; color: var(--neon-blue); font-weight: 500; font-size: 0.9rem; cursor: pointer; margin-top: 0.5rem; padding: 0; }
+
+        /* Dynamic Ads */
+        .ad-container { margin: 1.5rem; background: var(--glass-bg); border-radius: 15px; padding: 1rem; text-align: center; border: 1px solid var(--glass-border); overflow: hidden;}
+        .ad-label { font-size: 0.7rem; color: rgba(245, 245, 245, 0.4); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        .ad-dynamic-content { min-height: 50px; display: flex; justify-content: center; align-items: center; }
+
+        /* Smart Unlock Modal Overlay */
+        .ad-unlock-overlay { position: fixed; inset: 0; background: rgba(10,25,47,0.98); z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; opacity: 0; pointer-events: none; transition: 0.4s; backdrop-filter: blur(10px); }
+        .ad-unlock-overlay.active { opacity: 1; pointer-events: all; }
+        .ad-unlock-modal { text-align: center; max-width: 350px; padding: 2rem; }
+        .countdown-circle { width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--neon-purple); display: flex; justify-content: center; align-items: center; font-size: 2.5rem; font-weight: bold; margin: 2rem auto; color: var(--text-color); box-shadow: 0 0 20px rgba(155,93,229,0.4); }
+        
+        /* Lightbox */
+        .lightbox-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: 0.3s; }
+        .lightbox-overlay.active { opacity: 1; pointer-events: all; }
+        .lightbox-img { max-width: 90%; max-height: 90vh; border-radius: 10px; object-fit: contain; }
+        .lightbox-close { position: absolute; top: 20px; right: 20px; font-size: 2rem; color: white; cursor: pointer; z-index: 10000; }
+
+        /* Other Screens & Files (Restored perfectly) */
+        .file-grid, .contact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; }
+        .file-card, .contact-card { background: var(--glass-bg); border-radius: 15px; padding: 1rem; text-align: center; cursor: pointer; transition: 0.3s; border: 1px solid var(--glass-border); }
+        .file-card:hover, .contact-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); border-color: var(--neon-blue); }
+        .file-icon { font-size: 2.5rem; margin-bottom: 0.5rem; color: var(--neon-blue); }
+        .file-category-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; overflow-x: auto; padding-bottom: 0.5rem; scrollbar-width: none; }
+        .file-category-tabs::-webkit-scrollbar { display: none; }
+        .file-category-tab { padding: 0.5rem 1rem; background: var(--glass-bg); border-radius: 10px; cursor: pointer; transition: 0.3s; white-space: nowrap; border: 1px solid var(--glass-border); font-size: 0.9rem; }
+        .file-category-tab.active { background: var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue); }
+        .contact-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+        .email .contact-icon { color: #EA4335; } .telegram .contact-icon { color: #0088cc; } .whatsapp .contact-icon { color: #25D366; } .messenger .contact-icon { color: #006AFF; }
+        
+        .notification-card { background: var(--glass-bg); border-radius: 15px; padding: 1rem; margin-bottom: 1rem; cursor: pointer; border: 1px solid transparent; transition: 0.3s; }
+        .notification-card:hover { border-color: var(--neon-purple); }
+        .notification-card h3 { color: var(--neon-blue); margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .notification-date { font-size: 0.8rem; color: rgba(245,245,245,0.6); margin-top: 0.5rem; }
+
+        #file-detail-screen .header { text-align: center; }
+        .file-detail-icon { width: 100px; height: 100px; border-radius: 20px; margin: 1rem auto; object-fit: cover; }
+        .file-actions { display: flex; gap: 1rem; margin-top: 1rem; }
+        .file-action-btn { flex: 1; padding: 1rem; border: none; border-radius: 15px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .watch-btn { background: var(--neon-blue); color: white; box-shadow: 0 0 15px rgba(0,187,249,0.5); }
+        .download-file-btn { background: var(--neon-purple); color: white; box-shadow: 0 0 15px rgba(155,93,229,0.5); }
+        
+        /* Loading Animation logic */
+        .download-btn-loading { background: var(--neon-blue) !important; color: transparent !important; pointer-events: none; position: relative; overflow: hidden; }
+        .download-btn-loading::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); animation: loadingScan 1s infinite; }
+        @keyframes loadingScan { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+    </style>
+</head>
+<body>
+    <!-- Global UI Overlays -->
+    <div id="adsterra-socialbar" style="display:none; position:fixed; bottom:0; width:100%; z-index:1000;"></div>
+    <div id="adsterra-popunder" style="display:none;"></div>
+
+    <div class="ad-unlock-overlay" id="ad-unlock-overlay">
+        <div class="ad-unlock-modal">
+            <i class="fas fa-lock-open" style="font-size: 3rem; color: var(--neon-blue); margin-bottom: 1rem;"></i>
+            <h3>Unlocking Download...</h3>
+            <p style="font-size: 0.9rem; color: #ccc; margin-top: 5px;">Please verify your view to unlock.</p>
+            <div class="countdown-circle"><span id="ad-countdown">5</span></div>
+            <button id="ad-unlock-close" class="btn btn-3d-neon" style="display: none; width: 100%;">CONTINUE TO DOWNLOAD</button>
+        </div>
+    </div>
+
+    <div class="lightbox-overlay" id="lightbox-overlay">
+        <span class="lightbox-close" id="lightbox-close"><i class="fas fa-times"></i></span>
+        <img class="lightbox-img" id="lightbox-img" src="" alt="Screenshot" loading="lazy">
+    </div>
+
+    <div class="sidebar-overlay"></div>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">N Store</div>
+            <button class="close-sidebar"><i class="fas fa-times"></i></button>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#" class="menu-item active" data-screen="home-screen"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="#" class="menu-item" data-screen="apps-screen"><i class="fas fa-mobile-alt"></i> Apps</a></li>
+            <li>
+                <a href="#" class="menu-item has-submenu"><i class="fas fa-folder"></i> Files <i class="fas fa-chevron-down" style="float: right;"></i></a>
+                <ul class="submenu">
+                    <li><a href="#" class="menu-item" data-category="document" data-screen="files-screen"><i class="fas fa-file-pdf"></i> Documents</a></li>
+                    <li><a href="#" class="menu-item" data-category="video" data-screen="files-screen"><i class="fas fa-file-video"></i> Videos</a></li>
+                    <li><a href="#" class="menu-item" data-category="html" data-screen="files-screen"><i class="fas fa-file-code"></i> HTML Files</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#" class="menu-item has-submenu"><i class="fas fa-address-book"></i> Contact <i class="fas fa-chevron-down" style="float: right;"></i></a>
+                <ul class="submenu">
+                    <li><a href="#" class="menu-item" data-screen="contact-screen"><i class="fas fa-envelope"></i> Email</a></li>
+                    <li><a href="#" class="menu-item" data-screen="contact-screen"><i class="fab fa-telegram"></i> Telegram</a></li>
+                    <li><a href="#" class="menu-item" data-screen="contact-screen"><i class="fab fa-whatsapp"></i> WhatsApp</a></li>
+                    <li><a href="#" class="menu-item" data-screen="contact-screen"><i class="fab fa-facebook-messenger"></i> Messenger</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <div class="app-container">
+        <!-- Home Screen -->
+        <div id="home-screen" class="screen active">
+            <header class="top-bar">
+                <button class="menu-toggle"><i class="fas fa-bars"></i></button>
+                <div class="logo">N Store</div>
+                <div class="top-bar-icons">
+                    <div class="notification-bell"><i class="fas fa-bell"></i><div class="notification-dot"></div></div>
+                    <div class="profile-avatar" id="profile-avatar"></div>
+                </div>
+            </header>
+            <div class="search-bar"><i class="fas fa-search"></i><input type="text" id="search-input" placeholder="Search for apps..."></div>
+            
+            <section>
+                <h2 class="section-title">Featured</h2>
+                <div class="featured-carousel-container">
+                    <div class="featured-carousel" id="featured-carousel">
+                        <div class="featured-card skeleton"></div>
+                    </div>
+                </div>
+                <div class="carousel-dots" id="carousel-dots"></div>
+            </section>
+            
+            <!-- Home Ad -->
+            <div id="ad-container-home" class="ad-container"></div>
+            
+            <section>
+                <h2 class="section-title">New & Trending</h2>
+                <div class="app-grid" id="app-grid">
+                    <div class="app-card skeleton" style="height: 140px;"></div>
+                    <div class="app-card skeleton" style="height: 140px;"></div>
+                    <div class="app-card skeleton" style="height: 140px;"></div>
+                    <div class="app-card skeleton" style="height: 140px;"></div>
+                </div>
+            </section>
+        </div>
+        
+        <!-- Premium App Details Screen -->
+        <div id="details-screen" class="screen">
+            <i class="fas fa-arrow-left back-button"></i>
+            
+            <div class="details-banner" id="details-banner"></div>
+            
+            <div class="details-header-content">
+                <img id="details-app-icon" class="details-icon" src="" alt="App Icon" loading="lazy">
+                <div class="details-title-group">
+                    <h2 id="details-app-title" class="details-title">App Name</h2>
+                    <p id="details-dev-name" class="dev-name">Developer</p>
+                </div>
+            </div>
+            
+            <div class="details-stats-bar">
+                <div class="stat-item"><span id="details-rating">4.8</span> <i class="fas fa-star" style="color:#FFD700; font-size: 0.8rem;"></i><br><small>Rating</small></div>
+                <div class="stat-item"><span id="details-downloads">10k+</span><br><small>Downloads</small></div>
+                <div class="stat-item"><span id="details-size">-- MB</span><br><small>Size</small></div>
+            </div>
+            
+            <div class="download-btn-container">
+                <button id="download-btn" class="btn btn-3d-neon"><i class="fas fa-download"></i> DOWNLOAD NOW</button>
+            </div>
+            
+            <section class="media-section" id="details-media-section">
+                <div class="media-scroll" id="details-media-scroll">
+                    <!-- Dynamic Screenshots / Video inserted here -->
+                </div>
+            </section>
+            
+            <section class="glass-card about-section">
+                <h3>About this app</h3>
+                <div class="description-area" id="details-desc-area">
+                    <p id="details-app-description"></p>
+                </div>
+                <button id="read-more-btn" class="read-more-btn">Read More <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i></button>
+            </section>
+            
+            <div id="ad-container-details" class="ad-container" style="margin: 0 1.5rem 2rem 1.5rem;"></div>
+        </div>
+
+        <!-- Apps Screen -->
+        <div id="apps-screen" class="screen">
+            <header class="top-bar">
+                <i class="fas fa-arrow-left back-button" style="position:static;"></i>
+                <h2 class="section-title" style="margin:0;">All Apps</h2>
+                <div style="width:24px;"></div>
+            </header>
+            <div id="ad-container-apps" class="ad-container"></div>
+            <div class="app-grid" id="all-apps-grid"></div>
+        </div>
+        
+        <!-- Files Screen -->
+        <div id="files-screen" class="screen">
+            <header class="top-bar">
+                <i class="fas fa-arrow-left back-button" style="position:static;"></i>
+                <h2 class="section-title" style="margin:0;">Files</h2>
+                <div style="width:24px;"></div>
+            </header>
+            <div id="ad-container-files" class="ad-container"></div>
+            <div class="file-category-tabs" id="file-category-tabs">
+                <div class="file-category-tab active" data-category="all">All</div>
+                <div class="file-category-tab" data-category="document">Documents</div>
+                <div class="file-category-tab" data-category="video">Videos</div>
+                <div class="file-category-tab" data-category="html">HTML</div>
+            </div>
+            <div class="file-grid" id="file-grid"></div>
+        </div>
+        
+        <!-- File Detail Screen -->
+        <div id="file-detail-screen" class="screen">
+            <i class="fas fa-arrow-left back-button"></i>
+            <header class="header" style="padding-top:2rem;">
+                 <img id="file-detail-icon" class="file-detail-icon" src="" alt="File Icon" loading="lazy">
+                 <h2 id="file-detail-title" style="font-size:1.5rem; text-shadow:0 0 5px var(--neon-blue);"></h2>
+            </header>
+            <section class="glass-card"><p id="file-detail-description" style="font-size:0.9rem; color:rgba(255,255,255,0.8); text-align:center;"></p></section>
+            <div class="file-actions">
+                <button id="watch-btn" class="file-action-btn watch-btn" style="display: none;"><i class="fas fa-play"></i> WATCH</button>
+                <button id="download-file-btn" class="file-action-btn download-file-btn"><i class="fas fa-download"></i> GET FILE</button>
+            </div>
+            <div id="ad-container-file-detail" class="ad-container"></div>
+        </div>
+        
+        <!-- Contact Screen -->
+        <div id="contact-screen" class="screen">
+            <header class="top-bar">
+                <i class="fas fa-arrow-left back-button" style="position:static;"></i>
+                <h2 class="section-title" style="margin:0;">Contact Us</h2>
+                <div style="width:24px;"></div>
+            </header>
+            <div class="contact-grid" id="contact-grid"></div>
+        </div>
+
+        <!-- Notifications Screen -->
+        <div id="notifications-screen" class="screen">
+            <header class="top-bar">
+                <i class="fas fa-arrow-left back-button" style="position:static;"></i>
+                <h2 class="section-title" style="margin:0;">Notifications</h2>
+                <div style="width:24px;"></div>
+            </header>
+            <div id="notifications-list"></div>
+        </div>
+        
+        <!-- Notification Detail Screen -->
+        <div id="notification-detail-screen" class="screen">
+            <i class="fas fa-arrow-left back-button"></i>
+            <div class="glass-card" style="margin-top:4rem;">
+                <h2 id="notification-detail-title" style="color:var(--neon-blue); margin-bottom:1rem; font-size:1.3rem;"></h2>
+                <p id="notification-detail-message" style="font-size:0.9rem; line-height:1.6; color:#eee;"></p>
+                <a href="#" id="notification-detail-link" style="display:none; color:var(--soft-pink); margin-top:1rem; text-decoration:none; font-weight:bold;">Open Link <i class="fas fa-external-link-alt"></i></a>
+                <div id="notification-detail-time" class="notification-date" style="margin-top:1rem;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, onSnapshot, query, orderBy, doc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyDwOzjFqA1rlczCeS6MrQeEQsTbmT2Gkdk",
+          authDomain: "nstore-5a995.firebaseapp.com",
+          databaseURL: "https://nstore-5a995-default-rtdb.firebaseio.com",
+          projectId: "nstore-5a995",
+          storageBucket: "nstore-5a995.firebasestorage.app",
+          messagingSenderId: "1061511000081",
+          appId: "1:1061511000081:web:62f9a776b0f6e4ddfa41b0"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Core DOM Elements
+        const screens = document.querySelectorAll('.screen');
+        const menuToggle = document.querySelector('.menu-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        const closeSidebar = document.querySelector('.close-sidebar');
+        const sidebarOverlay = document.querySelector('.sidebar-overlay');
+        const menuItems = document.querySelectorAll('.menu-item');
+        const submenuToggles = document.querySelectorAll('.has-submenu');
+        
+        // Data Arrays
+        let allApps = [], allFiles = [], allNotifications = [], allContacts = [], allAds = [];
+        let currentSlide = 0, slideInterval;
+        
+        // Initialize Data
+        const initializeAppData = async () => {
+            fetchAndRenderApps();
+            fetchAndRenderAds();
+            setupFilesListener();
+            setupContactsListener();
+            setupNotificationsListener();
+        };
+
+        // Screen Navigation
+        const showScreen = (screenId) => {
+            screens.forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            window.scrollTo(0,0);
+        };
+
+        // Sidebar Actions
+        menuToggle.onclick = () => { sidebar.classList.add('active'); sidebarOverlay.classList.add('active'); };
+        closeSidebar.onclick = () => { sidebar.classList.remove('active'); sidebarOverlay.classList.remove('active'); };
+        sidebarOverlay.onclick = closeSidebar.onclick;
+
+        submenuToggles.forEach(toggle => {
+            toggle.onclick = (e) => {
+                e.preventDefault();
+                const sub = toggle.nextElementSibling;
+                sub.classList.toggle('active');
+                const icon = toggle.querySelector('.fa-chevron-down') || toggle.querySelector('.fa-chevron-up');
+                icon.className = sub.classList.contains('active') ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+                icon.style.float = 'right';
+            };
+        });
+
+        menuItems.forEach(item => {
+            if(!item.classList.contains('has-submenu')) {
+                item.onclick = (e) => {
+                    e.preventDefault();
+                    menuItems.forEach(m => m.classList.remove('active'));
+                    item.classList.add('active');
+                    const screenId = item.dataset.screen;
+                    if(screenId) {
+                        showScreen(screenId);
+                        if(window.innerWidth < 768) closeSidebar.onclick();
+                    }
+                };
+            }
+        });
+
+        document.querySelectorAll('.back-button').forEach(btn => {
+            btn.onclick = () => showScreen('home-screen');
+        });
+
+        // App Logic
+        const fetchAndRenderApps = async () => {
+            try {
+                const snap = await getDocs(collection(db, "apps"));
+                allApps = [];
+                snap.forEach(doc => allApps.push({ id: doc.id, ...doc.data() }));
+                renderFeaturedApps(allApps.filter(a => a.isFeatured));
+                renderAllApps(allApps);
+            } catch (error) {
+                console.error('Error fetching apps:', error);
+            }
+        };
+
+        const renderFeaturedApps = (apps) => {
+            const container = document.getElementById('featured-carousel');
+            const dotsContainer = document.getElementById('carousel-dots');
+            container.innerHTML = ''; dotsContainer.innerHTML = '';
+            
+            if (!apps.length) return;
+            apps.forEach((app, idx) => {
+                const card = document.createElement('div');
+                card.className = 'featured-card';
+                card.style.backgroundImage = `url(${app.banner || app.icon})`;
+                card.innerHTML = `<div class="featured-card-content"><h3>${app.title}</h3><p>${app.description}</p></div>`;
+                card.onclick = () => showAppDetails(app);
+                container.appendChild(card);
+                
+                const dot = document.createElement('div');
+                dot.className = `carousel-dot ${idx === 0 ? 'active' : ''}`;
+                dot.onclick = () => goToSlide(idx);
+                dotsContainer.appendChild(dot);
+            });
+            startCarousel();
+        };
+
+        const renderAllApps = (apps) => {
+            const grid = document.getElementById('app-grid');
+            const allGrid = document.getElementById('all-apps-grid');
+            grid.innerHTML = ''; allGrid.innerHTML = '';
+            
+            apps.forEach(app => {
+                const html = `
+                    <img src="${app.icon}" alt="${app.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/75'">
+                    <h3>${app.title}</h3>
+                    <p>${app.description}</p>
+                `;
+                const card = document.createElement('div');
+                card.className = 'app-card';
+                card.innerHTML = html;
+                card.onclick = () => showAppDetails(app);
+                grid.appendChild(card);
+                
+                const allCard = card.cloneNode(true);
+                allCard.onclick = () => showAppDetails(app);
+                allGrid.appendChild(allCard);
+            });
+        };
+
+        const startCarousel = () => {
+            if (slideInterval) clearInterval(slideInterval);
+            slideInterval = setInterval(() => {
+                const slides = document.querySelectorAll('.featured-card');
+                if(!slides.length) return;
+                currentSlide = (currentSlide + 1) % slides.length;
+                goToSlide(currentSlide);
+            }, 4000);
+        };
+
+        const goToSlide = (idx) => {
+            currentSlide = idx;
+            document.getElementById('featured-carousel').style.transform = `translateX(-${idx * 100}%)`;
+            document.querySelectorAll('.carousel-dot').forEach((dot, i) => dot.classList.toggle('active', i === idx));
+        };
+
+        document.getElementById('search-input').oninput = (e) => {
+            renderAllApps(allApps.filter(a => a.title.toLowerCase().includes(e.target.value.toLowerCase())));
+        };
+
+        // Premium Details Logic
+        const showAppDetails = (app) => {
+            document.getElementById('details-banner').style.backgroundImage = `url(${app.banner || app.icon})`;
+            document.getElementById('details-app-icon').src = app.icon;
+            document.getElementById('details-app-title').textContent = app.title;
+            document.getElementById('details-dev-name').textContent = app.developer || "NStore verified";
+            document.getElementById('details-app-description').textContent = app.description;
+            
+            document.getElementById('details-rating').textContent = app.rating || "4.8";
+            document.getElementById('details-downloads').textContent = (app.downloads || "100") + "+";
+            document.getElementById('details-size').textContent = app.size || "Varies";
+            
+            // Render Media (Video/Screenshots)
+            const mediaScroll = document.getElementById('details-media-scroll');
+            mediaScroll.innerHTML = '';
+            if (app.videoUrl) {
+                mediaScroll.innerHTML += `<iframe class="media-video" src="${app.videoUrl}" frameborder="0" allowfullscreen loading="lazy"></iframe>`;
+            }
+            if (app.screenshots && app.screenshots.length > 0) {
+                app.screenshots.forEach(src => {
+                    const img = document.createElement('img');
+                    img.src = src; img.className = 'media-item'; img.loading = "lazy";
+                    img.onclick = () => openLightbox(src);
+                    mediaScroll.appendChild(img);
+                });
+            } else {
+                // Dummy safe fallback
+                const dummy = document.createElement('div');
+                dummy.style.padding = "10px"; dummy.style.color = "gray"; dummy.innerText = "No media provided";
+                mediaScroll.appendChild(dummy);
+            }
+
+            // Action Button Logic
+            const btn = document.getElementById('download-btn');
+            btn.dataset.url = app.downloadUrl;
+            btn.dataset.id = app.id;
+            
+            if (app.lockDownloadWithAd) {
+                btn.innerHTML = '<i class="fas fa-lock"></i> WATCH AD TO UNLOCK';
+                btn.className = 'btn watch-ad-btn';
+                btn.dataset.requiresAd = 'true';
+                btn.dataset.adLink = app.adLink || '#';
+            } else {
+                btn.innerHTML = '<i class="fas fa-download"></i> DOWNLOAD NOW';
+                btn.className = 'btn btn-3d-neon';
+                btn.dataset.requiresAd = 'false';
+            }
+            
+            showScreen('details-screen');
+            triggerPopunderAd();
+            displayAd(getRandomAd(), document.getElementById('ad-container-details'));
+        };
+
+        // Description Read More Toggle
+        document.getElementById('read-more-btn').onclick = function() {
+            const desc = document.getElementById('details-desc-area');
+            desc.classList.toggle('expanded');
+            this.innerHTML = desc.classList.contains('expanded') ? 'Show Less <i class="fas fa-chevron-up"></i>' : 'Read More <i class="fas fa-chevron-down"></i>';
+        };
+
+        // Lightbox Logic
+        const openLightbox = (src) => {
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('lightbox-overlay').classList.add('active');
+        };
+        document.getElementById('lightbox-close').onclick = () => document.getElementById('lightbox-overlay').classList.remove('active');
+
+        // Download Action & Smart Ad Unlock Modal
+        document.getElementById('download-btn').onclick = (e) => {
+            const btn = e.currentTarget;
+            const url = btn.dataset.url;
+            const requiresAd = btn.dataset.requiresAd === 'true';
+
+            if (requiresAd) {
+                const adLink = btn.dataset.adLink;
+                if(adLink && adLink !== '#') window.open(adLink, '_blank');
+                
+                const overlay = document.getElementById('ad-unlock-overlay');
+                const closeBtn = document.getElementById('ad-unlock-close');
+                const timerEl = document.getElementById('ad-countdown');
+                
+                overlay.classList.add('active');
+                closeBtn.style.display = 'none';
+                
+                let time = 5;
+                timerEl.textContent = time;
+                timerEl.style.fontSize = "2.5rem";
+                
+                const timer = setInterval(() => {
+                    time--;
+                    timerEl.textContent = time;
+                    if (time <= 0) {
+                        clearInterval(timer);
+                        timerEl.innerHTML = '<i class="fas fa-check"></i>';
+                        timerEl.style.fontSize = "3rem";
+                        closeBtn.style.display = 'block';
+                    }
+                }, 1000);
+            } else {
+                if (url) {
+                    btn.classList.add('download-btn-loading');
+                    setTimeout(() => {
+                        window.open(url, '_blank');
+                        btn.classList.remove('download-btn-loading');
+                        if(btn.dataset.id) updateDoc(doc(db, "apps", btn.dataset.id), { downloads: increment(1) });
+                    }, 1500);
+                }
+            }
+        };
+
+        document.getElementById('ad-unlock-close').onclick = () => {
+            document.getElementById('ad-unlock-overlay').classList.remove('active');
+            const btn = document.getElementById('download-btn');
+            btn.dataset.requiresAd = 'false';
+            btn.innerHTML = '<i class="fas fa-download"></i> DOWNLOAD NOW';
+            btn.className = 'btn btn-3d-neon';
+        };
+
+        // Dynamic Adsterra & Advertising
+        const fetchAndRenderAds = async () => {
+            onSnapshot(collection(db, "ads"), snap => {
+                allAds = [];
+                snap.forEach(d => { if(d.data().active) allAds.push({id: d.id, ...d.data()}) });
+                displayAd(getRandomAd(), document.getElementById('ad-container-home'));
+                displayAd(getRandomAd(), document.getElementById('ad-container-apps'));
+            });
+        };
+
+        const getRandomAd = () => allAds.length ? allAds[Math.floor(Math.random() * allAds.length)] : null;
+
+        const displayAd = (ad, container) => {
+            if(!container) return;
+            container.innerHTML = '';
+            if (!ad) {
+                container.style.display = 'none';
+                return;
+            }
+            container.style.display = 'block';
+            container.innerHTML = '<div class="ad-label">Sponsored</div>';
+            
+            const adWrapper = document.createElement('div');
+            adWrapper.className = 'ad-dynamic-content';
+            
+            // Safe Contextual Fragment execution for raw ad scripts
+            try {
+                const fragment = document.createRange().createContextualFragment(ad.script || '');
+                adWrapper.appendChild(fragment);
+            } catch(e) {
+                console.warn("Script inject error fallback applied.");
+                adWrapper.innerHTML = `<a href="${ad.url || '#'}" target="_blank" style="color:var(--neon-blue); text-decoration:none;">Check this out!</a>`;
+            }
+            container.appendChild(adWrapper);
+        };
+
+        const triggerPopunderAd = () => console.log('Popunder logic triggered silently');
+
+        // Other Firebase Realtime Listeners (Kept exactly as original rule mandated)
+        const setupFilesListener = () => {
+            onSnapshot(collection(db, "files"), snap => {
+                allFiles = []; snap.forEach(d => allFiles.push({id: d.id, ...d.data()}));
+                renderFiles(allFiles, 'all');
+            });
+        };
+
+        const renderFiles = (files, cat) => {
+            const grid = document.getElementById('file-grid');
+            grid.innerHTML = '';
+            const filtered = cat === 'all' ? files : files.filter(f => f.type === cat);
+            filtered.forEach(file => {
+                const c = document.createElement('div'); c.className = 'file-card';
+                c.innerHTML = `<img src="${file.icon}" style="width:50px; border-radius:10px; margin-bottom:10px;" loading="lazy"><h3>${file.name}</h3>`;
+                c.onclick = () => {
+                    document.getElementById('file-detail-icon').src = file.icon;
+                    document.getElementById('file-detail-title').textContent = file.name;
+                    document.getElementById('file-detail-description').textContent = file.description;
+                    document.getElementById('download-file-btn').dataset.url = file.downloadUrl;
+                    showScreen('file-detail-screen');
+                };
+                grid.appendChild(c);
+            });
+        };
+
+        document.getElementById('file-category-tabs').onclick = (e) => {
+            const t = e.target.closest('.file-category-tab');
+            if (t) {
+                document.querySelectorAll('.file-category-tab').forEach(x => x.classList.remove('active'));
+                t.classList.add('active');
+                renderFiles(allFiles, t.dataset.category);
+            }
+        };
+
+        document.getElementById('download-file-btn').onclick = function() {
+            const url = this.dataset.url;
+            if(url) {
+                this.classList.add('download-btn-loading');
+                setTimeout(() => { window.open(url, '_blank'); this.classList.remove('download-btn-loading'); }, 1500);
+            }
+        };
+
+        const setupContactsListener = () => {
+            onSnapshot(collection(db, "contacts"), snap => {
+                const grid = document.getElementById('contact-grid'); grid.innerHTML = '';
+                snap.forEach(d => {
+                    const data = d.data();
+                    const c = document.createElement('div'); c.className = `contact-card ${data.type}`;
+                    c.innerHTML = `<h3>${data.name}</h3>`;
+                    c.onclick = () => window.open(data.type === 'email' ? `mailto:${data.link}` : data.link, '_blank');
+                    grid.appendChild(c);
+                });
+            });
+        };
+
+        const setupNotificationsListener = () => {
+            onSnapshot(query(collection(db, "notifications"), orderBy("timestamp", "desc")), snap => {
+                allNotifications = []; snap.forEach(d => allNotifications.push({id: d.id, ...d.data()}));
+                if(allNotifications.length > 0) document.querySelector('.notification-dot').style.display = 'block';
+                
+                const list = document.getElementById('notifications-list'); list.innerHTML = '';
+                allNotifications.forEach(n => {
+                    const d = document.createElement('div'); d.className = 'notification-card';
+                    d.innerHTML = `<h3>${n.title}</h3><p>${n.message.substring(0,60)}...</p>`;
+                    d.onclick = () => {
+                        document.getElementById('notification-detail-title').textContent = n.title;
+                        document.getElementById('notification-detail-message').textContent = n.message;
+                        if(n.link) { 
+                            const l = document.getElementById('notification-detail-link');
+                            l.style.display = 'inline-block'; l.href = n.link; 
+                        } else document.getElementById('notification-detail-link').style.display = 'none';
+                        showScreen('notification-detail-screen');
+                    };
+                    list.appendChild(d);
+                });
+            });
+        };
+
+        document.querySelector('.notification-bell').onclick = () => {
+            document.querySelector('.notification-dot').style.display = 'none';
+            showScreen('notifications-screen');
+        };
+
+        document.addEventListener('DOMContentLoaded', initializeAppData);
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(()=> console.log('PWA init skipped.'));
+            });
+        }
+    </script>
+</body>
+</html>
