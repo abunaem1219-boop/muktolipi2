@@ -1891,7 +1891,12 @@
                      document.getElementById('yourStoryBg').style.backgroundImage = `url('${user.photoURL}')`;
                 }
                 loadFacebookStories();
-
+const urlParams = new URLSearchParams(window.location.search);
+const targetUid = urlParams.get('uid');
+if(targetUid) {
+    navTo('profile'); // হোম পেজ লুকিয়ে প্রোফাইল পেজ ওপেন করবে
+    loadProfile(targetUid); // কাঙ্ক্ষিত ইউজারের ডেটা লোড করবে
+}
             } else {
                 window.OneSignalDeferred.push(function(OneSignal) {
                     OneSignal.logout();
