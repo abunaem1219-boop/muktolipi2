@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unlock Download</title>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Hind Siliguri', sans-serif; background: #f8f9fa; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; text-align: center; color: #333; flex-direction: column; padding: 20px;}
+        .card { background: white; padding: 30px 20px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 350px; width: 100%; }
+        .icon { font-size: 50px; color: #f39c12; margin-bottom: 15px; }
+        h2 { margin: 0 0 10px; font-size: 22px; }
+        p { color: #666; font-size: 14px; margin-bottom: 25px; line-height: 1.5; }
+        
+        .action-btn { background: #01875f; color: white; border: none; padding: 15px; border-radius: 50px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
+        .action-btn:disabled { background: #ccc; cursor: not-allowed; }
+        
+        .timer { font-size: 40px; font-weight: bold; color: #e74c3c; margin: 20px 0; display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <i class="fas fa-lock icon" id="statusIcon"></i>
+        <h2 id="title">ডাউনলোড আনলক করুন</h2>
+        <p id="desc">আমাদের সাপোর্ট করার জন্য একটি বিজ্ঞাপন দেখুন। এর মাধ্যমে আগামী ২ মিনিটের জন্য স্টোরের সকল অ্যাপ ফ্রি হয়ে যাবে!</p>
+        
+        <div class="timer" id="timerDisplay">7</div>
+
+        <button class="action-btn" id="mainBtn" onclick="startProcess()">
+            <i class="fas fa-external-link-alt"></i> বিজ্ঞাপন দেখুন
+        </button>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetUrl = urlParams.get('target');
+        const adLink = urlParams.get('adLink') || 'https://google.com';
+        
+        let timeLeft = 7;
+        let timerInterval;
+
+        function startProcess() {
+            // Open Ad in New Tab
+            window.open(decodeURIComponent(adLink), '_blank');
+            
+            // Change UI for countdown
+            document.getElementById('mainBtn').style.display = 'none';
+            document.getElementById('desc').innerText = "দয়া করে অপেক্ষা করুন...";
+            const timerEl = document.getElementById('timerDisplay');
+            timerEl.style.display = 'block';
+
+            // Start Timer
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerEl.innerText = timeLeft;
+                
+                if(timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    unlockSuccess();
+                }
+            }, 1000);
+        }
+
+        function unlockSuccess() {
+            document.getElementById('statusIcon').className = 'fas fa-unlock';
+            document.getElementById('statusIcon').style.color = '#27ae60';
+            document.getElementById('title').innerText = "আনলক সফল হয়েছে!";
+            document.getElementById('desc').innerText = "আপনি এখন ডাউনলোড করতে পারবেন।";
+            document.getElementById('timerDisplay').style.display = 'none';
+            
+            const btn = document.getElementById('mainBtn');
+            btn.style.display = 'flex';
+            btn.style.background = '#27ae60';
+            btn.innerHTML = `<i class="fas fa-download"></i> ডাউনলোড করুন`;
+            
+            btn.onclick = () => {
+                // Set 2 minutes (120000 ms) unlock in localStorage
+                localStorage.setItem('storeUnlockTime', Date.now() + 120000);
+                window.location.href = `redirect.html?url=${targetUrl}`;
+            };
+        }
+    </script>
+</body>
+</html>
