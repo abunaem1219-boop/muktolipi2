@@ -1,4 +1,4 @@
-const CACHE_NAME = 'muktolipi-diary-v4';
+const CACHE_NAME = 'muktolipi-diary-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
