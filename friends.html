@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ফ্রেন্ডস - মুক্তলিপি</title>
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --text-color: #050505;
+            --secondary-text: #65676b;
+            --primary-color: #1877f2;
+            --card-bg: #ffffff;
+            --border-color: #ced0d4;
+            --glass-bg: rgba(255, 255, 255, 0.95);
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.1);
+            font-family: 'Hind Siliguri', sans-serif;
+        }
+
+        /* Dark Mode Variables */
+        .dark-theme {
+            --bg-color: #18191a;
+            --text-color: #e4e6eb;
+            --secondary-text: #b0b3b8;
+            --card-bg: #242526;
+            --border-color: #3e4042;
+            --glass-bg: rgba(36, 37, 38, 0.95);
+        }
+
+        body { margin: 0; background: var(--bg-color); color: var(--text-color); padding-bottom: 90px; -webkit-tap-highlight-color: transparent; }
+
+        /* Header & Search */
+        .header { position: sticky; top: 0; background: var(--glass-bg); backdrop-filter: blur(10px); padding: 15px; z-index: 100; box-shadow: var(--shadow-sm); }
+        .header-top { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .header-title { font-size: 22px; font-weight: 700; margin: 0; }
+        
+        .search-box { display: flex; align-items: center; background: var(--bg-color); border-radius: 20px; padding: 8px 15px; border: 1px solid var(--border-color); }
+        .search-box i { color: var(--secondary-text); font-size: 14px; }
+        .search-box input { flex: 1; border: none; background: transparent; padding: 5px 10px; outline: none; font-family: inherit; color: var(--text-color); font-size: 15px; }
+
+        /* Tabs */
+        .tabs { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding-bottom: 5px; }
+        .tabs::-webkit-scrollbar { display: none; }
+        .tab-btn { background: var(--bg-color); border: none; padding: 8px 16px; border-radius: 20px; font-weight: 600; color: var(--text-color); cursor: pointer; white-space: nowrap; transition: 0.2s; font-family: inherit; font-size: 14px;}
+        .tab-btn.active { background: rgba(24, 119, 242, 0.1); color: var(--primary-color); }
+
+        /* User Card */
+        .feed-container { padding: 15px; display: flex; flex-direction: column; gap: 15px; }
+        .user-card { background: var(--card-bg); border-radius: 12px; padding: 15px; display: flex; align-items: center; gap: 15px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); }
+        .user-avatar { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-color); cursor: pointer; }
+        .user-info { flex: 1; cursor: pointer; }
+        .user-name { font-size: 16px; font-weight: 700; margin: 0 0 4px 0; display: flex; align-items: center; gap: 5px; }
+        .user-bio { font-size: 13px; color: var(--secondary-text); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+        
+        .action-buttons { display: flex; gap: 8px; flex-direction: column; align-items: flex-end;}
+        .btn-follow { background: var(--primary-color); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; font-family: inherit; width: 100px; font-size: 13px;}
+        .btn-follow.following { background: var(--bg-color); color: var(--text-color); }
+        .btn-msg { background: var(--bg-color); color: var(--text-color); border: none; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100px; display: flex; justify-content: center; align-items: center; gap: 5px; font-size: 13px;}
+        
+        /* Loaders */
+        .loader { text-align: center; padding: 20px; color: var(--secondary-text); display: none; }
+        .skeleton { background: linear-gradient(90deg, var(--bg-color) 25%, var(--border-color) 50%, var(--bg-color) 75%); background-size: 200% 100%; animation: loading 1.5s infinite; border-radius: 8px; }
+        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        /* Bottom Nav (Reused) */
+        .bottom-nav { position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 500px; height: 60px; display: flex; justify-content: space-around; align-items: center; z-index: 1500; border-radius: 35px; background: var(--glass-bg); backdrop-filter: blur(20px); box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.2); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--secondary-text); background: none; border: none; font-size: 9px; cursor: pointer; width: 50px; font-family: inherit; }
+        .nav-item i { font-size: 20px; margin-bottom: 4px; }
+        .nav-item.active { color: var(--primary-color); font-weight: 700; transform: translateY(-3px); }
+        .nav-center-btn { background: linear-gradient(135deg, #1877f2 0%, #00c6ff 100%); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; font-size: 20px; transform: translateY(-4px); box-shadow: 0 8px 20px rgba(24, 119, 242, 0.4); }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-top">
+            <i class="fas fa-arrow-left" style="font-size: 20px; cursor: pointer;" onclick="window.history.back()"></i>
+            <h1 class="header-title">ফ্রেন্ডস</h1>
+        </div>
+        
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="নাম লিখে খুঁজুন..." oninput="handleSearch(this.value)">
+        </div>
+
+        <div class="tabs" style="margin-top: 15px;">
+            <button class="tab-btn active" onclick="switchTab('discover', this)">সকল ব্যবহারকারী</button>
+            <button class="tab-btn" onclick="switchTab('followers', this)">ফলোয়ারস <span id="folCount" style="background:#e74c3c;color:white;border-radius:10px;padding:2px 6px;font-size:11px;">0</span></button>
+            <button class="tab-btn" onclick="switchTab('following', this)">ফলোয়িং</button>
+        </div>
+    </div>
+
+    <div class="feed-container" id="userContainer">
+        <!-- Users will be loaded here -->
+    </div>
+
+    <div class="loader" id="mainLoader"><i class="fas fa-spinner fa-spin"></i> লোড হচ্ছে...</div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <button class="nav-item" onclick="window.location.href='index.html'"><i class="fas fa-home"></i>হোম</button>
+        <button class="nav-item active"><i class="fas fa-user-friends"></i>ফ্রেন্ডস</button>
+        <button class="nav-center-btn" onclick="window.location.href='index.html?action=write'"><i class="fas fa-pen-nib"></i></button>
+        <button class="nav-item" onclick="window.location.href='appstore.html'"><i class="fas fa-store"></i>স্টোর</button>
+        <button class="nav-item" onclick="window.location.href='index.html?page=profile'"><i class="fas fa-user"></i>প্রোফাইল</button>
+    </nav>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, get, query, orderByChild, limitToLast, endBefore, startAt, endAt, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBZtycgadrngON2WEwvIE7ERPYxdkDVfFM",
+            authDomain: "muktolipidiary.firebaseapp.com",
+            databaseURL: "https://muktolipidiary-default-rtdb.firebaseio.com",
+            projectId: "muktolipidiary",
+            storageBucket: "muktolipidiary.firebasestorage.app"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+
+        let currentUser = null;
+        let myFollowers = [];
+        let myFollowing = [];
+        
+        let currentTab = 'discover';
+        let lastUserKey = null;
+        let isFetching = false;
+        let reachedEnd = false;
+
+        // Theme sync
+        if(localStorage.getItem('userTheme') === 'dark') document.body.classList.add('dark-theme');
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                await fetchMyConnections();
+                loadUsers(true);
+            } else {
+                Swal.fire({icon:'warning', title:'লগইন প্রয়োজন', text:'ফ্রেন্ডস অপশন ব্যবহার করতে লগইন করুন।'}).then(()=> window.location.href='index.html');
+            }
+        });
+
+        // Fetch Follow Data Realtime Simulation
+        async function fetchMyConnections() {
+            const folSnap = await get(ref(db, `followers/${currentUser.uid}`));
+            const fingSnap = await get(ref(db, `following/${currentUser.uid}`));
+            
+            myFollowers = folSnap.exists() ? Object.keys(folSnap.val()) : [];
+            myFollowing = fingSnap.exists() ? Object.keys(fingSnap.val()) : [];
+            
+            document.getElementById('folCount').innerText = myFollowers.length;
+        }
+
+        // Tab Switching
+        window.switchTab = async function(tab, btnElement) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+            
+            currentTab = tab;
+            document.getElementById('searchInput').value = '';
+            
+            await fetchMyConnections(); // Refresh data before switching
+            loadUsers(true);
+        };
+
+        // Main Lazy Load Function
+        window.loadUsers = async function(reset = false) {
+            if(isFetching || (reachedEnd && !reset)) return;
+            isFetching = true;
+            document.getElementById('mainLoader').style.display = 'block';
+
+            const container = document.getElementById('userContainer');
+            if(reset) {
+                container.innerHTML = '';
+                lastUserKey = null;
+                reachedEnd = false;
+            }
+
+            try {
+                let userList = [];
+
+                if (currentTab === 'discover') {
+                    // Discover Tab: Load All users with pagination (15 per batch)
+                    let usersRef = ref(db, 'users');
+                    let q = lastUserKey 
+                        ? query(usersRef, orderByChild('joinDate'), limitToLast(15), endBefore(lastUserKey)) 
+                        : query(usersRef, orderByChild('joinDate'), limitToLast(15));
+                    
+                    const snap = await get(q);
+                    if (snap.exists()) {
+                        const data = snap.val();
+                        userList = Object.entries(data).map(([uid, val]) => ({ uid, ...val }));
+                        userList = userList.filter(u => u.uid !== currentUser.uid).reverse();
+                        if(userList.length > 0) lastUserKey = userList[userList.length - 1].joinDate;
+                        if(userList.length < 15) reachedEnd = true;
+                    } else {
+                        reachedEnd = true;
+                    }
+
+                } else {
+                    // Followers / Following Tab (Load specific IDs)
+                    const targetIds = currentTab === 'followers' ? myFollowers : myFollowing;
+                    
+                    if (targetIds.length === 0) {
+                        reachedEnd = true;
+                    } else {
+                        // For simplicity in list rendering, load them all or chunk manually
+                        // Fetching sequentially
+                        for (let uid of targetIds) {
+                            const snap = await get(ref(db, `users/${uid}`));
+                            if(snap.exists()) {
+                                userList.push({ uid, ...snap.val() });
+                            }
+                        }
+                        reachedEnd = true; // All loaded
+                    }
+                }
+
+                renderUserCards(userList);
+                if(container.innerHTML === '') container.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">কোনো ইউজার পাওয়া যায়নি।</div>';
+
+            } catch(e) {
+                console.error(e);
+            }
+
+            isFetching = false;
+            document.getElementById('mainLoader').style.display = 'none';
+        };
+
+        // Infinite Scroll
+        window.addEventListener('scroll', () => {
+            if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+                if(currentTab === 'discover' && document.getElementById('searchInput').value === '') {
+                    loadUsers();
+                }
+            }
+        });
+
+        // Search Functionality
+        let searchTimeout;
+        window.handleSearch = function(queryText) {
+            clearTimeout(searchTimeout);
+            const container = document.getElementById('userContainer');
+            
+            if(!queryText) {
+                loadUsers(true);
+                return;
+            }
+
+            searchTimeout = setTimeout(async () => {
+                document.getElementById('mainLoader').style.display = 'block';
+                container.innerHTML = '';
+                
+                // Switch to Discover tab internally for search
+                const qRef = query(ref(db, 'users'), orderByChild('displayName'), startAt(queryText), endAt(queryText + "\uf8ff"));
+                const snap = await get(qRef);
+                
+                if(snap.exists()) {
+                    let users = Object.entries(snap.val()).map(([uid, val]) => ({ uid, ...val }));
+                    users = users.filter(u => u.uid !== currentUser.uid);
+                    renderUserCards(users);
+                } else {
+                    container.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">কাউকে পাওয়া যায়নি।</div>';
+                }
+                document.getElementById('mainLoader').style.display = 'none';
+            }, 500);
+        };
+
+        // Render Cards
+        function renderUserCards(users) {
+            const container = document.getElementById('userContainer');
+            let html = '';
+
+            users.forEach(user => {
+                const isVerified = user.isVerified ? '<i class="fas fa-check-circle" style="color:#1877f2; font-size:12px;"></i>' : '';
+                const isFollowingThem = myFollowing.includes(user.uid);
+                const theyFollowMe = myFollowers.includes(user.uid);
+                
+                let btnText = "ফলো করুন";
+                let btnClass = "btn-follow";
+                
+                if (isFollowingThem) {
+                    btnText = "ফলোয়িং";
+                    btnClass += " following";
+                } else if (theyFollowMe) {
+                    btnText = "ফলো ব্যাক"; // FB style Follow back logic
+                }
+
+                html += `
+                <div class="user-card" id="user-${user.uid}">
+                    <img src="${user.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="user-avatar" onclick="viewProfile('${user.uid}')">
+                    <div class="user-info" onclick="viewProfile('${user.uid}')">
+                        <h4 class="user-name">${user.displayName} ${isVerified}</h4>
+                        <p class="user-bio">${user.bio || 'মুক্তলিপি ডায়েরি ব্যবহারকারী'}</p>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="${btnClass}" id="followBtn-${user.uid}" onclick="toggleFollow('${user.uid}', this)">${btnText}</button>
+                        <button class="btn-msg" onclick="messageUser('${user.uid}')"><i class="fab fa-facebook-messenger"></i> মেসেজ</button>
+                    </div>
+                </div>`;
+            });
+
+            container.innerHTML += html;
+        }
+
+        // Action Functions
+        window.toggleFollow = async function(targetUid, btnElement) {
+            if(!currentUser) return;
+            const myUid = currentUser.uid;
+
+            // Optimistic UI Update
+            if (btnElement.classList.contains('following')) {
+                // Unfollow
+                btnElement.classList.remove('following');
+                btnElement.innerText = myFollowers.includes(targetUid) ? "ফলো ব্যাক" : "ফলো করুন";
+                
+                // Remove from local array
+                myFollowing = myFollowing.filter(id => id !== targetUid);
+                
+                // Firebase Update
+                remove(ref(db, `followers/${targetUid}/${myUid}`));
+                remove(ref(db, `following/${myUid}/${targetUid}`));
+            } else {
+                // Follow
+                btnElement.classList.add('following');
+                btnElement.innerText = "ফলোয়িং";
+                
+                // Add to local array
+                myFollowing.push(targetUid);
+
+                // Firebase Update
+                update(ref(db, `followers/${targetUid}`), { [myUid]: true });
+                update(ref(db, `following/${myUid}`), { [targetUid]: { timestamp: Date.now() } }); 
+            }
+        };
+
+        window.viewProfile = function(uid) {
+            window.location.href = `index.html?uid=${uid}`;
+        };
+
+        window.messageUser = function(uid) {
+            window.location.href = `chat.html?targetUid=${uid}`;
+        };
+
+    </script>
+</body>
+</html>
