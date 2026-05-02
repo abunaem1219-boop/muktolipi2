@@ -35,12 +35,30 @@
           appId: "d2470015-4ed1-4274-96bd-1654f86cb54a",
           allowLocalhostAsSecureOrigin: true,
           notifyButton: { enable: true },
-          prompts: [{ type: "slidedown", autoPrompt: true, text: { actionMessage: "আপনি কি নতুন পোস্টের নোটিফিকেশন পেতে চান?", acceptButton: "হ্যাঁ", cancelButton: "পরে" } }]
+          prompts: [{ type: "slidedown", autoPrompt: true, text: { actionMessage: "আপনি কি নতুন পোস্টের নোটিফিকেশন পেতে চান?", accepButton: "হ্যাঁ", cancelButton: "পরে" } }]
         });
       });
     </script>
 
     <style>
+/* FB Style Create Menu */
+.create-menu-wrapper { position: relative; }
+.create-menu-dropdown {
+    position: absolute; top: 50px; right: 0; background: var(--glass-bg); backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color); border-radius: 16px; box-shadow: var(--shadow-card);
+    width: 220px; display: none; flex-direction: column; padding: 8px; z-index: 2000;
+    transform-origin: top right; animation: menuPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.create-menu-dropdown.show { display: flex; }
+@keyframes menuPop { 0% { opacity: 0; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
+.create-menu-item {
+    display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 10px; cursor: pointer;
+    color: var(--text-color); font-weight: 600; font-size: 15px; transition: 0.2s; border: none; background: transparent; text-align: left;
+}
+.create-menu-item:hover { background: rgba(0,0,0,0.05); }
+.dark-theme .create-menu-item:hover { background: rgba(255,255,255,0.05); }
+.create-icon-circle { width: 36px; height: 36px; border-radius: 50%; background: rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.dark-theme .create-icon-circle { background: rgba(255,255,255,0.1); }
         :root { 
             --bg-color: #f4f7f6; 
             --glass-bg: rgba(255, 255, 255, 0.95);
@@ -1165,7 +1183,23 @@
                 </button>
             </div>
         </div>
-
+<div class="create-menu-wrapper">
+    <button class="icon-btn" onclick="toggleCreateMenu()"><i class="fas fa-plus"></i></button>
+    <div id="createMenuDropdown" class="create-menu-dropdown">
+        <button class="create-menu-item" onclick="toggleCreateMenu(); openWriteModal();">
+            <div class="create-icon-circle"><i class="fas fa-pen-nib"></i></div> Post
+        </button>
+        <button class="create-menu-item" onclick="toggleCreateMenu(); openStoryCreator();">
+            <div class="create-icon-circle"><i class="fas fa-book-open"></i></div> Story
+        </button>
+        <button class="create-menu-item" onclick="toggleCreateMenu(); showToast('Reel অপশন শীঘ্রই আসছে!');">
+            <div class="create-icon-circle" style="color:#e74c3c;"><i class="fas fa-play"></i></div> Reel
+        </button>
+        <button class="create-menu-item" onclick="toggleCreateMenu(); openUserAppUploadModal();">
+            <div class="create-icon-circle" style="color:#2ecc71;"><i class="fab fa-android"></i></div> Upload APK
+        </button>
+    </div>
+</div>
         <!-- Search Header -->
         <div id="searchHeader" style="display:none; width:100%; align-items:center; gap:10px;">
             <button class="icon-btn" onclick="toggleHeaderSearch(false)">
@@ -1571,23 +1605,7 @@
     </div>
 
     <!-- Floating Dock -->
-    <nav class="bottom-nav">
-        <button class="nav-item active" onclick="navTo('home', this)" data-page="home">
-            <i class="fas fa-home"></i>হোম
-        </button>
-       <button class="nav-item" onclick="window.location.href='friends.html'">
-    <i class="fas fa-user-friends"></i>ফ্রেন্ডস
-</button>
-        <button class="nav-center-btn" onclick="openWriteModal()">
-            <i class="fas fa-pen-nib"></i>
-        </button>
-       <button class="nav-item" onclick="window.location.href='appstore.html'">
-    <i class="fas fa-store"></i> অ্যাপ স্টোর
-</button>
-        <button class="nav-item" onclick="navTo('profile', this)">
-            <i class="fas fa-user"></i>প্রোফাইল
-        </button>
-    </nav>
+    
 
     <!-- Generic Bottom Sheet (Reused for Comments, Notifications, Menu) -->
     <div id="universalBottomSheet" class="bottom-sheet-overlay" onclick="closeBottomSheet(event)">
@@ -4163,9 +4181,137 @@ window.addEventListener('popstate', (event) => {
     }
 });
 // ==================================================
-// 🔙 ব্যাক বাটন এবং এক্সিট পপ-আপ লজিক (End)
-// ==================================================
+        // 🎯 CREATE MENU & APK UPLOAD LOGIC (NEW)
+        // ==================================================
+
+        // ১. প্লাস আইকনে ক্লিক করলে মেনু ওপেন/ক্লোজ হবে
+        window.toggleCreateMenu = function() {
+            document.getElementById('createMenuDropdown').classList.toggle('show');
+        };
+
+        // বাইরে ক্লিক করলে মেনু অটোমেটিক বন্ধ হবে
+        document.addEventListener('click', function(e) {
+            if(!e.target.closest('.create-menu-wrapper')) {
+                const menu = document.getElementById('createMenuDropdown');
+                if(menu && menu.classList.contains('show')) menu.classList.remove('show');
+            }
+        });
+
+        // ২. APK Upload মডাল ওপেন করার ফাংশন
+        window.openUserAppUploadModal = function() {
+            if(!checkAuth()) return;
+            document.getElementById('userAppUploadModal').style.display = 'flex';
+        };
+
+        // ৩. ইউজারের অ্যাপ ফায়ারবেসে সাবমিট করার ফাংশন
+        window.submitUserAPK = async function() {
+            const title = document.getElementById('uAppTitle').value.trim();
+            const dev = document.getElementById('uAppDev').value.trim();
+            const size = document.getElementById('uAppSize').value.trim();
+            const rating = document.getElementById('uAppRating').value.trim();
+            const link = document.getElementById('uAppLink').value.trim();
+            const desc = document.getElementById('uAppDesc').value.trim();
+            const iconFile = document.getElementById('uAppIconFile').files[0];
+            const ssFiles = document.getElementById('uAppScreenshots').files;
+
+            if(!title || !link || !iconFile || ssFiles.length === 0) {
+                return Swal.fire('সতর্কতা', 'নাম, লিংক, আইকন এবং অন্তত ১টি স্ক্রিনশট দিতে হবে!', 'warning');
+            }
+            if(ssFiles.length > 5) return Swal.fire('সতর্কতা', 'সর্বোচ্চ ৫টি স্ক্রিনশট দেওয়া যাবে!', 'warning');
+
+            const btn = document.getElementById('uAppSubmitBtn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> আপলোড হচ্ছে...';
+            btn.disabled = true;
+
+            try {
+                // ImgBB Upload Function
+                const uploadToImgbb = async (file) => {
+                    const fd = new FormData(); 
+                    fd.append('image', file); 
+                    fd.append('key', '3b0068a7350cb175b92787df0a7b48ba'); // আপনার ImgBB API Key
+                    const res = await fetch('https://api.imgbb.com/1/upload', { method:'POST', body:fd });
+                    const data = await res.json();
+                    if(data.success) return data.data.url; else throw new Error();
+                };
+
+                // আইকন আপলোড
+                const iconUrl = await uploadToImgbb(iconFile);
+                
+                // স্ক্রিনশট আপলোড
+                let ssUrls = [];
+                for(let i=0; i<ssFiles.length; i++) {
+                    Swal.fire({title: `স্ক্রিনশট আপলোড হচ্ছে (${i+1}/${ssFiles.length})`, allowOutsideClick:false, didOpen:()=>Swal.showLoading()});
+                    let url = await uploadToImgbb(ssFiles[i]);
+                    ssUrls.push(url);
+                }
+
+                // ফায়ারবেসে পাঠানোর জন্য ডাটা তৈরি
+                const appData = {
+                    name: title, 
+                    developer: dev || window.currentUser.displayName, 
+                    size: size || 'Unknown',
+                    rating: rating || '5.0', 
+                    downloadLink: link, 
+                    desc: desc, 
+                    icon: iconUrl,
+                    screenshots: ssUrls, 
+                    submittedBy: window.currentUser.uid, 
+                    timestamp: Date.now(), 
+                    status: 'pending'
+                };
+
+                // ফায়ারবেসের pending_apps এ ডাটা পুশ করা
+                await push(ref(db, 'pending_apps'), appData);
+                
+                Swal.fire('সফল!', 'আপনার অ্যাপটি রিভিউয়ের জন্য এডমিনের কাছে পাঠানো হয়েছে।', 'success');
+                document.getElementById('userAppUploadModal').style.display = 'none';
+                
+                // ফর্ম ক্লিয়ার করা
+                document.getElementById('uAppTitle').value = '';
+                document.getElementById('uAppDesc').value = '';
+                document.getElementById('uAppLink').value = '';
+                document.getElementById('uAppIconFile').value = '';
+                document.getElementById('uAppScreenshots').value = '';
+                
+            } catch(err) {
+                console.error(err);
+                Swal.fire('ত্রুটি', 'আপলোড ব্যর্থ হয়েছে। ইন্টারনেট সংযোগ বা ছবির সাইজ চেক করুন।', 'error');
+            } finally {
+                btn.innerHTML = 'রিভিউয়ের জন্য পাঠান'; 
+                btn.disabled = false;
+            }
+        };
     </script>
+<!-- User APK Upload Modal -->
+<div id="userAppUploadModal" class="modal-overlay" style="z-index: 3000;">
+    <div class="modal-content" style="height: 90vh; overflow-y: auto;">
+        <button class="modal-close-btn" onclick="document.getElementById('userAppUploadModal').style.display='none'"><i class="fas fa-times"></i></button>
+        <div class="auth-header" style="margin-top: 15px;">
+            <div class="auth-icon-circle" style="background:#e8f5e9; color:#2ecc71;"><i class="fab fa-android"></i></div>
+            <h2 class="auth-title">Upload APK</h2>
+            <p class="auth-subtitle">আপনার তৈরি অ্যাপ স্টোরে পাবলিশ করুন</p>
+        </div>
+        
+        <div class="auth-form">
+            <input type="text" id="uAppTitle" class="modern-input" style="border:1px solid #ddd; border-radius:12px; margin-bottom:10px; width:100%; box-sizing:border-box;" placeholder="অ্যাপের নাম">
+            <input type="text" id="uAppDev" class="modern-input" style="border:1px solid #ddd; border-radius:12px; margin-bottom:10px; width:100%; box-sizing:border-box;" placeholder="ডেভেলপারের নাম">
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="uAppSize" class="modern-input" style="border:1px solid #ddd; border-radius:12px; margin-bottom:10px; width:100%; box-sizing:border-box;" placeholder="সাইজ (যেমন: 15 MB)">
+                <input type="text" id="uAppRating" class="modern-input" style="border:1px solid #ddd; border-radius:12px; margin-bottom:10px; width:100%; box-sizing:border-box;" placeholder="রেটিং (যেমন: 4.5)">
+            </div>
+            <input type="text" id="uAppLink" class="modern-input" style="border:1px solid #ddd; border-radius:12px; margin-bottom:10px; width:100%; box-sizing:border-box;" placeholder="ডাউনলোড লিংক (Drive/Mediafire)">
+            <textarea id="uAppDesc" class="modern-input" style="border:1px solid #ddd; border-radius:12px; margin-bottom:10px; width:100%; box-sizing:border-box; height:80px;" placeholder="অ্যাপ সম্পর্কে বিস্তারিত..."></textarea>
+            
+            <label class="input-label">অ্যাপ আইকন (১টি)</label>
+            <input type="file" id="uAppIconFile" accept="image/*" style="margin-bottom:15px; width:100%;">
+            
+            <label class="input-label">স্ক্রিনশট (সর্বোচ্চ ৪-৫টি)</label>
+            <input type="file" id="uAppScreenshots" accept="image/*" multiple style="margin-bottom:15px; width:100%;">
+
+            <button class="auth-submit-btn" onclick="submitUserAPK()" id="uAppSubmitBtn" style="background:#2ecc71;">রিভিউয়ের জন্য পাঠান</button>
+        </div>
+    </div>
+</div>
 <script>
     // --- PWA INSTALLATION LOGIC ---
     let deferredPrompt;
@@ -4218,5 +4364,8 @@ window.addEventListener('popstate', (event) => {
         if(installBtn) installBtn.style.display = 'none';
     }
 </script>
+<!-- যুক্ত করুন এই লাইনটি -->
+    <script src="navbar.js"></script>
+    
 </body>
 </html>
