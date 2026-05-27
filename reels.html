@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>রিলস - মুক্তলিপি</title>
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --text-color: #050505;
+            --secondary-text: #65676b;
+            --android-green: #3DDC84;
+            --card-bg: #ffffff;
+            --border-color: #ced0d4;
+        }
+
+        /* ডার্ক থিম সাপোর্ট */
+        .dark-theme, [data-theme="dark"] {
+            --bg-color: #18191a;
+            --text-color: #e4e6eb;
+            --secondary-text: #b0b3b8;
+            --card-bg: #242526;
+            --border-color: #3e4042;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', 'Hind Siliguri', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 85vh;
+            overflow-x: hidden;
+            box-sizing: border-box;
+        }
+
+        .container {
+            text-align: center;
+            padding: 20px;
+            max-width: 500px;
+            z-index: 10;
+        }
+
+        /* --- অ্যানিমেশন বক্স --- */
+        .animation-box {
+            position: relative;
+            width: 200px;
+            height: 220px;
+            margin: 0 auto 30px;
+        }
+
+        /* ঘূর্ণায়মান গিয়ার/সেটিংস চাকা */
+        .gear-large {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 55px;
+            color: var(--secondary-text);
+            opacity: 0.25;
+            animation: spinClockwise 8s linear infinite;
+        }
+
+        .gear-small {
+            position: absolute;
+            top: 55px;
+            right: 0px;
+            font-size: 32px;
+            color: var(--secondary-text);
+            opacity: 0.25;
+            animation: spinCounterClockwise 5s linear infinite;
+        }
+
+        /* অ্যান্ড্রয়েড রোবট স্ট্রাকচার */
+        .android-head {
+            width: 90px;
+            height: 45px;
+            background-color: var(--android-green);
+            border-radius: 45px 45px 0 0;
+            position: absolute;
+            top: 60px;
+            left: 55px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        /* চোখ */
+        .android-head::before, .android-head::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            top: 18px;
+        }
+        .android-head::before { left: 22px; }
+        .android-head::after { right: 22px; }
+
+        /* অ্যান্টেনা */
+        .antenna-l, .antenna-r {
+            width: 5px;
+            height: 22px;
+            background: var(--android-green);
+            position: absolute;
+            top: -15px;
+            border-radius: 3px;
+            transform-origin: bottom center;
+        }
+        .antenna-l { left: 18px; transform: rotate(-25deg); }
+        .antenna-r { right: 18px; transform: rotate(25deg); }
+
+        .android-body {
+            width: 90px;
+            height: 75px;
+            background-color: var(--android-green);
+            border-radius: 0 0 18px 18px;
+            position: absolute;
+            top: 110px;
+            left: 55px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        /* বাম হাত */
+        .android-arm-l {
+            width: 18px;
+            height: 60px;
+            background: var(--android-green);
+            position: absolute;
+            left: 31px;
+            top: 110px;
+            border-radius: 10px;
+        }
+
+        /* ডান হাত (অ্যানিমেটেড সেটিংস কাজ করবে) */
+        .android-arm-r {
+            width: 18px;
+            height: 60px;
+            background: var(--android-green);
+            position: absolute;
+            right: 31px;
+            top: 110px;
+            border-radius: 10px;
+            transform-origin: top center;
+            animation: repairAction 1.2s ease-in-out infinite alternate;
+        }
+
+        /* রেঞ্জ/টুলস আইকন হাতের সাথে যুক্ত */
+        .wrench-tool {
+            position: absolute;
+            bottom: -16px;
+            left: -8px;
+            font-size: 24px;
+            color: #7f8c8d;
+            transform: rotate(45deg);
+        }
+
+        /* --- কি-ফ্রেম অ্যানিমেশনসমূহ --- */
+        @keyframes repairAction {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(-55deg); }
+        }
+
+        @keyframes spinClockwise {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes spinCounterClockwise {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(-360deg); }
+        }
+
+        h1 {
+            font-size: 22px;
+            margin: 0 0 10px 0;
+            font-weight: 700;
+        }
+
+        p {
+            font-size: 15px;
+            color: var(--secondary-text);
+            margin: 0;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- অ্যান্ড্রয়েড রিপেয়ার বা সেটিংস অ্যানিমেশন এরিয়া -->
+        <div class="animation-box">
+            <!-- ঘড়ির কাঁটার দিকে ঘূর্ণায়মান গিয়ার -->
+            <i class="fa-solid fa-cog gear-large"></i>
+            <!-- উল্টো দিকে ঘূর্ণায়মান গিয়ার -->
+            <i class="fa-solid fa-gear gear-small"></i>
+
+            <!-- অ্যান্ড্রয়েড রোবট -->
+            <div class="android-head">
+                <div class="antenna-l"></div>
+                <div class="antenna-r"></div>
+            </div>
+            <div class="android-arm-l"></div>
+            <div class="android-body"></div>
+            <div class="android-arm-r">
+                <!-- রেঞ্জ/wrench আইকনটি হাতের সাথে যুক্ত -->
+                <i class="fa-solid fa-wrench wrench-tool"></i>
+            </div>
+        </div>
+
+        <!-- নোটিশ টেক্সট -->
+        <h1>রিলস পৃষ্ঠাটি আপডেটের কাজ চলছে</h1>
+        <p>খুব শীঘ্রই নতুন ও চমৎকার সব ফিচারের সাথে রিলস অপশনটি যুক্ত করা হচ্ছে। আমাদের সাথেই থাকুন।</p>
+    </div>
+
+    <!-- ডার্ক থিম সিঙ্ক করার স্ক্রিপ্ট -->
+    <script>
+        if (localStorage.getItem('userTheme') === 'dark') {
+            document.body.classList.add('dark-theme');
+        }
+    </script>
+    
+    <!-- আপনার গ্লোবাল নেভিগেশন স্ক্রিপ্ট -->
+    <script src="navbar.js"></script>
+</body>
+</html>

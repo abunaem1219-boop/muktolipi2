@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ফ্রেন্ডস - মুক্তলিপি</title>
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --text-color: #050505;
+            --secondary-text: #65676b;
+            --primary-color: #1877f2;
+            --card-bg: #ffffff;
+            --border-color: #ced0d4;
+            --button-grey: #e4e6eb;
+            --button-grey-text: #050505;
+            font-family: 'Inter', 'Hind Siliguri', sans-serif;
+        }
+
+        /* ডার্ক থিম সাপোর্ট */
+        .dark-theme, [data-theme="dark"] {
+            --bg-color: #18191a;
+            --text-color: #e4e6eb;
+            --secondary-text: #b0b3b8;
+            --card-bg: #242526;
+            --border-color: #3e4042;
+            --button-grey: #3a3b3c;
+            --button-grey-text: #e4e6eb;
+        }
+
+        body { 
+            margin: 0; 
+            background: var(--bg-color); 
+            color: var(--text-color); 
+            padding-bottom: 30px; 
+            -webkit-tap-highlight-color: transparent; 
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        /* ফেসবুক স্টাইল সেকেন্ডারি হেডার */
+        .friends-header-sec {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .friends-header-sec h2 {
+            font-size: 24px;
+            font-weight: 800;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        /* সার্চ বক্স */
+        .search-circle-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--button-grey);
+            color: var(--text-color);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* ফেসবুক স্টাইল স্লাইডিং চিপস */
+        .chips-scroll {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 15px;
+        }
+        .chips-scroll::-webkit-scrollbar { display: none; }
+
+        .chip-btn {
+            background: var(--button-grey);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            color: var(--button-grey-text);
+            cursor: pointer;
+            white-space: nowrap;
+            font-size: 14px;
+            transition: transform 0.1s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .chip-btn:active { transform: scale(0.95); }
+        .chip-btn.active {
+            background: rgba(24, 119, 242, 0.1);
+            color: var(--primary-color);
+        }
+
+        .online-indicator-dot {
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        /* ফ্রেন্ড রিকোয়েস্ট সেকশন */
+        .req-section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .req-section-title h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0;
+        }
+        .req-count {
+            color: #e41e3f;
+            font-size: 19px;
+            font-weight: 800;
+            margin-left: 5px;
+        }
+
+        .see-all-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        /* রিকোয়েস্ট কার্ড (ফেসবুক এর হুবহু লেআউট) */
+        .req-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .req-card {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .req-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid var(--border-color);
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .req-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .req-name-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .req-name {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 0;
+            cursor: pointer;
+        }
+        .req-name:hover { text-decoration: underline; }
+
+        .req-time {
+            font-size: 12px;
+            color: var(--secondary-text);
+        }
+
+        .mutual-text {
+            font-size: 13px;
+            color: var(--secondary-text);
+            margin: 0;
+        }
+
+        /* অ্যাকশন বাটনসমূহ */
+        .req-actions {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 8px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.1s;
+            font-family: inherit;
+        }
+        .btn-action:active { transform: scale(0.97); }
+
+        .btn-confirm {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-delete {
+            background-color: var(--button-grey);
+            color: var(--button-grey-text);
+        }
+
+        /* লোডার */
+        .loader {
+            text-align: center;
+            padding: 40px;
+            color: var(--secondary-text);
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- ফেসবুক স্টাইল সেকেন্ডারি হেডার -->
+        <div class="friends-header-sec">
+            <h2>Friends</h2>
+            <button class="search-circle-btn" onclick="triggerGlobalSearch()"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </div>
+
+        <!-- হরাইজন্টাল স্লাইডিং ফিল্টার চিপস -->
+        <div class="chips-scroll">
+            <button class="chip-btn active" id="btnReqs" onclick="switchFilter('requests')">Requests</button>
+            <button class="chip-btn" id="btnSuggestions" onclick="switchFilter('suggestions')">Suggestions</button>
+            <button class="chip-btn" id="btnAllFriends" onclick="switchFilter('friends')">All Friends</button>
+        </div>
+
+        <!-- রিকোয়েস্ট এরিয়া -->
+        <div class="req-section-title">
+            <h3 id="sectionTitle">Friend requests <span class="req-count" id="reqCount">0</span></h3>
+            <a href="javascript:void(0)" class="see-all-link" id="seeAllBtn" onclick="showAllRequests()">See all</a>
+        </div>
+
+        <div class="loader" id="friendsLoader"><i class="fas fa-circle-notch fa-spin"></i> লোড হচ্ছে...</div>
+
+        <!-- ফ্রেন্ড রিকোয়েস্ট বা অন্য কন্টেন্টের লিস্ট কন্টেইনার -->
+        <div class="req-list" id="requestsContainer"></div>
+    </div>
+
+    <!-- Firebase SDK & Custom Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, get, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBZtycgadrngON2WEwvIE7ERPYxdkDVfFM",
+            authDomain: "muktolipidiary.firebaseapp.com",
+            databaseURL: "https://muktolipidiary-default-rtdb.firebaseio.com",
+            projectId: "muktolipidiary",
+            storageBucket: "muktolipidiary.firebasestorage.app"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+
+        let currentUser = null;
+        let myFollowers = []; // যারা আমাকে ফলো করে
+        let myFollowing = []; // আমি যাদের ফলো করি
+        let currentFilter = 'requests'; // requests, suggestions, friends
+
+        // থিম সিঙ্ক
+        if(localStorage.getItem('userTheme') === 'dark') document.body.classList.add('dark-theme');
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                await loadFriendsData();
+            } else {
+                window.location.href = 'auth.html?redirect=friends.html';
+            }
+        });
+
+        // ডেটাবেজ থেকে ডাটা লোড ও সিঙ্কিং
+        async function loadFriendsData() {
+            document.getElementById('friendsLoader').style.display = 'block';
+            document.getElementById('requestsContainer').innerHTML = '';
+
+            try {
+                const folSnap = await get(ref(db, `followers/${currentUser.uid}`));
+                const fingSnap = await get(ref(db, `following/${currentUser.uid}`));
+
+                myFollowers = folSnap.exists() ? Object.keys(folSnap.val()) : [];
+                myFollowing = fingSnap.exists() ? Object.keys(fingSnap.val()) : [];
+
+                renderCurrentView();
+            } catch(e) {
+                console.error(e);
+            }
+            document.getElementById('friendsLoader').style.display = 'none';
+        }
+
+        // কোন ট্যাব সিলেক্টেড আছে তা সনাক্ত করে রেন্ডার করা
+        async function renderCurrentView() {
+            const container = document.getElementById('requestsContainer');
+            container.innerHTML = '';
+
+            if (currentFilter === 'requests') {
+                // Friend requests = যারা আমাকে ফলো করেছে কিন্তু আমি ফলো ব্যাক করিনি
+                const pendingRequests = myFollowers.filter(uid => !myFollowing.includes(uid));
+                document.getElementById('reqCount').innerText = pendingRequests.length;
+                document.getElementById('sectionTitle').innerHTML = `Friend requests <span class="req-count">${pendingRequests.length}</span>`;
+                document.getElementById('seeAllBtn').style.display = pendingRequests.length > 5 ? 'block' : 'none';
+
+                if(pendingRequests.length === 0) {
+                    container.innerHTML = '<p style="text-align:center; padding:30px; color:var(--secondary-text);">কোনো নতুন রিকোয়েস্ট নেই।</p>';
+                    return;
+                }
+
+                // পেইন্ডিং রিকোয়েস্ট ব্যবহারকারীদের তথ্য লোড করা
+                for(let uid of pendingRequests.slice(0, 10)) { // কর্মদক্ষতার জন্য প্রথম ১০টি লোড
+                    const userSnap = await get(ref(db, `users/${uid}`));
+                    if(userSnap.exists()) {
+                        const user = userSnap.val();
+                        container.innerHTML += createFriendCardHTML(uid, user, 'request');
+                    }
+                }
+            } else if (currentFilter === 'suggestions') {
+                document.getElementById('reqCount').innerText = '';
+                document.getElementById('sectionTitle').innerHTML = `Suggestions`;
+                document.getElementById('seeAllBtn').style.display = 'none';
+
+                // Suggestions = গ্লোবাল সকল ইউজার থেকে ফিল্টার করে যারা আমাদের লিস্টে নেই
+                const allUsersSnap = await get(ref(db, 'users'));
+                if(allUsersSnap.exists()) {
+                    const allUsers = Object.entries(allUsersSnap.val());
+                    const filteredSuggestions = allUsers.filter(([uid, data]) => uid !== currentUser.uid && !myFollowing.includes(uid)).slice(0, 15);
+                    
+                    if(filteredSuggestions.length === 0) {
+                        container.innerHTML = '<p style="text-align:center; padding:30px; color:var(--secondary-text);">কোনো পরামর্শ নেই।</p>';
+                        return;
+                    }
+
+                    filteredSuggestions.forEach(([uid, data]) => {
+                        container.innerHTML += createFriendCardHTML(uid, data, 'suggestion');
+                    });
+                }
+            } else if (currentFilter === 'friends') {
+                // All Friends = যাদের আমরা ফলো ব্যাক করেছি (পরস্পর ফলোয়ার/ফলোয়িং)
+                const mutualFriends = myFollowing.filter(uid => myFollowers.includes(uid));
+                document.getElementById('reqCount').innerText = mutualFriends.length;
+                document.getElementById('sectionTitle').innerHTML = `Mutual Friends <span class="req-count" style="color:var(--primary-color);">${mutualFriends.length}</span>`;
+                document.getElementById('seeAllBtn').style.display = 'none';
+
+                if(mutualFriends.length === 0) {
+                    container.innerHTML = '<p style="text-align:center; padding:30px; color:var(--secondary-text);">এখনও কোনো ফ্রেন্ড তৈরি হয়নি।</p>';
+                    return;
+                }
+
+                for(let uid of mutualFriends) {
+                    const userSnap = await get(ref(db, `users/${uid}`));
+                    if(userSnap.exists()) {
+                        const user = userSnap.val();
+                        container.innerHTML += createFriendCardHTML(uid, user, 'friend');
+                    }
+                }
+            }
+        }
+
+        // ফেসবুক ডিজাইনের কার্ড এইচটিএমএল
+        function createFriendCardHTML(uid, user, type) {
+            const isVerified = user.isVerified ? '<i class="fas fa-check-circle" style="color:#1877f2; font-size:12px;"></i>' : '';
+            const avatar = user.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+            
+            let actionButtons = '';
+            if (type === 'request') {
+                actionButtons = `
+                    <button class="btn-action btn-confirm" onclick="confirmRequest('${uid}', this)">Confirm</button>
+                    <button class="btn-action btn-delete" onclick="deleteRequest('${uid}', this)">Delete</button>
+                `;
+            } else if (type === 'suggestion') {
+                actionButtons = `
+                    <button class="btn-action btn-confirm" onclick="followSuggestion('${uid}', this)"><i class="fas fa-user-plus"></i> Add Friend</button>
+                    <button class="btn-action btn-delete" onclick="removeCard('${uid}')">Remove</button>
+                `;
+            } else if (type === 'friend') {
+                actionButtons = `
+                    <button class="btn-action btn-delete" style="background:#e41e3f; color:white;" onclick="unfriend('${uid}', this)">Unfriend</button>
+                    <button class="btn-action btn-confirm" style="background:var(--primary-color);" onclick="messageUser('${uid}')"><i class="fab fa-facebook-messenger"></i> Message</button>
+                `;
+            }
+
+            return `
+                <div class="req-card" id="card-${uid}">
+                    <img src="${avatar}" class="req-avatar" onclick="viewProfile('${uid}')">
+                    <div class="req-info">
+                        <div class="req-name-row">
+                            <h4 class="req-name" onclick="viewProfile('${uid}')">${user.displayName} ${isVerified}</h4>
+                            <span class="req-time">2w</span>
+                        </div>
+                        <p class="mutual-text">${user.bio || 'মুক্তলিপি ব্যবহারকারী'}</p>
+                        <div class="req-actions">
+                            ${actionButtons}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ফিল্টার টগল করা
+        window.switchFilter = function(filter) {
+            document.querySelectorAll('.chip-btn').forEach(btn => btn.classList.remove('active'));
+            if(filter === 'requests') document.getElementById('btnReqs').classList.add('active');
+            else if(filter === 'suggestions') document.getElementById('btnSuggestions').classList.add('active');
+            else if(filter === 'friends') document.getElementById('btnAllFriends').classList.add('active');
+
+            currentFilter = filter;
+            renderCurrentView();
+        }
+
+        // রিকোয়েস্ট কনফার্ম করা (Mutual Follow Back)
+        window.confirmRequest = async function(targetUid, btn) {
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            try {
+                await update(ref(db, `following/${currentUser.uid}`), { [targetUid]: { timestamp: Date.now() } });
+                await update(ref(db, `followers/${targetUid}`), { [currentUser.uid]: true });
+                document.getElementById(`card-${targetUid}`).remove();
+                loadFriendsData(); // সিঙ্ক রিফ্রেশ
+                Swal.fire({toast:true, position:'bottom', icon:'success', title:'রিকোয়েস্ট সফলভাবে কনফার্ম করা হয়েছে!', showConfirmButton:false, timer:2000});
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        // রিকোয়েস্ট ডিলিট করা
+        window.deleteRequest = async function(targetUid, btn) {
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            try {
+                await remove(ref(db, `followers/${currentUser.uid}/${targetUid}`));
+                document.getElementById(`card-${targetUid}`).remove();
+                loadFriendsData();
+            } catch(e) { console.error(e); }
+        }
+
+        // সাজেশন ফলো করা
+        window.followSuggestion = async function(targetUid, btn) {
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding';
+            try {
+                await update(ref(db, `following/${currentUser.uid}`), { [targetUid]: { timestamp: Date.now() } });
+                await update(ref(db, `followers/${targetUid}`), { [currentUser.uid]: true });
+                btn.innerHTML = 'Sent Request';
+                btn.style.background = 'var(--button-grey)';
+                btn.style.color = 'var(--button-grey-text)';
+            } catch(e) { console.error(e); }
+        }
+
+        // আনফ্রেন্ড করা
+        window.unfriend = async function(targetUid, btn) {
+            Swal.fire({
+                title: 'আনফ্রেন্ড করতে চান?',
+                text: "আপনি কি নিশ্চিতভাবে এই ব্যবহারকারীকে আনফ্রেন্ড করতে চান?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e41e3f',
+                confirmButtonText: 'হ্যাঁ',
+                cancelButtonText: 'না'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    await remove(ref(db, `following/${currentUser.uid}/${targetUid}`));
+                    await remove(ref(db, `followers/${targetUid}/${currentUser.uid}`));
+                    document.getElementById(`card-${targetUid}`).remove();
+                    loadFriendsData();
+                }
+            });
+        }
+
+        window.removeCard = function(uid) {
+            document.getElementById(`card-${uid}`).remove();
+        }
+
+        window.viewProfile = function(uid) {
+            window.location.href = `index.html?uid=${uid}`;
+        }
+
+        window.messageUser = function(uid) {
+            window.location.href = `chat.html?targetUid=${uid}`;
+        }
+
+        window.triggerGlobalSearch = function() {
+            if (typeof window.handleSearchAction === 'function') {
+                window.handleSearchAction();
+            } else {
+                window.location.href = "index.html?action=search";
+            }
+        }
+    </script>
+    <script src="navbar.js"></script>
+</body>
+</html>

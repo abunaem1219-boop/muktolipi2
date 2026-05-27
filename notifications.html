@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>নোটিফিকেশন - মুক্তলিপি</title>
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #050505;
+            --secondary-text: #65676b;
+            --hover-color: #f2f2f2;
+            --section-header-bg: #f7f8fa;
+            --card-bg: #ffffff;
+            --border-color: #ced0d4;
+            --circle-btn-bg: #e4e6eb;
+        }
+
+        .dark-theme, [data-theme="dark"] {
+            --bg-color: #18191a;
+            --text-color: #e4e6eb;
+            --secondary-text: #b0b3b8;
+            --hover-color: #242526;
+            --section-header-bg: #111213;
+            --card-bg: #242526;
+            --border-color: #3e4042;
+            --circle-btn-bg: #3a3b3c;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', 'Hind Siliguri', sans-serif;
+            padding-bottom: 80px;
+        }
+
+        .notif-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--bg-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .notif-title {
+            font-size: 24px;
+            font-weight: 800;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        .circle-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--circle-btn-bg);
+            border: none;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+
+        .section-divider {
+            font-size: 16px;
+            font-weight: 700;
+            padding: 10px 16px;
+            margin: 0;
+        }
+
+        .notif-list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notif-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: background 0.15s;
+            position: relative;
+        }
+        .notif-item:hover, .notif-item:active {
+            background: var(--hover-color);
+        }
+
+        .notif-item.unread {
+            background: rgba(24, 119, 242, 0.06);
+        }
+
+        .notif-avatar-container {
+            position: relative;
+            width: 56px;
+            height: 56px;
+            flex-shrink: 0;
+        }
+
+        .notif-user-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid var(--border-color);
+        }
+
+        .notif-badge-icon {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 11px;
+            border: 2px solid var(--bg-color);
+        }
+
+        .badge-comment { background: #45bd62; }
+        .badge-friend { background: #1877f2; }
+        .badge-love { background: #f02849; }
+
+        .notif-content-area {
+            flex: 1;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .notif-text {
+            margin: 0;
+            color: var(--text-color);
+        }
+
+        .notif-text strong {
+            font-weight: 700;
+        }
+
+        .notif-time {
+            font-size: 12px;
+            color: var(--secondary-text);
+            margin-top: 3px;
+            display: block;
+        }
+
+        .loader {
+            text-align: center;
+            padding: 40px;
+            color: var(--secondary-text);
+        }
+
+        .notif-more-btn {
+            background: none;
+            border: none;
+            color: var(--secondary-text);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- হেডার অংশ -->
+    <div class="notif-header">
+        <h2 class="notif-title">Notifications</h2>
+        <button class="circle-btn" onclick="Swal.fire({title: 'খুঁজুন', input: 'text', placeholder: 'এখানে লিখুন...', confirmButtonColor: '#1877f2'})">
+            <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+    </div>
+
+    <div id="loadingArea" class="loader">
+        <i class="fas fa-spinner fa-spin" style="font-size:24px;"></i> লোড হচ্ছে...
+    </div>
+
+    <!-- নতুন নোটিফিকেশন সেকশন -->
+    <div id="newSectionArea" style="display: none;">
+        <h3 class="section-divider">New</h3>
+        <div class="notif-list" id="newNotifList"></div>
+    </div>
+
+    <!-- পূর্ববর্তী নোটিফিকেশন সেকশন -->
+    <div id="earlierSectionArea" style="display: none;">
+        <h3 class="section-divider">Earlier</h3>
+        <div class="notif-list" id="earlierNotifList"></div>
+    </div>
+
+    <div id="emptyMessage" class="loader" style="display: none; padding-top: 80px;">
+        <i class="fa-regular fa-bell" style="font-size:40px; margin-bottom:10px;"></i>
+        <p>কোনো নোটিফিকেশন নেই।</p>
+    </div>
+
+    <!-- ফায়ারবেস স্ক্রিপ্ট কানেকশন -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBZtycgadrngON2WEwvIE7ERPYxdkDVfFM",
+            authDomain: "muktolipidiary.firebaseapp.com",
+            databaseURL: "https://muktolipidiary-default-rtdb.firebaseio.com",
+            projectId: "muktolipidiary",
+            storageBucket: "muktolipidiary.firebasestorage.app",
+            messagingSenderId: "639103995400",
+            appId: "1:639103995400:web:13528e51c0e86080770bbd"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+
+        // ডার্ক মোড সিঙ্ক
+        if (localStorage.getItem('userTheme') === 'dark') {
+            document.body.classList.add('dark-theme');
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loadRealtimeNotifications(user.uid);
+            } else {
+                window.location.href = 'auth.html?redirect=notifications.html';
+            }
+        });
+
+        function loadRealtimeNotifications(uid) {
+            const notifRef = ref(db, `notifications/${uid}`);
+            
+            onValue(notifRef, (snapshot) => {
+                document.getElementById('loadingArea').style.display = 'none';
+                
+                const data = snapshot.val();
+                if (!data) {
+                    document.getElementById('emptyMessage').style.display = 'block';
+                    document.getElementById('newSectionArea').style.display = 'none';
+                    document.getElementById('earlierSectionArea').style.display = 'none';
+                    return;
+                }
+
+                document.getElementById('emptyMessage').style.display = 'none';
+
+                // ডাটাকে অ্যারেতে রূপান্তর এবং টাইমস্ট্যাম্প অনুযায়ী সাজানো (নতুনগুলো আগে)
+                const notifList = Object.entries(data).map(([key, val]) => ({
+                    key,
+                    ...val
+                })).sort((a, b) => b.timestamp - a.timestamp);
+
+                const newNotifListContainer = document.getElementById('newNotifList');
+                const earlierNotifListContainer = document.getElementById('earlierNotifList');
+
+                newNotifListContainer.innerHTML = '';
+                earlierNotifListContainer.innerHTML = '';
+
+                let hasNew = false;
+                let hasEarlier = false;
+
+                notifList.forEach(notif => {
+                    const html = generateNotificationHTML(notif, uid);
+                    
+                    // আনরিড (read: false) নোটিফিকেশনগুলোকে "New" এবং পঠিতগুলোকে "Earlier" সেকশনে রাখা হবে
+                    if (!notif.read) {
+                        newNotifListContainer.innerHTML += html;
+                        hasNew = true;
+                    } else {
+                        earlierNotifListContainer.innerHTML += html;
+                        hasEarlier = true;
+                    }
+                });
+
+                document.getElementById('newSectionArea').style.display = hasNew ? 'block' : 'none';
+                document.getElementById('earlierSectionArea').style.display = hasEarlier ? 'block' : 'none';
+            });
+        }
+
+        // নোটিফিকেশনের ধরণ অনুযায়ী আইকন ও লেআউট নির্ধারণ
+        function generateNotificationHTML(n, uid) {
+            let badgeClass = 'badge-comment';
+            let iconClass = 'fa-comment';
+            let messageText = '';
+
+            // নোটিফিকেশনের ধরণ নির্ধারণ
+            if (n.type === 'like') {
+                badgeClass = 'badge-love';
+                iconClass = 'fa-heart';
+                messageText = `reacted ❤️ to your post.`;
+            } else if (n.type === 'comment' || n.type === 'reply') {
+                badgeClass = 'badge-comment';
+                iconClass = 'fa-comment';
+                messageText = n.type === 'reply' ? `replied ↩️ to your comment.` : `commented 💬 on your post.`;
+            } else if (n.type === 'mention') {
+                badgeClass = 'badge-comment';
+                iconClass = 'fa-bell';
+                messageText = `mentioned you in a comment 🔔`;
+            } else if (n.type === 'follow') {
+                badgeClass = 'badge-friend';
+                iconClass = 'fa-user-check';
+                messageText = `started following you.`;
+            }
+
+            const senderImg = n.senderImg || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+            const timeAgo = getRelativeTime(n.timestamp);
+            const isUnread = !n.read ? 'unread' : '';
+
+            // ফাস্ট-ক্লিক ফাংশন: নোটিফিকেশনে ক্লিক করলে তা পঠিত (Read) হবে এবং পোস্টে রিডাইরেক্ট করবে
+            return `
+                <div class="notif-item ${isUnread}" onclick="handleNotificationClick('${n.key}', '${n.postId}', '${uid}', '${n.type}')">
+                    <div class="notif-avatar-container">
+                        <img src="${senderImg}" class="notif-user-img">
+                        <div class="notif-badge-icon ${badgeClass}">
+                            <i class="fa-solid ${iconClass}"></i>
+                        </div>
+                    </div>
+                    <div class="notif-content-area">
+                        <p class="notif-text"><strong>${n.sender}</strong> ${messageText}</p>
+                        <span class="notif-time">${timeAgo}</span>
+                    </div>
+                    <button class="notif-more-btn" onclick="event.stopPropagation(); deleteNotification('${n.key}', '${uid}')">
+                        <i class="fa-solid fa-trash" style="font-size: 13px;"></i>
+                    </button>
+                </div>
+            `;
+        }
+
+        // নোটিফিকেশনে ক্লিকের অ্যাকশন
+        window.handleNotificationClick = function(key, postId, uid, type) {
+            // নোটিফিকেশনটি পঠিত হিসেবে আপডেট করা
+            update(ref(db, `notifications/${uid}/${key}`), { read: true }).then(() => {
+                if (type === 'follow') {
+                    // ফলো নোটিফিকেশন হলে ফ্রেন্ডস লিস্টে বা প্রোফাইলে রিডাইরেক্ট করবে
+                    window.location.href = 'friends.html';
+                } else if (postId && postId !== 'undefined') {
+                    // পোস্ট-সংক্রান্ত নোটিফিকেশন হলে নির্দিষ্ট পোস্টে নিয়ে যাবে
+                    window.location.href = `index.html?post=${postId}`;
+                }
+            });
+        };
+
+        // নোটিফিকেশন ডিলিট করার ফাংশন
+        window.deleteNotification = function(key, uid) {
+            Swal.fire({
+                title: 'ডিলিট করতে চান?',
+                text: "এই নোটিফিকেশনটি তালিকা থেকে মুছে ফেলা হবে।",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e41e3f',
+                confirmButtonText: 'মুছুন',
+                cancelButtonText: 'বাতিল'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    remove(ref(db, `notifications/${uid}/${key}`));
+                }
+            });
+        };
+
+        // সময় নির্ধারণের ফাংশন
+        function getRelativeTime(timestamp) {
+            const now = Date.now();
+            const diff = now - timestamp;
+            const min = 60 * 1000;
+            const hr = 60 * min;
+            const day = 24 * hr;
+
+            if (diff < min) return "Just now";
+            if (diff < hr) return Math.floor(diff / min) + "m";
+            if (diff < day) return Math.floor(diff / hr) + "h";
+            return new Date(timestamp).toLocaleDateString();
+        }
+    </script>
+
+    <!-- নেভিগেশন বার স্ক্রিপ্ট -->
+    <script src="navbar.js"></script>
+</body>
+</html>
