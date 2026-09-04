@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>লগইন / সাইনআপ - মুক্তলিপি</title>
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+    --bg-color: #f0f2f5; /* ফেসবুকের মতো প্রিমিয়াম সফট গ্রে ব্যাকগ্রাউন্ড */
+    --card-bg: #ffffff;
+    --text-color: #1c1e21;
+    --text-secondary: #606770;
+    --primary-color: #1877f2;
+    --primary-gradient: linear-gradient(135deg, #1877f2 0%, #1062d4 100%);
+    --border-color: #e4e6eb;
+    --input-bg: #f5f6f7;
+}
+
+.dark-theme {
+    --bg-color: #0b1426;
+    --card-bg: #1e293b;
+    --text-color: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --border-color: #334155;
+    --input-bg: #0f172a;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', 'Hind Siliguri', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    box-sizing: border-box;
+    transition: background-color 0.3s;
+}
+
+/* স্মুথ ফেড-ইন অ্যানিমেশন */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 410px;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.auth-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 30px 24px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+    position: relative;
+    transition: background-color 0.3s, border-color 0.3s;
+    animation: fadeInUp 0.4s ease-out;
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+/* আইকন বক্স স্টাইল (নতুন ইমেজের জন্য সামঞ্জস্যপূর্ণ) */
+.brand-icon {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.brand-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.auth-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 6px 0;
+    color: var(--text-color);
+}
+
+.auth-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* গুগল বাটন প্রিমিয়াম ডিজাইন */
+.google-btn {
+    width: 100%;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    color: var(--text-color);
+    font-weight: 600;
+    font-size: 14px;
+    transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.google-btn:hover {
+    background-color: var(--input-bg);
+}
+
+.google-btn:active {
+    transform: scale(0.98);
+}
+
+/* গুগলের লোগো সাইজ নিয়ন্ত্রণ (এটি বড় হওয়া রোধ করবে) */
+.google-btn img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: var(--text-secondary);
+    margin: 20px 0;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.divider span {
+    padding: 0 10px;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.input-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 6px;
+}
+
+/* ইনপুট ফিল্ড ও আইকন সামঞ্জস্যতা */
+.input-wrapper {
+    display: flex;
+    align-items: center;
+    background-color: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 2px 10px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-wrapper:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.15);
+    background-color: var(--card-bg);
+}
+
+.input-wrapper i {
+    color: var(--text-secondary);
+    font-size: 15px;
+}
+
+.auth-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 11px 8px;
+    font-size: 14px;
+    color: var(--text-color);
+    outline: none;
+    font-family: inherit;
+}
+
+.input-suffix {
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.password-toggle {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 6px;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.forgot-pass {
+    text-align: right;
+    display: block;
+    font-size: 12px;
+    color: var(--primary-color);
+    margin-top: -8px;
+    margin-bottom: 18px;
+    cursor: pointer;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+/* সাবমিট বাটন */
+.submit-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.submit-btn:hover {
+    filter: brightness(0.95);
+}
+
+.submit-btn:active {
+    transform: scale(0.98);
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.switch-link {
+    color: var(--primary-color);
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.switch-link:hover {
+    text-decoration: underline;
+}
+
+.back-home {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    transition: color 0.2s;
+}
+
+.back-home:hover {
+    color: var(--text-color);
+}
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <a href="index.html" class="back-home"><i class="fas fa-arrow-left"></i> হোমে ফিরে যান</a>
+
+        <div class="auth-card">
+            <!-- LOGIN VIEW -->
+            <div id="loginView">
+                <div class="auth-header">
+                    <div class="brand-icon">
+    <img src="icon.png" alt="মুক্তলিপি লোগো">
+</div>
+                    <h2 class="auth-title">স্বাগতম!</h2>
+                    <p class="auth-subtitle">আপনার একাউন্টে লগইন করুন</p>
+                </div>
+
+                <button class="google-btn" onclick="loginWithGoogle()">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                    গুগল দিয়ে প্রবেশ করুন
+                </button>
+
+                <div class="divider"><span>অথবা ইমেইল দিয়ে</span></div>
+
+                <div class="form-group">
+                    <label class="input-label">ইউজারনেম</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="loginUsername" placeholder="username" class="auth-input" autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="input-label">পাসওয়ার্ড</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="loginPassword" placeholder="••••••••" class="auth-input">
+                        <button type="button" class="password-toggle" onclick="togglePass('loginPassword')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <span class="forgot-pass" onclick="resetPassword()">পাসওয়ার্ড ভুলে গেছেন?</span>
+
+                <button class="submit-btn" onclick="emailLogin()">
+                    লগইন করুন <i class="fas fa-arrow-right"></i>
+                </button>
+
+                <div class="auth-footer">
+                    কোনো একাউন্ট নেই? <span class="switch-link" onclick="toggleAuthView('signup')">নতুন একাউন্ট খুলুন</span>
+                </div>
+            </div>
+
+            <!-- SIGNUP VIEW -->
+            <div id="signupView" style="display: none;">
+                <div class="auth-header">
+<div class="brand-icon">
+    <img src="icon.png" alt="মুক্তলিপি লোগো">
+</div>
+                    <h2 class="auth-title">নতুন একাউন্ট</h2>
+                    <p class="auth-subtitle">মুক্তলিপিতে যোগ দিতে একাউন্ট তৈরি করুন</p>
+                </div>
+
+                <button class="google-btn" onclick="loginWithGoogle()">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                    গুগল দিয়ে সাইনআপ করুন
+                </button>
+
+                <div class="divider"><span>অথবা তথ্য পূরণ করুন</span></div>
+
+                <div class="form-group">
+                    <label class="input-label">আপনার নাম</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-signature"></i>
+                        <input type="text" id="signupName" placeholder="যেমন: আবু নাঈম" class="auth-input" autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="input-label">ইউজারনেম</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="signupUsername" placeholder="username" class="auth-input" autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="input-label">পাসওয়ার্ড</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="signupPassword" placeholder="কমপক্ষে ৬টি অক্ষর" class="auth-input">
+                        <button type="button" class="password-toggle" onclick="togglePass('signupPassword')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button class="submit-btn" onclick="emailSignup()">
+                    একাউন্ট তৈরি করুন <i class="fas fa-check"></i>
+                </button>
+
+                <div class="auth-footer">
+                    ইতিমধ্যে একাউন্ট আছে? <span class="switch-link" onclick="toggleAuthView('login')">লগইন করুন</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Script Configuration -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendPasswordResetEmail, signInWithCredential } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBZtycgadrngON2WEwvIE7ERPYxdkDVfFM",
+            authDomain: "muktolipidiary.firebaseapp.com",
+            databaseURL: "https://muktolipidiary-default-rtdb.firebaseio.com",
+            projectId: "muktolipidiary",
+            storageBucket: "muktolipidiary.firebasestorage.app"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        // Theme initialization
+        if(localStorage.getItem('userTheme') === 'dark') {
+            document.body.classList.add('dark-theme');
+        }
+
+        // Handle Redirect Parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirectUrl = urlParams.get('redirect') || 'index.html';
+
+        window.toggleAuthView = function(view) {
+            if(view === 'signup') {
+                document.getElementById('loginView').style.display = 'none';
+                document.getElementById('signupView').style.display = 'block';
+            } else {
+                document.getElementById('loginView').style.display = 'block';
+                document.getElementById('signupView').style.display = 'none';
+            }
+        }
+
+        window.togglePass = function(id) {
+            const input = document.getElementById(id);
+            const icon = input.nextElementSibling.querySelector('i');
+            if(input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+
+        // Google Login
+        window.loginWithGoogle = async function() {
+            if (window.AndroidInterface) {
+                // অ্যান্ড্রয়েড অ্যাপে থাকলে নেটিভ গুগল সাইন-ইন সচল করবে
+                window.AndroidInterface.triggerGoogleLogin();
+            } else {
+                // সাধারণ ব্রাউজারে থাকলে আগের পপ-আপ লগইন কাজ করবে
+                Swal.fire({title: 'প্রবেশ করা হচ্ছে...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+                try {
+                    const result = await signInWithPopup(auth, provider);
+                    const user = result.user;
+                    const userRef = ref(db, 'users/' + user.uid);
+                    const snap = await get(userRef);
+                    if(!snap.exists()) {
+                        await set(userRef, {
+                            displayName: user.displayName,
+                            email: user.email,
+                            photoURL: user.photoURL,
+                            bio: "আমি মুক্তলিপি ব্যবহার করছি।",
+                            createdAt: new Date().toISOString(),
+                            isVerified: false
+                        });
+                    }
+                    Swal.fire({icon: 'success', title: 'সফল লগইন!', timer: 1500, showConfirmButton: false});
+                    setTimeout(() => window.location.href = redirectUrl, 1500);
+                } catch (error) {
+                    Swal.fire('ত্রুটি', 'গুগল দিয়ে প্রবেশ করতে ব্যর্থ হয়েছে', 'error');
+                }
+            }
+        }
+// অ্যান্ড্রয়েড অ্যাপ থেকে প্রাপ্ত গুগল আইডি টোকেন দিয়ে লগইন (নতুন সংযোজন)
+        window.loginWithAndroidGoogleToken = async function(idToken) {
+            Swal.fire({title: 'প্রবেশ করা হচ্ছে...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+            try {
+                const credential = GoogleAuthProvider.credential(idToken);
+                const result = await signInWithCredential(auth, credential);
+                const user = result.user;
+                const userRef = ref(db, 'users/' + user.uid);
+                const snap = await get(userRef);
+                if(!snap.exists()) {
+                    await set(userRef, {
+                        displayName: user.displayName,
+                        email: user.email,
+                        photoURL: user.photoURL,
+                        bio: "আমি মুক্তলিপি ব্যবহার করছি।",
+                        createdAt: new Date().toISOString(),
+                        isVerified: false
+                    });
+                }
+                Swal.fire({icon: 'success', title: 'সফল লগইন!', timer: 1500, showConfirmButton: false});
+                setTimeout(() => window.location.href = redirectUrl, 1500);
+            } catch (error) {
+                Swal.close();
+                Swal.fire('ত্রুটি', 'গুগল সাইন-ইন করতে ব্যর্থ হয়েছে', 'error');
+            }
+        }
+
+        // Email Login
+        window.emailLogin = async function() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            if(!username || !password) return Swal.fire('সতর্কতা', 'সবগুলো ঘর পূরণ করুন', 'warning');
+
+            const email = `${username}@gmail.com`;
+            Swal.fire({title: 'লগইন করা হচ্ছে...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                Swal.fire({icon: 'success', title: 'লগইন সফল!', timer: 1500, showConfirmButton: false});
+                setTimeout(() => window.location.href = redirectUrl, 1500);
+            } catch (error) {
+                Swal.fire('লগইন ব্যর্থ', 'সঠিক ইউজারনেম এবং পাসওয়ার্ড দিয়ে পুনরায় চেষ্টা করুন', 'error');
+            }
+        }
+
+        // Email Signup
+        window.emailSignup = async function() {
+            const name = document.getElementById('signupName').value.trim();
+            const username = document.getElementById('signupUsername').value.trim();
+            const password = document.getElementById('signupPassword').value;
+
+            if(!name || !username || !password) return Swal.fire('সতর্কতা', 'সবগুলো ঘর পূরণ করুন', 'warning');
+            if(password.length < 6) return Swal.fire('দুর্বল পাসওয়ার্ড', 'পাসওয়ার্ড কমপক্ষে ৬টি অক্ষরের হতে হবে', 'warning');
+
+            const email = `${username}@gmail.com`;
+            Swal.fire({title: 'একাউন্ট তৈরি হচ্ছে...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                await updateProfile(user, { displayName: name });
+                await set(ref(db, 'users/' + user.uid), {
+                    displayName: name,
+                    email: email,
+                    photoURL: 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
+                    bio: "আমি মুক্তলিপি ব্যবহার করছি।",
+                    createdAt: new Date().toISOString(),
+                    isVerified: false
+                });
+                Swal.fire({icon: 'success', title: 'রেজিস্ট্রেশন সফল!', timer: 1500, showConfirmButton: false});
+                setTimeout(() => window.location.href = redirectUrl, 1500);
+            } catch (error) {
+                Swal.fire('রেজিস্ট্রেশন ব্যর্থ', 'এই ইউজারনেমটি পূর্বে ব্যবহৃত হয়েছে', 'error');
+            }
+        }
+
+// Reset Password (উন্নত ও ত্রুটিমুক্ত সংস্করণ)
+window.resetPassword = async function() {
+    const { value: userInput } = await Swal.fire({
+        title: 'পাসওয়ার্ড রিসেট',
+        text: 'আপনার ইউজারনেম অথবা ইমেইল এড্রেসটি লিখুন',
+        input: 'text',
+        inputPlaceholder: 'username অথবা email@gmail.com',
+        showCancelButton: true,
+        confirmButtonText: 'রিসেট লিংক পাঠান',
+        cancelButtonText: 'বাতিল',
+        confirmButtonColor: '#1877f2', // আপনার থিমের সাথে মিল রেখে ব্লু কালার
+        inputValidator: (value) => {
+            if (!value) {
+                return 'অনুগ্রহ করে ইউজারনেম বা ইমেইল লিখুন!';
+            }
+        }
+    });
+
+    if (userInput) {
+        const trimmedInput = userInput.trim();
+        let email = '';
+
+        // ব্যবহারকারী যদি সম্পূর্ণ ইমেইল লিখেন (@ চিহ্ন থাকে)
+        if (trimmedInput.includes('@')) {
+            email = trimmedInput;
+        } else {
+            // শুধুমাত্র ইউজারনেম লিখলে @gmail.com যোগ হবে
+            email = `${trimmedInput}@gmail.com`;
+        }
+
+        Swal.fire({
+            title: 'লিংক পাঠানো হচ্ছে...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        try {
+            await sendPasswordResetEmail(auth, email);
+            Swal.fire({
+                icon: 'success',
+                title: 'সফল!',
+                text: 'পাসওয়ার্ড রিসেট লিংকটি আপনার ইমেইলে পাঠানো হয়েছে। অনুগ্রহ করে ইনবক্স বা স্প্যাম ফোল্ডার চেক করুন।',
+                confirmButtonColor: '#1877f2'
+            });
+        } catch (e) {
+            Swal.fire({
+                icon: 'error',
+                title: 'ব্যর্থ হয়েছে',
+                text: 'এই তথ্য দিয়ে কোনো অ্যাকাউন্ট খুঁজে পাওয়া যায়নি।',
+                confirmButtonColor: '#1877f2'
+            });
+        }
+    }
+}
+    </script>
+</body>
+</html>

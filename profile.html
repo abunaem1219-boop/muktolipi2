@@ -1,0 +1,1821 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>প্রোফাইল - মুক্তলিপি</title>
+    <link rel="icon" type="image/png" href="icon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+     <!-- Cropper.js for Photo Editing -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <style>
+        :root {
+            --bg: #fafafa;
+            --surface: #ffffff;
+            --surface2: #f3f4f6;
+            --border: #e5e7eb;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --accent: #3b82f6;
+            --accent-grad: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --story-ring: linear-gradient(45deg, #f9a825, #f06292, #ab47bc, #42a5f5);
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.10);
+            --shadow-lg: 0 12px 40px rgba(0,0,0,0.14);
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --font-main: 'Sora', 'Hind Siliguri', sans-serif;
+            --transition: all 0.22s cubic-bezier(0.4,0,0.2,1);
+        }
+        .dark-theme {
+            --bg: #0a0a0a;
+            --surface: #161616;
+            --surface2: #1f1f1f;
+            --border: #2a2a2a;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.5);
+            --shadow-lg: 0 12px 40px rgba(0,0,0,0.6);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: var(--font-main);
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding-bottom: 90px;
+            transition: background 0.3s, color 0.3s;
+        }
+
+/* ====== SKELETON LOADER ====== */
+        .skeleton { 
+            background: linear-gradient(90deg, var(--surface2) 25%, var(--border) 50%, var(--surface2) 75%); 
+            background-size: 200% 100%; 
+            animation: shimmer 1.4s infinite linear; 
+            border-radius: 8px; 
+        }
+        .dark-theme .skeleton {
+            background: linear-gradient(90deg, #1d1d1d 25%, #2c2c2c 50%, #1d1d1d 75%);
+            background-size: 200% 100%;
+        }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+        /* ====== LOADING OVERLAY ====== */
+        .page-loading {
+            position: fixed; 
+            inset: 0;
+            background: var(--bg);
+            display: block;
+            overflow-y: auto;
+            z-index: 99999;
+            transition: opacity 0.35s cubic-bezier(0.25, 1, 0.5, 1), visibility 0.35s;
+        }
+        .page-loading.hide { 
+            opacity: 0; 
+            pointer-events: none; 
+            visibility: hidden; 
+        }
+
+        /* ====== WRAPPER ====== */
+        .page-wrap { max-width: 700px; margin: 0 auto; }
+
+        /* ====== COVER PHOTO ====== */
+        .cover-wrap {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: cover;
+            background-position: center;
+            overflow: hidden;
+        }
+        .cover-wrap::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.35) 100%);
+        }
+        .cover-actions {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            z-index: 10;
+            display: flex;
+            gap: 8px;
+        }
+        .cover-icon-btn {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: var(--transition);
+        }
+        .cover-icon-btn:hover { background: rgba(255,255,255,0.35); transform: scale(1.08); }
+
+        /* ====== PROFILE HEADER ====== */
+        .profile-header {
+            background: var(--surface);
+            padding: 0 18px 20px;
+            position: relative;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .avatar-row {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            margin-top: -44px;
+            margin-bottom: 14px;
+        }
+
+        .avatar-outer {
+            position: relative;
+            width: 90px; height: 90px;
+            flex-shrink: 0;
+        }
+        .avatar-ring-wrap {
+            width: 90px; height: 90px;
+            border-radius: 50%;
+            padding: 3px;
+            background: var(--story-ring);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 16px rgba(103,78,167,0.35);
+        }
+        .avatar-inner {
+            width: 84px; height: 84px;
+            border-radius: 50%;
+            border: 3px solid var(--surface);
+            overflow: hidden;
+            background: var(--surface2);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .avatar-inner img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .header-right-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+            padding-top: 50px;
+        }
+
+        /* ====== STATS ROW ====== */
+        .stats-band {
+            display: flex;
+            justify-content: space-around;
+            background: var(--surface2);
+            border-radius: var(--radius-md);
+            padding: 14px 10px;
+            margin-bottom: 14px;
+        }
+        .stat-cell {
+            text-align: center;
+            cursor: pointer;
+            padding: 4px 12px;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+            flex: 1;
+        }
+        .stat-cell:hover { background: var(--border); }
+        .stat-num {
+            font-size: 19px;
+            font-weight: 800;
+            color: var(--text-primary);
+            display: block;
+            line-height: 1.2;
+        }
+        .stat-lbl {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-top: 2px;
+            display: block;
+        }
+        .stat-divider {
+            width: 1px;
+            background: var(--border);
+            align-self: stretch;
+            margin: 4px 0;
+        }
+
+        /* ====== NAME & BIO ====== */
+        .profile-name-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 4px;
+        }
+        .profile-name {
+            font-size: 19px;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+        .verified-icon {
+            color: #1d9bf0;
+            font-size: 17px;
+            flex-shrink: 0;
+        }
+        .username-handle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .bio-text {
+            font-size: 13.5px;
+            line-height: 1.6;
+            color: var(--text-primary);
+            white-space: pre-wrap;
+            margin-bottom: 12px;
+            font-family: 'Hind Siliguri', sans-serif;
+        }
+
+        /* ====== META INFO CHIPS ====== */
+        .meta-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .meta-chip {
+            display: flex; align-items: center; gap: 5px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            background: var(--surface2);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+        .meta-chip i { font-size: 11px; }
+
+        /* ====== SOCIAL CHIPS ====== */
+        .social-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+        .social-chip {
+            display: flex; align-items: center; gap: 6px;
+            padding: 7px 14px;
+            border-radius: 22px;
+            font-size: 12px; font-weight: 700;
+            text-decoration: none; color: #fff;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+        .social-chip:active { transform: scale(0.95); opacity: 0.9; }
+
+        /* ====== ACTION BUTTONS ====== */
+        .action-buttons-row {
+            display: flex;
+            gap: 8px;
+        }
+        .btn-prof {
+            flex: 1;
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            border: 1.5px solid var(--border);
+            background: var(--surface2);
+            color: var(--text-primary);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 7px;
+            transition: var(--transition);
+            font-family: var(--font-main);
+        }
+        .btn-prof:hover { background: var(--border); }
+        .btn-prof:active { transform: scale(0.97); }
+        .btn-prof-primary {
+            background: var(--accent-grad);
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 14px rgba(103,78,167,0.3);
+        }
+        .btn-prof-primary:hover { opacity: 0.9; }
+        .btn-prof-primary.following {
+            background: var(--surface2);
+            color: var(--text-primary);
+            border: 1.5px solid var(--border);
+            box-shadow: none;
+        }
+        .btn-icon-only {
+            flex: 0 0 42px;
+            width: 42px;
+            padding: 0;
+            border-radius: var(--radius-sm);
+        }
+
+        /* ====== SETTINGS GEAR (top right of avatar-row) ====== */
+        .settings-gear-btn {
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            color: var(--text-primary);
+            font-size: 16px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+        .settings-gear-btn:hover { background: var(--surface2); transform: rotate(45deg); }
+
+        /* ====== PROFILE TABS ====== */
+        .profile-tabs {
+            display: flex;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .p-tab {
+            flex: 1;
+            padding: 14px 0;
+            border: none;
+            background: none;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            position: relative;
+            transition: var(--transition);
+            font-family: var(--font-main);
+        }
+        .p-tab i { font-size: 15px; }
+        .p-tab.active { color: var(--text-primary); }
+        .p-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 10%; width: 80%; height: 2.5px;
+            background: var(--text-primary);
+            border-radius: 2px;
+        }
+
+        /* ====== POST GRID ====== */
+        .posts-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3px;
+            background: var(--bg);
+        }
+        .grid-post {
+            position: relative;
+            aspect-ratio: 1 / 1;
+            overflow: hidden;
+            background: var(--surface2);
+            cursor: pointer;
+        }
+        .grid-post img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+        .grid-post:hover img { transform: scale(1.05); }
+        .grid-post-text {
+            width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            padding: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+            color: var(--text-primary);
+            line-height: 1.4;
+            background: var(--surface);
+            font-family: 'Hind Siliguri', sans-serif;
+        }
+        .grid-post-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            display: flex; align-items: center; justify-content: center; gap: 14px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .grid-post:hover .grid-post-overlay { opacity: 1; }
+        .grid-post-overlay span {
+            color: #fff; font-size: 13px; font-weight: 700;
+            display: flex; align-items: center; gap: 5px;
+        }
+        .post-type-badge {
+            position: absolute;
+            top: 7px; right: 7px;
+            background: rgba(0,0,0,0.55);
+            color: #fff; font-size: 11px;
+            padding: 3px 6px; border-radius: 5px;
+        }
+        .post-delete-fab {
+            position: absolute;
+            top: 7px; left: 7px;
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            background: rgba(220,38,38,0.85);
+            backdrop-filter: blur(4px);
+            color: #fff; font-size: 11px;
+            border: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s, transform 0.2s;
+            z-index: 10;
+        }
+        .grid-post:hover .post-delete-fab { opacity: 1; }
+        .post-delete-fab:hover { transform: scale(1.15); }
+
+        /* Touch support for mobile */
+        .grid-post.touch-active .grid-post-overlay { opacity: 1; }
+        .grid-post.touch-active .post-delete-fab { opacity: 1; }
+
+        /* ====== EMPTY STATE ====== */
+        .empty-state {
+            grid-column: span 3;
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+        .empty-state i { font-size: 42px; margin-bottom: 12px; display: block; opacity: 0.5; }
+        .empty-state p { font-size: 14px; font-weight: 600; }
+
+        /* ====== POST DETAIL MODAL ====== */
+        .modal-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.72);
+            backdrop-filter: blur(6px);
+            z-index: 3000;
+            display: none;
+            align-items: center; justify-content: center;
+            padding: 16px;
+        }
+        .modal-backdrop.open { display: flex; animation: fadeIn 0.2s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .post-detail-card {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            animation: slideUp 0.25s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .post-detail-header {
+            display: flex; align-items: center; gap: 10px;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0;
+            background: var(--surface);
+            z-index: 5;
+        }
+        .post-detail-avatar {
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .post-detail-meta { flex: 1; }
+        .post-detail-name { font-size: 14px; font-weight: 700; }
+        .post-detail-time { font-size: 11px; color: var(--text-secondary); }
+        .modal-close {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: var(--surface2);
+            color: var(--text-primary);
+            font-size: 14px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: var(--transition);
+        }
+        .modal-close:hover { background: var(--border); }
+
+        .post-detail-image { width: 100%; max-height: 380px; object-fit: cover; display: block; }
+        .post-detail-body { padding: 16px; }
+        .post-detail-title { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+        .post-detail-content { font-size: 14px; line-height: 1.7; color: var(--text-primary); font-family: 'Hind Siliguri', sans-serif; }
+        .post-detail-footer {
+            padding: 12px 16px;
+            border-top: 1px solid var(--border);
+            display: flex; gap: 16px;
+        }
+        .post-action-btn {
+            display: flex; align-items: center; gap: 6px;
+            padding: 8px 14px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: none;
+            color: var(--text-secondary);
+            font-size: 13px; font-weight: 600;
+            cursor: pointer;
+            font-family: var(--font-main);
+            transition: var(--transition);
+        }
+        .post-action-btn:hover { background: var(--surface2); color: var(--text-primary); }
+        .post-action-btn.liked { color: #ef4444; border-color: #ef4444; }
+
+        /* ====== SETTINGS BOTTOM SHEET ====== */
+        .sheet-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+            z-index: 4000;
+            display: none;
+            align-items: flex-end; justify-content: center;
+        }
+        .sheet-backdrop.open { display: flex; animation: fadeIn 0.2s ease; }
+
+        .settings-sheet {
+            background: var(--surface);
+            border-radius: 24px 24px 0 0;
+            width: 100%;
+            max-width: 700px;
+            padding: 0 0 30px;
+            box-shadow: var(--shadow-lg);
+            animation: sheetUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        @keyframes sheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        .sheet-handle {
+            width: 40px; height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            margin: 14px auto 0;
+        }
+        .sheet-title-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 20px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .sheet-title { font-size: 17px; font-weight: 800; }
+        .sheet-close {
+            width: 32px; height: 32px;
+            border-radius: 50%; border: none;
+            background: var(--surface2);
+            color: var(--text-primary);
+            font-size: 14px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: var(--transition);
+        }
+        .sheet-close:hover { background: var(--border); }
+
+        .sheet-menu-item {
+            display: flex; align-items: center; gap: 14px;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: var(--transition);
+            border-bottom: 1px solid var(--border);
+            font-size: 15px; font-weight: 600;
+        }
+        .sheet-menu-item:last-child { border-bottom: none; }
+        .sheet-menu-item:hover { background: var(--surface2); }
+        .sheet-menu-item:active { background: var(--border); }
+        .sheet-menu-icon {
+            width: 42px; height: 42px;
+            border-radius: var(--radius-sm);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .sheet-menu-item.danger { color: #ef4444; }
+        .sheet-menu-item.danger .sheet-menu-icon { background: #fee2e2; color: #ef4444; }
+
+        /* ====== EDIT PROFILE MODAL ====== */
+        .edit-modal-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.65);
+            backdrop-filter: blur(8px);
+            z-index: 5000;
+            display: none;
+            align-items: center; justify-content: center;
+            padding: 16px;
+        }
+        .edit-modal-backdrop.open { display: flex; animation: fadeIn 0.2s ease; }
+
+        .edit-modal-card {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 480px;
+            max-height: 92vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            animation: slideUp 0.25s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .edit-modal-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 20px 14px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; background: var(--surface); z-index: 5;
+        }
+        .edit-modal-title { font-size: 17px; font-weight: 800; }
+        .edit-modal-body { padding: 20px; }
+
+        /* ====== AVATAR EDIT ====== */
+        .avatar-edit-section {
+            display: flex; flex-direction: column; align-items: center;
+            margin-bottom: 24px; gap: 10px;
+        }
+        .edit-avatar-ring {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            padding: 3px;
+            background: var(--story-ring);
+        }
+        .edit-avatar-img {
+            width: 74px; height: 74px;
+            border-radius: 50%;
+            border: 3px solid var(--surface);
+            object-fit: cover;
+            background: var(--surface2);
+        }
+        .change-photo-btn {
+            font-size: 13px; font-weight: 700;
+            color: var(--accent);
+            background: none; border: none;
+            cursor: pointer; font-family: var(--font-main);
+        }
+
+        /* ====== FORM FIELDS ====== */
+        .form-group { margin-bottom: 16px; }
+        .form-label {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 12px; font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase; letter-spacing: 0.05em;
+            margin-bottom: 7px;
+        }
+        .form-label i { font-size: 11px; }
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--surface2);
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: 'Hind Siliguri', 'Sora', sans-serif;
+            outline: none;
+            transition: var(--transition);
+        }
+        .form-input:focus, .form-textarea:focus { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+        .form-textarea { resize: vertical; min-height: 90px; }
+        .char-count { font-size: 11px; color: var(--text-muted); text-align: right; margin-top: 4px; }
+
+        .form-divider {
+            font-size: 12px; font-weight: 700;
+            color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em;
+            margin: 20px 0 14px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .form-divider::before, .form-divider::after {
+            content: ''; flex: 1; height: 1px; background: var(--border);
+        }
+
+        .save-btn {
+            width: 100%;
+            padding: 13px;
+            border-radius: var(--radius-sm);
+            border: none;
+            background: var(--accent-grad);
+            color: #fff;
+            font-size: 15px; font-weight: 800;
+            cursor: pointer;
+            font-family: var(--font-main);
+            box-shadow: 0 4px 16px rgba(103,78,167,0.3);
+            transition: var(--transition);
+            margin-top: 8px;
+        }
+        .save-btn:hover { opacity: 0.92; transform: translateY(-1px); }
+        .save-btn:active { transform: scale(0.98); }
+
+        /* ====== FOLLOWERS MODAL ====== */
+        .follow-list-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 0; cursor: pointer;
+            transition: var(--transition);
+        }
+        .follow-list-item:hover { opacity: 0.8; }
+        .follow-list-avatar {
+            width: 44px; height: 44px;
+            border-radius: 50%; object-fit: cover;
+            flex-shrink: 0;
+        }
+        .follow-list-name { font-size: 14px; font-weight: 700; }
+        .follow-list-bio { font-size: 12px; color: var(--text-secondary); }
+
+        /* ====== DRAFT CARD ====== */
+        .draft-card {
+            background: var(--surface);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .draft-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .draft-content {
+            padding: 12px;
+            font-size: 12px; font-weight: 600;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            text-align: center;
+        }
+        .draft-badge {
+            display: flex; align-items: center; justify-content: center; gap: 4px;
+            padding: 4px;
+            background: rgba(245,158,11,0.15);
+            color: #d97706;
+            font-size: 10px; font-weight: 700;
+        }
+
+        /* ====== DARK MODE TOGGLE ====== */
+        .theme-toggle {
+            display: flex; align-items: center; gap: 12px;
+        }
+        .toggle-switch {
+            width: 44px; height: 24px;
+            border-radius: 12px;
+            background: var(--border);
+            position: relative;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            flex-shrink: 0;
+        }
+        .toggle-switch.on { background: #667eea; }
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px; left: 3px;
+            width: 18px; height: 18px;
+            border-radius: 50%;
+            background: #fff;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+        .toggle-switch.on::after { transform: translateX(20px); }
+
+        /* ====== RESPONSIVE ====== */
+        @media (max-width: 400px) {
+            .stats-band { padding: 10px 4px; }
+            .stat-num { font-size: 16px; }
+            .stat-lbl { font-size: 10px; }
+            .stat-cell { padding: 4px 6px; }
+        }
+
+/* ====== SKELETON LOADER ====== */
+        .skeleton { 
+            background: linear-gradient(90deg, var(--surface2) 25%, var(--border) 50%, var(--surface2) 75%); 
+            background-size: 200% 100%; 
+            animation: shimmer 1.4s infinite linear; 
+            border-radius: 8px; 
+        }
+        .dark-theme .skeleton {
+            background: linear-gradient(90deg, #1d1d1d 25%, #2c2c2c 50%, #1d1d1d 75%);
+            background-size: 200% 100%;
+        }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+        /* ====== LOADING OVERLAY ====== */
+        .page-loading {
+            position: fixed; 
+            inset: 0;
+            background: var(--bg);
+            display: block;
+            overflow-y: auto;
+            z-index: 99999;
+            transition: opacity 0.35s cubic-bezier(0.25, 1, 0.5, 1), visibility 0.35s;
+        }
+        .page-loading.hide { 
+            opacity: 0; 
+            pointer-events: none; 
+            visibility: hidden; 
+        }
+        /* scroll bar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+<!-- Page Loader (Premium Skeleton Mockup) -->
+<div class="page-loading" id="pageLoader">
+    <div class="page-wrap" style="width: 100%; padding-bottom: 90px;">
+        <!-- Cover Photo Skeleton -->
+        <div class="skeleton" style="width: 100%; height: 200px; border-radius: 0;"></div>
+        
+        <!-- Profile Header Skeleton -->
+        <div style="background: var(--surface); padding: 0 18px 20px; border-bottom: 1px solid var(--border);">
+            <!-- Avatar and Actions Row -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: -44px; margin-bottom: 18px;">
+                <div class="skeleton" style="width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--surface); box-shadow: var(--shadow-sm);"></div>
+                <div style="display: flex; gap: 8px; margin-bottom: 4px;">
+                    <div class="skeleton" style="width: 110px; height: 38px; border-radius: var(--radius-sm);"></div>
+                    <div class="skeleton" style="width: 42px; height: 38px; border-radius: var(--radius-sm);"></div>
+                </div>
+            </div>
+
+            <!-- Stats Band Skeleton -->
+            <div style="display: flex; gap: 10px; background: var(--surface2); border-radius: var(--radius-md); padding: 14px 10px; margin-bottom: 20px; height: 62px;">
+                <div class="skeleton" style="flex: 1; height: 100%;"></div>
+                <div class="skeleton" style="flex: 1; height: 100%;"></div>
+                <div class="skeleton" style="flex: 1; height: 100%;"></div>
+                <div class="skeleton" style="flex: 1; height: 100%;"></div>
+            </div>
+
+            <!-- Name and Handle Skeleton -->
+            <div class="skeleton" style="width: 160px; height: 22px; margin-bottom: 8px;"></div>
+            <div class="skeleton" style="width: 90px; height: 12px; margin-bottom: 18px;"></div>
+
+            <!-- Bio Lines Skeleton -->
+            <div class="skeleton" style="width: 100%; height: 12px; margin-bottom: 8px;"></div>
+            <div class="skeleton" style="width: 85%; height: 12px; margin-bottom: 8px;"></div>
+            <div class="skeleton" style="width: 50%; height: 12px; margin-bottom: 20px;"></div>
+
+            <!-- Meta Chips Skeleton -->
+            <div style="display: flex; gap: 8px;">
+                <div class="skeleton" style="width: 90px; height: 26px; border-radius: 20px;"></div>
+                <div class="skeleton" style="width: 110px; height: 26px; border-radius: 20px;"></div>
+            </div>
+        </div>
+
+        <!-- Tabs Skeleton -->
+        <div style="display: flex; background: var(--surface); border-bottom: 1px solid var(--border); height: 48px; margin-bottom: 3px;">
+            <div class="skeleton" style="flex: 1; height: 100%; border-radius: 0; margin: 0 15px;"></div>
+            <div class="skeleton" style="flex: 1; height: 100%; border-radius: 0; margin: 0 15px;"></div>
+        </div>
+
+        <!-- Grid Cards Skeleton -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px;">
+            <div class="skeleton" style="aspect-ratio: 1/1; border-radius: 0;"></div>
+            <div class="skeleton" style="aspect-ratio: 1/1; border-radius: 0;"></div>
+            <div class="skeleton" style="aspect-ratio: 1/1; border-radius: 0;"></div>
+            <div class="skeleton" style="aspect-ratio: 1/1; border-radius: 0;"></div>
+            <div class="skeleton" style="aspect-ratio: 1/1; border-radius: 0;"></div>
+            <div class="skeleton" style="aspect-ratio: 1/1; border-radius: 0;"></div>
+        </div>
+    </div>
+</div>
+
+<div class="page-wrap">
+
+    <!-- ===== COVER ===== -->
+    <div class="cover-wrap" id="coverPhoto">
+        <div class="cover-actions">
+            <button class="cover-icon-btn" id="settingsGearBtn" title="সেটিংস" onclick="openSettingsSheet()">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- ===== PROFILE HEADER ===== -->
+    <div class="profile-header">
+        <div class="avatar-row">
+            <div class="avatar-outer">
+                <div class="avatar-ring-wrap">
+                    <div class="avatar-inner">
+                        <img id="profilePic" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="প্রোফাইল ছবি">
+                    </div>
+                </div>
+            </div>
+
+            <div class="header-right-actions" id="headerRightActions">
+                <!-- dynamically filled -->
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-band">
+            <div class="stat-cell" id="statPostsCell">
+                <span class="stat-num" id="statPosts">—</span>
+                <span class="stat-lbl">পোস্ট</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-cell" onclick="showFollowList('followers')">
+                <span class="stat-num" id="statFollowers">—</span>
+                <span class="stat-lbl">ফলোয়ার</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-cell" onclick="showFollowList('following')">
+                <span class="stat-num" id="statFollowing">—</span>
+                <span class="stat-lbl">ফলোয়িং</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-cell" id="statLikesCell">
+                <span class="stat-num" id="statLikes">—</span>
+                <span class="stat-lbl">লাইক</span>
+            </div>
+        </div>
+
+        <!-- Name & Bio -->
+        <div class="profile-name-row">
+            <span class="profile-name" id="profileName">লোড হচ্ছে...</span>
+            <i class="fas fa-circle-check verified-icon" id="verifiedBadge" style="display:none;"></i>
+        </div>
+        <span class="username-handle" id="profileHandle"></span>
+        <p class="bio-text" id="profileBio"></p>
+
+        <!-- Meta Chips (location, joined, website) -->
+        <div class="meta-chips" id="metaChips"></div>
+
+        <!-- Social Links -->
+        <div class="social-chips" id="socialLinks"></div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons-row" id="actionButtons"></div>
+    </div>
+
+    <!-- ===== TABS ===== -->
+    <div class="profile-tabs" id="profileTabs">
+        <button class="p-tab active" id="tabPosts" onclick="switchTab('posts', this)">
+            <i class="fas fa-grid-2"></i> লেখা
+        </button>
+        <button class="p-tab" id="tabDrafts" onclick="switchTab('drafts', this)" style="display:none;">
+            <i class="fas fa-file-pen"></i> ড্রাফট
+        </button>
+    </div>
+
+    <!-- ===== CONTENT GRID ===== -->
+    <div class="posts-grid" id="postsGrid"></div>
+
+</div>
+
+<!-- ===== POST DETAIL MODAL ===== -->
+<div class="modal-backdrop" id="postModal">
+    <div class="post-detail-card">
+        <div class="post-detail-header">
+            <img id="modalAvatar" class="post-detail-avatar" src="">
+            <div class="post-detail-meta">
+                <div class="post-detail-name" id="modalUserName"></div>
+                <div class="post-detail-time" id="modalPostTime"></div>
+            </div>
+            <button class="modal-close" onclick="closePostModal()">
+                <i class="fas fa-xmark"></i>
+            </button>
+        </div>
+        <img id="modalPostImage" class="post-detail-image" src="" style="display:none;" alt="">
+        <div class="post-detail-body">
+            <div class="post-detail-title" id="modalPostTitle"></div>
+            <div class="post-detail-content" id="modalPostContent"></div>
+        </div>
+        <div class="post-detail-footer">
+            <button class="post-action-btn" id="modalLikeBtn" onclick="handleModalLike()">
+                <i class="far fa-heart"></i> <span id="modalLikeCount">0</span>
+            </button>
+            <button class="post-action-btn" onclick="handleModalShare()">
+                <i class="fas fa-share-nodes"></i> শেয়ার
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== SETTINGS SHEET ===== -->
+<div class="sheet-backdrop" id="settingsSheet" onclick="handleSheetBackdropClick(event)">
+    <div class="settings-sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-title-row">
+            <span class="sheet-title">সেটিংস</span>
+            <button class="sheet-close" onclick="closeSettingsSheet()"><i class="fas fa-xmark"></i></button>
+        </div>
+
+        <!-- Edit Profile -->
+        <div class="sheet-menu-item" id="menuEditProfile" onclick="openEditProfile()">
+            <div class="sheet-menu-icon" style="background:#ede9fe; color:#7c3aed;">
+                <i class="fas fa-user-pen"></i>
+            </div>
+            <div>
+                <div style="font-size:15px; font-weight:700;">প্রোফাইল এডিট করুন</div>
+                <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">নাম, বায়ো, ছবি ও আরো পরিবর্তন করুন</div>
+            </div>
+            <i class="fas fa-chevron-right" style="margin-left:auto; color:var(--text-muted); font-size:13px;"></i>
+        </div>
+
+        <!-- Dark Mode -->
+        <div class="sheet-menu-item" id="menuTheme">
+            <div class="sheet-menu-icon" style="background:#fef3c7; color:#d97706;">
+                <i class="fas fa-moon" id="themeIcon"></i>
+            </div>
+            <div style="flex:1;">
+                <div style="font-size:15px; font-weight:700;">ডার্ক মোড</div>
+                <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">রাতের মোড চালু / বন্ধ করুন</div>
+            </div>
+            <button class="toggle-switch" id="themeToggle" onclick="toggleDarkMode(event)"></button>
+        </div>
+
+        <!-- Share Profile -->
+        <div class="sheet-menu-item" onclick="shareProfile()">
+            <div class="sheet-menu-icon" style="background:#dcfce7; color:#16a34a;">
+                <i class="fas fa-share-from-square"></i>
+            </div>
+            <div>
+                <div style="font-size:15px; font-weight:700;">প্রোফাইল শেয়ার করুন</div>
+                <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">লিংক কপি করুন বা শেয়ার করুন</div>
+            </div>
+        </div>
+
+        <!-- Logout -->
+        <div class="sheet-menu-item danger" id="menuLogout" onclick="handleLogout()">
+            <div class="sheet-menu-icon">
+                <i class="fas fa-right-from-bracket"></i>
+            </div>
+            <div>
+                <div style="font-size:15px; font-weight:700;">লগ আউট</div>
+                <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">অ্যাকাউন্ট থেকে বের হন</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ===== EDIT PROFILE MODAL ===== -->
+<div class="edit-modal-backdrop" id="editProfileModal">
+    <div class="edit-modal-card">
+        <div class="edit-modal-header">
+            <span class="edit-modal-title">প্রোফাইল এডিট</span>
+            <button class="sheet-close" onclick="closeEditProfile()"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="edit-modal-body">
+
+ <!-- Avatar & Cover Upload Grid -->
+            <div style="display: flex; gap: 20px; margin-bottom: 24px; align-items: center; justify-content: center; flex-wrap: wrap; background: var(--surface2); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+                <!-- Avatar Edit Box -->
+                <div class="avatar-edit-section" style="margin-bottom: 0; flex: 1; min-width: 120px;">
+                    <div class="edit-avatar-ring" style="margin: 0 auto 8px;">
+                        <img id="editAvatarPreview" class="edit-avatar-img" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+                    </div>
+                    <button class="change-photo-btn" onclick="document.getElementById('profileFileInput').click(); return false;">
+                        <i class="fas fa-camera"></i> প্রোফাইল ছবি
+                    </button>
+                    <input type="file" id="profileFileInput" accept="image/*" style="display:none;" onchange="handleFileSelect(event, 'avatar')">
+                </div>
+
+                <!-- Cover Edit Box -->
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; min-width: 140px;">
+                    <div style="width: 140px; height: 80px; border-radius: var(--radius-sm); border: 2px solid var(--border); overflow: hidden; background: var(--bg); display: flex; align-items: center; justify-content: center;">
+                        <img id="editCoverPreview" src="" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none';">
+                    </div>
+                    <button class="change-photo-btn" onclick="document.getElementById('coverFileInput').click(); return false;">
+                        <i class="fas fa-image"></i> কভার ফটো
+                    </button>
+                    <input type="file" id="coverFileInput" accept="image/*" style="display:none;" onchange="handleFileSelect(event, 'cover')">
+                </div>
+            </div>
+
+            <!-- ব্যাকএন্ড ডাটাবেস ভ্যালু সংরক্ষণের জন্য ডিরেক্ট ইনপুট ফিল্ডগুলো হিডেন করা হলো -->
+            <input type="hidden" id="editPicUrl">
+            <input type="hidden" id="editCoverUrl">
+
+            <div class="form-divider">ব্যক্তিগত তথ্য</div>
+
+            <div class="form-group">
+                <label class="form-label"><i class="fas fa-user"></i> প্রদর্শনী নাম *</label>
+                <input type="text" id="editName" class="form-input" placeholder="আপনার নাম লিখুন" maxlength="50">
+            </div>
+            <div class="form-group">
+                <label class="form-label"><i class="fas fa-at"></i> ইউজার হ্যান্ডেল</label>
+                <input type="text" id="editUsername" class="form-input" placeholder="@username" maxlength="30">
+            </div>
+            <div class="form-group">
+                <label class="form-label"><i class="fas fa-align-left"></i> বায়ো</label>
+                <textarea id="editBio" class="form-textarea" placeholder="নিজের সম্পর্কে কিছু লিখুন..." maxlength="150" oninput="updateCharCount(this, 150, 'bioCharCount')"></textarea>
+                <div class="char-count" id="bioCharCount">0 / 150</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label"><i class="fas fa-location-dot"></i> অবস্থান</label>
+                <input type="text" id="editLocation" class="form-input" placeholder="শহর, দেশ" maxlength="60">
+            </div>
+            <div class="form-group">
+                <label class="form-label"><i class="fas fa-link"></i> ওয়েবসাইট</label>
+                <input type="url" id="editWebsite" class="form-input" placeholder="https://yoursite.com">
+            </div>
+
+            <div class="form-divider">সোশ্যাল মিডিয়া</div>
+
+            <div class="form-group">
+                <label class="form-label"><i class="fab fa-facebook-f" style="color:#1877f2;"></i> Facebook লিংক</label>
+                <input type="url" id="editFacebook" class="form-input" placeholder="https://facebook.com/username">
+            </div>
+            <div class="form-group">
+                <label class="form-label"><i class="fab fa-youtube" style="color:#ff0000;"></i> YouTube লিংক</label>
+                <input type="url" id="editYoutube" class="form-input" placeholder="https://youtube.com/@channel">
+            </div>
+            <div class="form-group">
+                <label class="form-label"><i class="fab fa-instagram" style="color:#e1306c;"></i> Instagram লিংক</label>
+                <input type="url" id="editInstagram" class="form-input" placeholder="https://instagram.com/username">
+            </div>
+            <div class="form-group">
+                <label class="form-label"><i class="fab fa-twitter" style="color:#1da1f2;"></i> Twitter/X লিংক</label>
+                <input type="url" id="editTwitter" class="form-input" placeholder="https://x.com/username">
+            </div>
+<div class="form-group">
+                <label class="form-label"><i class="fab fa-tiktok" style="color:#010101;"></i> TikTok লিংক</label>
+                <input type="url" id="editTiktok" class="form-input" placeholder="https://tiktok.com/@username">
+            </div>
+            <div class="form-group">
+                <label class="form-label"><i class="fab fa-whatsapp" style="color:#25d366;"></i> WhatsApp লিংক বা নম্বর</label>
+                <input type="url" id="editWhatsapp" class="form-input" placeholder="https://wa.me/88017xxxxxxxx">
+            </div>
+            <button class="save-btn" onclick="saveProfile()">
+                <i class="fas fa-check"></i> সংরক্ষণ করুন
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, get, update, remove, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBZtycgadrngON2WEwvIE7ERPYxdkDVfFM",
+        authDomain: "muktolipidiary.firebaseapp.com",
+        databaseURL: "https://muktolipidiary-default-rtdb.firebaseio.com",
+        projectId: "muktolipidiary",
+        storageBucket: "muktolipidiary.firebasestorage.app",
+        messagingSenderId: "639103995400",
+        appId: "1:639103995400:web:13528e51c0e86080770bbd"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+
+    let currentUser = null;
+    let profileUid = null;
+    let allPosts = [];
+    let profileData = null;
+
+    // Theme init
+    if (localStorage.getItem('userTheme') === 'dark') {
+        document.body.classList.add('dark-theme');
+        const t = document.getElementById('themeToggle');
+        if (t) t.classList.add('on');
+        const ic = document.getElementById('themeIcon');
+        if (ic) { ic.classList.remove('fa-moon'); ic.classList.add('fa-sun'); }
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+        currentUser = user;
+        const urlParams = new URLSearchParams(window.location.search);
+        profileUid = urlParams.get('uid') || (user ? user.uid : null);
+
+        if (!profileUid) {
+            window.location.href = 'auth.html?redirect=profile.html';
+            return;
+        }
+
+        await loadProfile();
+        document.getElementById('pageLoader').classList.add('hide');
+    });
+
+    async function loadProfile() {
+        const isMe = currentUser && currentUser.uid === profileUid;
+
+        // Show/hide settings button & draft tab
+        if (isMe) {
+            document.getElementById('tabDrafts').style.display = 'flex';
+            document.getElementById('menuEditProfile').style.display = 'flex';
+            document.getElementById('menuLogout').style.display = 'flex';
+            // Settings icon visible on own profile
+            document.getElementById('settingsGearBtn').style.display = 'flex';
+            // Action buttons for own profile
+            document.getElementById('actionButtons').innerHTML = `
+                <button class="btn-prof" onclick="openEditProfile()" style="flex:1;">
+                    <i class="fas fa-user-pen"></i> প্রোফাইল এডিট
+                </button>
+                <button class="btn-prof btn-icon-only" title="শেয়ার" onclick="shareProfile()">
+                    <i class="fas fa-share-nodes"></i>
+                </button>
+            `;
+        } else {
+            document.getElementById('menuEditProfile').style.display = 'none';
+            document.getElementById('menuLogout').style.display = 'none';
+            // Other user's profile action buttons
+            let followHtml = `<button class="btn-prof btn-prof-primary" id="followBtn" onclick="toggleFollow()"><i class="fas fa-user-plus"></i> ফলো করুন</button>`;
+            if (currentUser) {
+                const fSnap = await get(ref(db, `followers/${profileUid}/${currentUser.uid}`));
+                if (fSnap.exists()) {
+                    followHtml = `<button class="btn-prof btn-prof-primary following" id="followBtn" onclick="toggleFollow()"><i class="fas fa-user-check"></i> Following</button>`;
+                }
+            }
+            document.getElementById('actionButtons').innerHTML = `
+                ${followHtml}
+                <button class="btn-prof" style="flex:0.5;" onclick="initChat()">
+                    <i class="fas fa-paper-plane"></i> মেসেজ
+                </button>
+                <button class="btn-prof btn-icon-only" onclick="openSettingsSheet()">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+            `;
+        }
+
+        // Load user data
+        const uSnap = await get(ref(db, `users/${profileUid}`));
+        if (uSnap.exists()) {
+            profileData = uSnap.val();
+            renderProfileInfo(profileData);
+        }
+
+        // Stats
+        const [follSnap, follgSnap] = await Promise.all([
+            get(ref(db, `followers/${profileUid}`)),
+            get(ref(db, `following/${profileUid}`))
+        ]);
+        document.getElementById('statFollowers').textContent = follSnap.exists() ? Object.keys(follSnap.val()).length : 0;
+        document.getElementById('statFollowing').textContent = follgSnap.exists() ? Object.keys(follgSnap.val()).length : 0;
+
+        // Posts
+        const postsQ = query(ref(db, 'posts'), orderByChild('uid'), equalTo(profileUid));
+        const postsSnap = await get(postsQ);
+        allPosts = postsSnap.val()
+            ? Object.entries(postsSnap.val()).map(([k, v]) => ({ key: k, ...v })).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
+            : [];
+
+        document.getElementById('statPosts').textContent = allPosts.length;
+        const totalLikes = allPosts.reduce((s, p) => s + (p.likes || 0), 0);
+        document.getElementById('statLikes').textContent = totalLikes;
+
+        renderGrid(allPosts);
+    }
+
+    function renderProfileInfo(u) {
+        // Cover
+        const cover = document.getElementById('coverPhoto');
+        if (u.coverURL) {
+            cover.style.backgroundImage = `url(${u.coverURL})`;
+            cover.style.backgroundSize = 'cover';
+            cover.style.backgroundPosition = 'center';
+        } else {
+            cover.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)';
+        }
+
+        // Avatar
+        const pic = u.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+        document.getElementById('profilePic').src = pic;
+
+        // Name
+        document.getElementById('profileName').textContent = u.displayName || 'ব্যবহারকারী';
+        document.getElementById('verifiedBadge').style.display = u.isVerified ? 'inline-block' : 'none';
+
+        // Handle
+        if (u.username) {
+            document.getElementById('profileHandle').textContent = '@' + u.username;
+        }
+
+        // Bio
+        document.getElementById('profileBio').textContent = u.bio || '';
+
+        // Meta chips
+        const metaContainer = document.getElementById('metaChips');
+        metaContainer.innerHTML = '';
+        if (u.location) metaContainer.innerHTML += `<div class="meta-chip"><i class="fas fa-location-dot"></i> ${u.location}</div>`;
+        if (u.website) metaContainer.innerHTML += `<a href="${u.website}" target="_blank" class="meta-chip" style="text-decoration:none; color:var(--accent);"><i class="fas fa-link"></i> ওয়েবসাইট</a>`;
+        if (u.joinedDate) metaContainer.innerHTML += `<div class="meta-chip"><i class="fas fa-calendar"></i> ${u.joinedDate}</div>`;
+
+// Social Links
+        const soc = document.getElementById('socialLinks');
+        soc.innerHTML = '';
+        if (u.socialLinks) {
+            if (u.socialLinks.facebook) soc.innerHTML += `<a href="${u.socialLinks.facebook}" target="_blank" class="social-chip" style="background:#1877f2;"><i class="fab fa-facebook-f"></i> Facebook</a>`;
+            if (u.socialLinks.youtube) soc.innerHTML += `<a href="${u.socialLinks.youtube}" target="_blank" class="social-chip" style="background:#ff0000;"><i class="fab fa-youtube"></i> YouTube</a>`;
+            if (u.socialLinks.instagram) soc.innerHTML += `<a href="${u.socialLinks.instagram}" target="_blank" class="social-chip" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);"><i class="fab fa-instagram"></i> Instagram</a>`;
+            if (u.socialLinks.twitter) soc.innerHTML += `<a href="${u.socialLinks.twitter}" target="_blank" class="social-chip" style="background:#1da1f2;"><i class="fab fa-twitter"></i> Twitter</a>`;
+            if (u.socialLinks.tiktok) soc.innerHTML += `<a href="${u.socialLinks.tiktok}" target="_blank" class="social-chip" style="background:#010101;"><i class="fab fa-tiktok"></i> TikTok</a>`;
+            if (u.socialLinks.whatsapp) soc.innerHTML += `<a href="${u.socialLinks.whatsapp}" target="_blank" class="social-chip" style="background:#25d366;"><i class="fab fa-whatsapp"></i> WhatsApp</a>`;
+        }
+    }
+
+    function renderGrid(posts) {
+        const grid = document.getElementById('postsGrid');
+        const isMe = currentUser && currentUser.uid === profileUid;
+
+        if (!posts.length) {
+            grid.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-feather"></i>
+                    <p>এখনো কোনো পোস্ট নেই</p>
+                </div>`;
+            return;
+        }
+
+        grid.innerHTML = posts.map(p => {
+            const hasImage = p.image && p.image.trim();
+            const deleteBtn = isMe ? `<button class="post-delete-fab" onclick="event.stopPropagation(); confirmDeletePost('${p.key}')" title="ডিলিট করুন"><i class="fas fa-trash-alt"></i></button>` : '';
+            const inner = hasImage
+                ? `<img src="${p.image}" alt="${p.title || ''}" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                   <div class="post-grid-text fallback-hidden" style="display:none;">${p.title || ''}</div>`
+                : `<div class="post-grid-text grid-post-text">${(p.title || '').slice(0, 80)}</div>`;
+
+            const likeCount = p.likes || 0;
+
+            return `
+                <div class="grid-post" onclick="openPostModal('${p.key}')" data-key="${p.key}">
+                    ${deleteBtn}
+                    ${inner}
+                    <div class="grid-post-overlay">
+                        <span><i class="fas fa-heart"></i> ${likeCount}</span>
+                    </div>
+                </div>`;
+        }).join('');
+
+        // Touch support for mobile delete button
+        grid.querySelectorAll('.grid-post').forEach(card => {
+            let touchTimer;
+            card.addEventListener('touchstart', () => {
+                touchTimer = setTimeout(() => {
+                    card.classList.add('touch-active');
+                }, 400);
+            }, { passive: true });
+            card.addEventListener('touchend', () => {
+                clearTimeout(touchTimer);
+                setTimeout(() => card.classList.remove('touch-active'), 2000);
+            }, { passive: true });
+        });
+    }
+
+    // ========== GLOBAL FUNCTIONS ==========
+
+    window.switchTab = function(tab, btn) {
+        document.querySelectorAll('.p-tab').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+
+        const grid = document.getElementById('postsGrid');
+        if (tab === 'posts') {
+            grid.style.display = 'grid';
+            renderGrid(allPosts);
+        } else if (tab === 'drafts') {
+            const drafts = JSON.parse(localStorage.getItem('MUKTOLIPI_DRAFTS_V2') || '[]');
+            grid.style.display = 'grid';
+            if (!drafts.length) {
+                grid.innerHTML = `<div class="empty-state"><i class="fas fa-file-pen"></i><p>কোনো ড্রাফট নেই</p></div>`;
+                return;
+            }
+            grid.innerHTML = drafts.map((d, i) => `
+                <div class="grid-post draft-card" style="aspect-ratio:1/1; cursor:pointer;">
+                    <div class="draft-badge"><i class="fas fa-pen"></i> ড্রাফট</div>
+                    <div class="draft-content" style="flex:1; display:flex; align-items:center; justify-content:center; padding:12px; font-size:12px; color:var(--text-secondary);">
+                        ${(d.title || 'শিরোনাম নেই').slice(0, 60)}
+                    </div>
+                </div>`).join('');
+        }
+    };
+
+    window.openPostModal = async function(key) {
+        const post = allPosts.find(p => p.key === key);
+        if (!post) return;
+
+        // Fill modal
+        const picSrc = profileData?.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+        document.getElementById('modalAvatar').src = picSrc;
+        document.getElementById('modalUserName').textContent = profileData?.displayName || 'ব্যবহারকারী';
+        
+        const timeAgo = post.timestamp ? getTimeAgo(post.timestamp) : '';
+        document.getElementById('modalPostTime').textContent = timeAgo;
+
+        const imgEl = document.getElementById('modalPostImage');
+        if (post.image) { imgEl.src = post.image; imgEl.style.display = 'block'; }
+        else { imgEl.style.display = 'none'; }
+
+        document.getElementById('modalPostTitle').textContent = post.title || '';
+        document.getElementById('modalPostContent').textContent = post.content || post.body || '';
+        document.getElementById('modalLikeCount').textContent = post.likes || 0;
+
+        document.getElementById('postModal').classList.add('open');
+        document.getElementById('postModal').dataset.currentKey = key;
+    };
+
+    window.closePostModal = function() {
+        document.getElementById('postModal').classList.remove('open');
+    };
+    document.getElementById('postModal').addEventListener('click', e => {
+        if (e.target === document.getElementById('postModal')) closePostModal();
+    });
+
+    window.handleModalLike = function() {
+        const btn = document.getElementById('modalLikeBtn');
+        btn.classList.toggle('liked');
+        if (btn.classList.contains('liked')) {
+            btn.querySelector('i').classList.replace('far', 'fas');
+        } else {
+            btn.querySelector('i').classList.replace('fas', 'far');
+        }
+    };
+
+    window.handleModalShare = async function() {
+        const key = document.getElementById('postModal').dataset.currentKey;
+        const url = `${location.origin}/index.html?post=${key}`;
+        try {
+            if (navigator.share) {
+                await navigator.share({ title: 'মুক্তলিপি পোস্ট', url });
+            } else {
+                await navigator.clipboard.writeText(url);
+                Swal.fire({ toast: true, position: 'bottom', icon: 'success', title: 'লিংক কপি হয়েছে!', showConfirmButton: false, timer: 2000 });
+            }
+        } catch(e) {}
+    };
+
+    window.confirmDeletePost = async function(key) {
+        const result = await Swal.fire({
+            title: 'পোস্ট ডিলিট করবেন?',
+            text: 'এই পোস্টটি স্থায়ীভাবে মুছে যাবে।',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: '<i class="fas fa-trash"></i> হ্যাঁ, ডিলিট করুন',
+            cancelButtonText: 'বাতিল',
+            customClass: { popup: 'swal-popup-custom' }
+        });
+        if (!result.isConfirmed) return;
+        try {
+            await remove(ref(db, `posts/${key}`));
+            allPosts = allPosts.filter(p => p.key !== key);
+            document.getElementById('statPosts').textContent = allPosts.length;
+            renderGrid(allPosts);
+            Swal.fire({ toast: true, position: 'bottom', icon: 'success', title: 'পোস্ট মুছে গেছে!', showConfirmButton: false, timer: 2500 });
+        } catch(e) {
+            Swal.fire('ত্রুটি!', 'পোস্ট ডিলিট করা যায়নি।', 'error');
+        }
+    };
+
+    window.toggleFollow = async function() {
+        if (!currentUser) { window.location.href = 'auth.html'; return; }
+        const btn = document.getElementById('followBtn');
+        const isFollowing = btn.classList.contains('following');
+        const follRef = ref(db, `followers/${profileUid}/${currentUser.uid}`);
+        const follgRef = ref(db, `following/${currentUser.uid}/${profileUid}`);
+
+        if (isFollowing) {
+            await remove(follRef); await remove(follgRef);
+            btn.classList.remove('following');
+            btn.innerHTML = '<i class="fas fa-user-plus"></i> ফলো করুন';
+            const cur = parseInt(document.getElementById('statFollowers').textContent) || 0;
+            document.getElementById('statFollowers').textContent = Math.max(0, cur - 1);
+        } else {
+            await update(ref(db, `followers/${profileUid}`), { [currentUser.uid]: true });
+            await update(ref(db, `following/${currentUser.uid}`), { [profileUid]: { timestamp: Date.now() } });
+            btn.classList.add('following');
+            btn.innerHTML = '<i class="fas fa-user-check"></i> Following';
+            const cur = parseInt(document.getElementById('statFollowers').textContent) || 0;
+            document.getElementById('statFollowers').textContent = cur + 1;
+        }
+    };
+
+    window.initChat = function() {
+        if (!currentUser) { window.location.href = 'auth.html'; return; }
+        window.location.href = `chat.html?targetUid=${profileUid}`;
+    };
+
+    // ===== SETTINGS SHEET =====
+    window.openSettingsSheet = function() {
+        document.getElementById('settingsSheet').classList.add('open');
+    };
+    window.closeSettingsSheet = function() {
+        document.getElementById('settingsSheet').classList.remove('open');
+    };
+    window.handleSheetBackdropClick = function(e) {
+        if (e.target === document.getElementById('settingsSheet')) closeSettingsSheet();
+    };
+// ========== CLOUDINARY & IMAGE CROPPER SYSTEM ==========
+    let cropperInstance = null;
+    let currentCropMode = 'avatar'; // avatar অথবা cover
+    const CLOUDINARY_CLOUD_NAME = "dvvx2frpu";
+    const CLOUDINARY_UPLOAD_PRESET = "story_upload";
+
+    window.handleFileSelect = function(event, mode) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        currentCropMode = mode;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            openCropper(e.target.result);
+        };
+        reader.readAsDataURL(file);
+        event.target.value = ''; // রি-সিলেকশন সচল রাখতে রিসেট
+    };
+
+    function openCropper(imageSrc) {
+        document.getElementById('cropperModalOverlay').style.display = 'flex';
+        document.getElementById('cropperTitle').textContent = currentCropMode === 'avatar' ? 'প্রোফাইল ছবি ক্রপ করুন' : 'কভার ফটো ক্রপ করুন';
+        
+        const imgEl = document.getElementById('cropperImageSource');
+        imgEl.src = imageSrc;
+
+        if (cropperInstance) { cropperInstance.destroy(); }
+
+        // কভারের চওড়া স্ক্রিন অনুযায়ী ডাইনামিক অ্যাসপেক্ট রেশিও হিসাব করা
+        let aspectRatio = 1; // প্রোফাইল ছবির জন্য ১:১
+        if (currentCropMode === 'cover') {
+            const coverWrap = document.getElementById('coverPhoto');
+            const currentWidth = coverWrap ? coverWrap.offsetWidth : 700;
+            const currentHeight = coverWrap ? coverWrap.offsetHeight : 200;
+            aspectRatio = currentWidth / currentHeight; // মোবাইলে ১.৮ এবং ডেস্কটপে ৩.৫ রেশিও অটো-সেট হবে
+        }
+
+        setTimeout(() => {
+            cropperInstance = new Cropper(imgEl, {
+                aspectRatio: aspectRatio,
+                viewMode: 1,
+                dragMode: 'move',
+                autoCropArea: 1,
+                restore: false,
+                guides: true,
+                highlight: false,
+                cropBoxMovable: true,
+                cropBoxResizable: true,
+                toggleDragModeOnDblclick: false
+            });
+        }, 100);
+    }
+
+    window.confirmCrop = function() {
+        if (!cropperInstance) return;
+
+        // ডাইনামিক রেশিও বজায় রাখতে কভারের জন্য হার্ডকোড সাইজ তুলে দিয়ে maxWidth প্রপোর্শনাল সাইজ সেট করা হলো
+        const canvasOptions = currentCropMode === 'avatar' 
+            ? { width: 400, height: 400 } 
+            : { maxWidth: 1200, imageSmoothingEnabled: true, imageSmoothingQuality: 'high' };
+
+        const canvas = cropperInstance.getCroppedCanvas(canvasOptions);
+        canvas.toBlob(async (blob) => {
+            document.getElementById('cropperModalOverlay').style.display = 'none';
+            cropperInstance.destroy();
+
+            if (blob) {
+                try {
+                    const uploadedUrl = await uploadToCloudinary(blob);
+                    
+                    if (currentCropMode === 'avatar') {
+                        document.getElementById('editPicUrl').value = uploadedUrl;
+                        document.getElementById('editAvatarPreview').src = uploadedUrl;
+                    } else {
+                        document.getElementById('editCoverUrl').value = uploadedUrl;
+                        const coverPreview = document.getElementById('editCoverPreview');
+                        coverPreview.src = uploadedUrl;
+                        coverPreview.style.display = 'block';
+                    }
+                    Swal.fire({ toast: true, position: 'bottom', icon: 'success', title: 'ছবি আপলোড সম্পন্ন হয়েছে!', showConfirmButton: false, timer: 2000 });
+                } catch (error) {
+                    Swal.fire('আপলোড ব্যর্থ', 'ক্লাউডিনারি আপলোড সম্পন্ন করা যায়নি।', 'error');
+                }
+            }
+        }, 'image/jpeg', 0.90);
+    }
+
+    // ক্লাউডিনারি প্রোগ্রেস আপলোডার হ্যান্ডলার
+    async function uploadToCloudinary(blob) {
+        const formData = new FormData();
+        formData.append("file", blob);
+        formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`);
+            
+            // সুইট অ্যালার্ট দিয়ে আপলোড প্রোগ্রেস বার প্রদর্শন
+            Swal.fire({
+                title: 'ছবি আপলোড হচ্ছে...',
+                html: 'অগ্রগতি: <b>0%</b>',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            xhr.upload.onprogress = (e) => {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    Swal.getHtmlContainer().querySelector('b').textContent = percent + '%';
+                }
+            };
+
+            xhr.onload = () => {
+                Swal.close();
+                if (xhr.status === 200) {
+                    const response = JSON.parse(xhr.responseText);
+                    resolve(response.secure_url);
+                } else {
+                    reject(new Error("Upload failed"));
+                }
+            };
+
+            xhr.onerror = () => {
+                Swal.close();
+                reject(new Error("Network error"));
+            };
+
+            xhr.send(formData);
+        });
+    }
+    // ===== EDIT PROFILE =====
+    window.openEditProfile = async function() {
+        closeSettingsSheet();
+        const snap = await get(ref(db, `users/${profileUid}`));
+        if (snap.exists()) {
+            const u = snap.val();
+            document.getElementById('editPicUrl').value = u.photoURL || '';
+            document.getElementById('editCoverUrl').value = u.coverURL || '';
+            document.getElementById('editName').value = u.displayName || '';
+            document.getElementById('editUsername').value = u.username || '';
+            document.getElementById('editBio').value = u.bio || '';
+            document.getElementById('editLocation').value = u.location || '';
+            document.getElementById('editWebsite').value = u.website || '';
+            document.getElementById('editFacebook').value = u.socialLinks?.facebook || '';
+            document.getElementById('editYoutube').value = u.socialLinks?.youtube || '';
+            document.getElementById('editInstagram').value = u.socialLinks?.instagram || '';
+            document.getElementById('editTwitter').value = u.socialLinks?.twitter || '';
+            document.getElementById('editTiktok').value = u.socialLinks?.tiktok || '';
+            document.getElementById('editWhatsapp').value = u.socialLinks?.whatsapp || '';
+            document.getElementById('editAvatarPreview').src = u.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+            updateCharCount(document.getElementById('editBio'), 150, 'bioCharCount');
+            const editCoverPreview = document.getElementById('editCoverPreview');
+            if (u.coverURL) {
+                editCoverPreview.src = u.coverURL;
+                editCoverPreview.style.display = 'block';
+            } else {
+                editCoverPreview.style.display = 'none';
+            }
+        }
+        document.getElementById('editProfileModal').classList.add('open');
+    };
+    window.closeEditProfile = function() {
+        document.getElementById('editProfileModal').classList.remove('open');
+    };
+
+    window.updateAvatarPreview = function(url) {
+        if (url.startsWith('http')) document.getElementById('editAvatarPreview').src = url;
+    };
+
+    window.updateCharCount = function(el, max, counterId) {
+        const len = el.value.length;
+        const counter = document.getElementById(counterId);
+        if (counter) counter.textContent = `${len} / ${max}`;
+    };
+
+    window.saveProfile = async function() {
+        const name = document.getElementById('editName').value.trim();
+        if (!name) { Swal.fire('সতর্কতা', 'নাম খালি রাখা যাবে না।', 'warning'); return; }
+
+        const updates = {
+            displayName: name,
+            username: document.getElementById('editUsername').value.trim(),
+            bio: document.getElementById('editBio').value.trim(),
+            photoURL: document.getElementById('editPicUrl').value.trim(),
+            coverURL: document.getElementById('editCoverUrl').value.trim(),
+            location: document.getElementById('editLocation').value.trim(),
+            website: document.getElementById('editWebsite').value.trim(),
+            'socialLinks/facebook': document.getElementById('editFacebook').value.trim(),
+            'socialLinks/youtube': document.getElementById('editYoutube').value.trim(),
+            'socialLinks/instagram': document.getElementById('editInstagram').value.trim(),
+            'socialLinks/twitter': document.getElementById('editTwitter').value.trim(),
+            'socialLinks/tiktok': document.getElementById('editTiktok').value.trim(),
+            'socialLinks/whatsapp': document.getElementById('editWhatsapp').value.trim(),
+        };
+
+        try {
+            await update(ref(db, `users/${profileUid}`), updates);
+            closeEditProfile();
+            Swal.fire({ toast: true, position: 'bottom', icon: 'success', title: 'প্রোফাইল আপডেট হয়েছে!', showConfirmButton: false, timer: 2500 });
+            await loadProfile();
+        } catch(e) {
+            Swal.fire('ত্রুটি!', 'সংরক্ষণ করা যায়নি।', 'error');
+        }
+    };
+
+    // ===== DARK MODE =====
+    window.toggleDarkMode = function(e) {
+        e.stopPropagation();
+        const toggle = document.getElementById('themeToggle');
+        const icon = document.getElementById('themeIcon');
+        toggle.classList.toggle('on');
+        document.body.classList.toggle('dark-theme');
+        if (document.body.classList.contains('dark-theme')) {
+            localStorage.setItem('userTheme', 'dark');
+            icon.classList.replace('fa-moon', 'fa-sun');
+        } else {
+            localStorage.setItem('userTheme', 'light');
+            icon.classList.replace('fa-sun', 'fa-moon');
+        }
+    };
+
+    // ===== FOLLOW LIST =====
+    window.showFollowList = async function(type) {
+        const snap = await get(ref(db, `${type}/${profileUid}`));
+        const uids = snap.exists() ? Object.keys(snap.val()) : [];
+        const title = type === 'followers' ? 'ফলোয়ার' : 'ফলোয়িং';
+
+        if (!uids.length) {
+            Swal.fire({ title, text: 'তালিকাটি খালি।', icon: 'info', confirmButtonText: 'ঠিক আছে' });
+            return;
+        }
+
+        let html = '<div style="max-height:320px; overflow-y:auto; padding:8px 0;">';
+        for (const uid of uids) {
+            const us = await get(ref(db, `users/${uid}`));
+            if (us.exists()) {
+                const u = us.val();
+                html += `
+                    <div class="follow-list-item" onclick="window.location.href='profile.html?uid=${uid}'">
+                        <img class="follow-list-avatar" src="${u.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+                        <div>
+                            <div class="follow-list-name">${u.displayName || 'ব্যবহারকারী'}</div>
+                            <div class="follow-list-bio">${(u.bio || '').slice(0, 50)}</div>
+                        </div>
+                    </div>`;
+            }
+        }
+        html += '</div>';
+
+        Swal.fire({ title, html, showConfirmButton: false, showCloseButton: true, width: 380 });
+    };
+
+    // ===== SHARE =====
+    window.shareProfile = async function() {
+        closeSettingsSheet();
+        const url = `${location.origin}/profile.html?uid=${profileUid}`;
+        try {
+            if (navigator.share) {
+                await navigator.share({ title: profileData?.displayName || 'প্রোফাইল', url });
+            } else {
+                await navigator.clipboard.writeText(url);
+                Swal.fire({ toast: true, position: 'bottom', icon: 'success', title: 'প্রোফাইল লিংক কপি হয়েছে!', showConfirmButton: false, timer: 2000 });
+            }
+        } catch(e) {}
+    };
+
+    // ===== LOGOUT =====
+    window.handleLogout = async function() {
+        closeSettingsSheet();
+        const res = await Swal.fire({
+            title: 'লগ আউট করবেন?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'হ্যাঁ, বের হই',
+            cancelButtonText: 'না',
+            confirmButtonColor: '#ef4444'
+        });
+        if (res.isConfirmed) {
+            await signOut(auth);
+            window.location.href = 'auth.html';
+        }
+    };
+
+    // ===== HELPERS =====
+    function getTimeAgo(ts) {
+        const diff = Date.now() - ts;
+        const mins = Math.floor(diff / 60000);
+        if (mins < 1) return 'এইমাত্র';
+        if (mins < 60) return `${mins} মিনিট আগে`;
+        const hrs = Math.floor(mins / 60);
+        if (hrs < 24) return `${hrs} ঘন্টা আগে`;
+        const days = Math.floor(hrs / 24);
+        if (days < 30) return `${days} দিন আগে`;
+        const months = Math.floor(days / 30);
+        return `${months} মাস আগে`;
+    }
+</script>
+
+<script src="navbar.js"></script>
+<!-- Full-Screen Image Cropper Modal -->
+    <div id="cropperModalOverlay" style="position: fixed; inset: 0; background: #000; z-index: 99999; display: none; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: rgba(0,0,0,0.7); z-index: 10; width: 100%; box-sizing: border-box;">
+            <button onclick="cancelCrop()" style="background: none; border: none; color: white; font-size: 15px; font-weight: 700; cursor: pointer;">বাতিল</button>
+            <span id="cropperTitle" style="color: white; font-weight: 700; font-size: 15px;">ক্রপ করুন</span>
+            <button onclick="confirmCrop()" style="background: none; border: none; color: #3b82f6; font-size: 15px; font-weight: 700; cursor: pointer;">সম্পন্ন</button>
+        </div>
+        <div style="flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 10px;">
+            <img id="cropperImageSource" src="" style="max-width: 100%; max-height: 100%;">
+        </div>
+        <div style="padding: 20px 0 calc(env(safe-area-inset-bottom, 0px) + 20px) 0; display: flex; justify-content: center; gap: 30px; background: rgba(0,0,0,0.85); z-index: 10;">
+            <button onclick="rotateCropperImage(-90)" style="background: rgba(255,255,255,0.2); color: white; border: none; width: 44px; height: 44px; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;"><i class="fas fa-undo"></i></button>
+            <button onclick="rotateCropperImage(90)" style="background: rgba(255,255,255,0.2); color: white; border: none; width: 44px; height: 44px; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;"><i class="fas fa-redo"></i></button>
+        </div>
+    </div>
+</body>
+</html>

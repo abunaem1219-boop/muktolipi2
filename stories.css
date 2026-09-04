@@ -1,0 +1,1601 @@
+/* ============================================================
+   stories.css — Facebook-Style Stories System
+   Premium UI | Mobile-First | Production-Ready
+   ============================================================ */
+
+/* ======================================================
+   CSS VARIABLES (Theme-compatible)
+   ====================================================== */
+:root {
+    --story-blue: #1877f2;
+    --story-ring-unseen: #1877f2; /* ফেসবুকের সলিড ব্লু রিং */
+    --story-ring-seen: rgba(0, 0, 0, 0.15);
+    --story-shadow: 0 1.5px 4px rgba(0, 0, 0, 0.12); /* ফেসবুকের মতো সাবলীল সফট শ্যাডো */
+    --story-radius: 10px; /* ফেসবুক স্টাইল কিছুটা শার্প বর্ডার রেডিয়াস */
+    --viewer-bg: #000000;
+    --sheet-radius: 20px 20px 0 0;
+    --transition-smooth: cubic-bezier(0.25, 0.8, 0.25, 1);
+    --transition-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.4);
+}
+
+/* ডার্ক মোডের জন্য ভেরিয়েবল ওভাররাইড */
+body.dark-theme {
+    --story-ring-seen: rgba(255, 255, 255, 0.2);
+    --story-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+}
+
+/* ======================================================
+   🔧 BUG FIX: Text Story Editor — Hidden by Default
+   (Prevents leaking into home feed layout)
+   ====================================================== */
+#textStoryEditor {
+    display: none !important;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 99999998 !important;
+    background: #000 !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100vw !important;
+    height: 100vh !important;
+}
+#textStoryEditor.active {
+    display: flex !important;
+}
+
+/* ======================================================
+   📖 STORIES BAR — HOME FEED STRIP
+   ====================================================== */
+.fb-stories-wrapper {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 10px 12px 16px 12px;
+    margin-bottom: 8px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+}
+.fb-stories-wrapper::-webkit-scrollbar {
+    display: none;
+}
+
+/* ======================================================
+   🃏 BASE STORY CARD
+   ====================================================== */
+.story-card {
+    position: relative;
+    width: 108px;
+    height: 186px;
+    border-radius: var(--story-radius);
+    overflow: hidden;
+    cursor: pointer;
+    flex-shrink: 0;
+    box-shadow: var(--story-shadow);
+    background-color: var(--glass-bg, #f0f2f5);
+    transition: transform 0.18s var(--transition-smooth);
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+.story-card:active {
+    transform: scale(0.94);
+}
+
+/* ======================================================
+   ➕ CREATE STORY CARD — Facebook exact layout
+   Top 65%: Profile Picture background
+   Middle: Blue circular + button overlapping divider
+   Bottom 35%: Solid bg with "Create story" label
+   ====================================================== */
+.story-card.create-story-card {
+    background: var(--sheet-bg, #fff);
+    overflow: visible; /* allow + button to overflow boundary */
+}
+
+/* Top 65% — Profile photo */
+.create-story-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 65%;
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+    border-radius: var(--story-radius) var(--story-radius) 0 0;
+    overflow: hidden;
+}
+/* Subtle top gradient overlay on photo */
+.create-story-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.04) 0%, transparent 60%);
+}
+
+/* Bottom 35% — Label area */
+.create-story-bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 38%;
+    background: var(--sheet-bg, #ffffff);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 14px;
+    box-sizing: border-box;
+    border-radius: 0 0 var(--story-radius) var(--story-radius);
+}
+.create-story-bottom .story-label-text {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--text-color, #050505);
+    text-align: center;
+    line-height: 1.3;
+    letter-spacing: 0.01em;
+}
+
+/* Circular Blue + Button — overlapping the 65/35 boundary */
+.create-story-plus-btn {
+    position: absolute;
+    bottom: calc(38% - 17px); /* sits on the boundary */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 36px;
+    background: var(--story-blue);
+    border: 3.5px solid var(--sheet-bg, #ffffff);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 700;
+    z-index: 10;
+    box-shadow: 0 3px 12px rgba(24, 119, 242, 0.45);
+    line-height: 1;
+}
+/* ফেসবুক স্টাইল সর্বজনীন বটম ডার্ক ওভারলে (Create card বাদে সবার জন্য) */
+.story-card:not(.create-story-card)::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.15) 35%, transparent 100%);
+    z-index: 1;
+    border-radius: var(--story-radius);
+    pointer-events: none;
+}
+
+.story-author-img-wrap {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    z-index: 3;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    border: 2.5px solid var(--story-ring-unseen); /* না দেখা স্টোরির জন্য সলিড ফেসবুক ব্লু রিং */
+    transition: border-color 0.2s ease;
+}
+/* স্টোরিটি দেখা হয়ে গেলে রিং এর কালার ফেসবুক স্টাইল অনুযায়ী হালকা হয়ে যাবে */
+.story-card[data-seen="true"] .story-author-img-wrap {
+    border-color: var(--story-ring-seen) !important;
+}
+
+.story-author-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ffffff; /* লাইট মোডে সাদা ক্রিস্প বর্ডার */
+    display: block;
+    background: #3a3b3c;
+}
+body.dark-theme .story-author-img {
+    border-color: #242526; /* ডার্ক মোডে ডার্ক চারকোল বর্ডার */
+}
+
+.story-username {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    color: #ffffff !important;
+    font-size: 11px;
+    font-weight: 600;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+    z-index: 3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+}
+/* Online indicator dot */
+.story-online-dot {
+    position: absolute;
+    bottom: 1px;
+    right: 1px;
+    width: 11px;
+    height: 11px;
+    background: #31a24c;
+    border: 2.5px solid var(--sheet-bg, #fff);
+    border-radius: 50%;
+    z-index: 4;
+}
+.story-username {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    text-shadow: 0 1px 5px rgba(0,0,0,0.9);
+    z-index: 3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ======================================================
+   📋 STORY CREATOR SELECTOR MODAL
+   Full-screen slide-up panel for picking story type
+   ====================================================== */
+.story-modal {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-color, #f0f2f5);
+    z-index: 50000;
+    display: none;
+    flex-direction: column;
+}
+.story-modal.active {
+    display: flex;
+    animation: storyModalSlideUp 0.32s var(--transition-smooth) both;
+}
+@keyframes storyModalSlideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to   { transform: translateY(0);   opacity: 1; }
+}
+
+.story-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 16px 14px 16px;
+    border-bottom: 1px solid var(--border-color, #e4e6eb);
+}
+.story-modal-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-color, #050505);
+}
+.story-modal-close-btn {
+    width: 36px;
+    height: 36px;
+    background: var(--surface2, #e4e6eb);
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: var(--text-color, #050505);
+    cursor: pointer;
+}
+
+.story-options-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 24px 16px;
+}
+.story-option-card {
+    background: var(--surface2, #e4e6eb);
+    border-radius: 14px;
+    padding: 22px 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease;
+    border: 1px solid var(--border-color, #ccd0d5);
+    -webkit-tap-highlight-color: transparent;
+}
+.story-option-card:active { transform: scale(0.94); }
+.story-option-icon {
+    font-size: 28px;
+    margin-bottom: 10px;
+    display: block;
+}
+.story-option-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-color, #050505);
+}
+.text-icon  { color: #9333ea; }
+.media-icon { color: #16a34a; }
+.link-icon  { color: #0ea5e9; }
+
+/* ======================================================
+   🎬 PREMIUM STORY VIEWER — Full-Screen
+   Z-Index: 99999999 (absolute top tier)
+   ====================================================== */
+.story-viewer {
+    position: fixed !important;
+    inset: 0 !important;
+    background: #000000 !important;
+    z-index: 99999999 !important;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+.story-viewer.active {
+    display: flex;
+}
+
+/* ── Progress Bars ── */
+.viewer-progress-container {
+    display: flex;
+    gap: 5px;
+    padding: 14px 12px 4px 12px;
+    position: relative;
+    z-index: 20;
+    flex-shrink: 0;
+}
+.progress-bar-bg {
+    flex: 1;
+    height: 2.5px;
+    background: rgba(255,255,255,0.30);
+    border-radius: 2px;
+    overflow: hidden;
+}
+.progress-bar-fill {
+    height: 100%;
+    background: #ffffff;
+    width: 0%;
+    transition: width 0.1s linear;
+    border-radius: 2px;
+}
+.progress-bar-fill.done {
+    width: 100% !important;
+    transition: none;
+}
+
+/* ── Viewer Header (Avatar, Name, Time, Actions) ── */
+.viewer-header {
+    display: flex;
+    align-items: center;
+    padding: 8px 14px 10px 14px;
+    color: #ffffff;
+    position: relative;
+    z-index: 20;
+    flex-shrink: 0;
+}
+.viewer-author-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    border: 2px solid rgba(255,255,255,0.8);
+    cursor: pointer;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: #3a3b3c;
+}
+.viewer-author-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    cursor: pointer;
+}
+.viewer-author-name {
+    font-weight: 700;
+    font-size: 13.5px;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.viewer-time {
+    font-size: 11px;
+    color: rgba(255,255,255,0.70);
+    margin-top: 1px;
+}
+.viewer-actions-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+.viewer-top-btn {
+    background: rgba(255,255,255,0.12);
+    border: none;
+    color: #ffffff;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s ease;
+}
+.viewer-top-btn:active { background: rgba(255,255,255,0.25); }
+.viewer-close-btn {
+    background: rgba(255,255,255,0.12);
+    border: none;
+    color: #ffffff;
+    font-size: 20px;
+    cursor: pointer;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s ease;
+}
+.viewer-close-btn:active { background: rgba(255,255,255,0.25); }
+
+/* ── Media Content Area ── */
+.viewer-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    /* Touch tap areas handled in JS */
+}
+.viewer-media {
+    max-width: 100%;
+    max-height: 100%;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    position: relative;
+    z-index: 3;
+    display: block;
+}
+.viewer-text-content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 3;
+    font-size: clamp(18px, 5vw, 28px);
+    font-weight: 700;
+    color: #ffffff;
+    text-align: center;
+    line-height: 1.5;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.6);
+    word-break: break-word;
+}
+/* Blurred background behind media */
+.viewer-media-blur-bg {
+    position: absolute;
+    inset: -30px;
+    background-size: cover;
+    background-position: center;
+    filter: blur(24px) brightness(0.35) saturate(1.2);
+    z-index: 1;
+    transform: scale(1.1);
+}
+
+/* ── Touch Navigation Zones (invisible) ── */
+.viewer-tap-left,
+.viewer-tap-right {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 15;
+    cursor: pointer;
+}
+.viewer-tap-left  { left: 0;   width: 30%; }
+.viewer-tap-right { right: 0;  width: 70%; }
+
+/* ── Quick Reactions Row ── */
+.viewer-quick-reactions {
+    position: relative;
+    z-index: 20;
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 12px 6px 12px;
+    flex-shrink: 0;
+}
+.quick-reaction-pill {
+    background: rgba(255,255,255,0.14);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 22px;
+    padding: 8px 14px;
+    font-size: 22px;
+    cursor: pointer;
+    transition: transform 0.15s var(--transition-bounce), background 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    line-height: 1;
+}
+.quick-reaction-pill:active {
+    transform: scale(1.3) translateY(-6px);
+    background: rgba(255,255,255,0.25);
+}
+.reaction-count {
+    font-size: 12px;
+    color: rgba(255,255,255,0.85);
+    font-weight: 600;
+    min-width: 14px;
+    display: none;
+}
+.reaction-count.visible { display: inline; }
+
+/* ── Flying Reaction Emoji Animation ── */
+.flying-emoji {
+    position: fixed;
+    font-size: 30px;
+    pointer-events: none;
+    z-index: 999999990;
+    animation: flyUpFade 1.1s var(--transition-smooth) forwards;
+}
+@keyframes flyUpFade {
+    0%   { transform: translateY(0) scale(1);    opacity: 1; }
+    60%  { transform: translateY(-80px) scale(1.35); opacity: 1; }
+    100% { transform: translateY(-160px) scale(0.7); opacity: 0; }
+}
+
+/* ── Viewer Footer ── */
+.viewer-footer {
+    padding: 6px 16px 28px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 20;
+    flex-shrink: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, transparent 100%);
+}
+
+/* Reply Input Row */
+.story-reply-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.story-reply-input {
+    flex: 1;
+    background: rgba(255,255,255,0.14);
+    border: 1.5px solid rgba(255,255,255,0.22);
+    border-radius: 25px;
+    padding: 11px 18px;
+    color: #ffffff;
+    font-size: 14px;
+    outline: none;
+    font-family: inherit;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: border-color 0.2s ease, background 0.2s ease;
+    -webkit-appearance: none;
+}
+.story-reply-input::placeholder { color: rgba(255,255,255,0.60); }
+.story-reply-input:focus {
+    border-color: rgba(255,255,255,0.55);
+    background: rgba(255,255,255,0.20);
+}
+.story-reply-send-btn {
+    background: var(--story-blue);
+    border: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    color: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(24,119,242,0.45);
+    transition: transform 0.15s ease;
+}
+.story-reply-send-btn:active { transform: scale(0.9); }
+
+/* Like/Reaction row next to input */
+.viewer-footer-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: flex-end;
+    padding-right: 2px;
+}
+.viewer-footer-icon-btn {
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 22px;
+    cursor: pointer;
+    padding: 4px;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s var(--transition-bounce);
+}
+.viewer-footer-icon-btn:active { transform: scale(1.3); }
+
+/* ── Views Count Pill (own story only) ── */
+.viewer-views-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: rgba(255,255,255,0.90);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 7px 16px;
+    background: rgba(255,255,255,0.16);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.14);
+    align-self: center;
+    transition: background 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+.viewer-views-bar:active { background: rgba(255,255,255,0.28); }
+.viewer-views-bar i { font-size: 14px; }
+
+/* ======================================================
+   📄 BOTTOM SHEETS — Universal Base Style
+   Shared by: Action Menu, Analytics Panel
+   ====================================================== */
+.story-bottom-sheet {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 999999999; /* above EVERYTHING */
+    background: var(--sheet-bg, #242526);
+    border-radius: var(--sheet-radius);
+    padding: 0 0 env(safe-area-inset-bottom, 16px) 0;
+    transform: translateY(110%);
+    transition: transform 0.35s var(--transition-smooth);
+    max-height: 80vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    box-shadow: 0 -8px 40px rgba(0,0,0,0.55);
+}
+.story-bottom-sheet.open {
+    transform: translateY(0);
+}
+/* Backdrop overlay for bottom sheets */
+.story-sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.60);
+    z-index: 999999998;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+.story-sheet-backdrop.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* Drag handle on top of every sheet */
+.sheet-handle {
+    width: 40px;
+    height: 4px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 2px;
+    margin: 12px auto 4px auto;
+    flex-shrink: 0;
+}
+.sheet-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-color, #e4e6eb);
+    text-align: center;
+    padding: 10px 20px 14px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    flex-shrink: 0;
+}
+
+/* ======================================================
+   ⋯ ACTION BOTTOM SHEET (#storyActionBottomSheet)
+   Three-dot menu — own story vs friend's story
+   ====================================================== */
+#storyActionBottomSheet {
+    /* inherits .story-bottom-sheet */
+}
+.sheet-action-list {
+    list-style: none;
+    margin: 0;
+    padding: 8px 0;
+}
+.sheet-action-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 22px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+}
+.sheet-action-item:active { background: rgba(255,255,255,0.07); }
+.sheet-action-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.10);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    color: var(--text-color, #e4e6eb);
+    flex-shrink: 0;
+}
+.sheet-action-text {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+.sheet-action-label {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-color, #e4e6eb);
+}
+.sheet-action-desc {
+    font-size: 12px;
+    color: rgba(255,255,255,0.50);
+    margin-top: 2px;
+}
+/* Destructive (Delete) — red tint */
+.sheet-action-item.destructive .sheet-action-icon {
+    background: rgba(255, 60, 60, 0.15);
+    color: #ff4444;
+}
+.sheet-action-item.destructive .sheet-action-label { color: #ff4d4d; }
+/* Cancel divider row */
+.sheet-action-cancel {
+    margin: 6px 16px 6px 16px;
+    padding: 15px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--story-blue);
+    cursor: pointer;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    transition: background 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+.sheet-action-cancel:active { background: rgba(255,255,255,0.07); }
+
+/* ======================================================
+   👁️ ANALYTICS / VIEWS BOTTOM SHEET (#storyViewsSheet)
+   Real-time list of viewers + their reactions
+   ====================================================== */
+#storyViewsSheet {
+    /* inherits .story-bottom-sheet */
+}
+.views-sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 20px 14px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    flex-shrink: 0;
+}
+.views-sheet-count {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text-color, #e4e6eb);
+}
+.views-sheet-label {
+    font-size: 12px;
+    color: rgba(255,255,255,0.50);
+    font-weight: 500;
+    margin-top: 1px;
+}
+.views-sheet-close {
+    width: 30px;
+    height: 30px;
+    background: rgba(255,255,255,0.10);
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-color, #e4e6eb);
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.viewer-list {
+    padding: 8px 0 16px 0;
+}
+.viewer-list-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+.viewer-list-item:active { background: rgba(255,255,255,0.06); }
+.viewer-list-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: #3a3b3c;
+    border: 2px solid rgba(255,255,255,0.10);
+}
+.viewer-list-info {
+    flex: 1;
+    min-width: 0;
+}
+.viewer-list-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-color, #e4e6eb);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.viewer-list-time {
+    font-size: 11.5px;
+    color: rgba(255,255,255,0.45);
+    margin-top: 2px;
+}
+.viewer-list-reaction {
+    font-size: 22px;
+    flex-shrink: 0;
+    line-height: 1;
+}
+/* Skeleton loader for viewer list */
+.viewer-list-skeleton {
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.skeleton-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.10);
+    animation: skeletonPulse 1.4s ease infinite;
+    flex-shrink: 0;
+}
+.skeleton-line {
+    height: 12px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.10);
+    animation: skeletonPulse 1.4s ease infinite;
+    margin-bottom: 6px;
+}
+.skeleton-line.w-60 { width: 60%; }
+.skeleton-line.w-40 { width: 40%; }
+@keyframes skeletonPulse {
+    0%, 100% { opacity: 0.5; }
+    50%       { opacity: 1;   }
+}
+
+/* ======================================================
+   🖼️ STORY MEDIA EDITOR (Facebook Full Screen Real representation)
+   ====================================================== */
+.story-editor-container {
+    position: fixed !important;
+    inset: 0 !important;
+    background: #111214 !important; /* প্রফেশনাল ব্ল্যাক */
+    z-index: 99999990 !important;
+    display: none;
+    flex-direction: column;
+    color: #ffffff;
+    overflow: hidden;
+}
+.story-editor-container.active {
+    display: flex;
+    animation: editorFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes editorFadeIn {
+    from { opacity: 0; transform: scale(1.04); }
+    to   { opacity: 1; transform: scale(1);    }
+}
+
+/* সরাসরি স্ক্রিনে সুন্দরভাবে টাইপ করে লেখার স্টাইল */
+.editor-text-overlay {
+    position: absolute;
+    z-index: 5;
+    color: #ffffff;
+    font-size: clamp(20px, 6vw, 32px); /* রেসপনসিভ টাইপোগ্রাফি */
+    font-weight: 800;
+    text-align: center;
+    outline: none;
+    border: none;
+    max-width: 85%;
+    word-wrap: break-word;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+    font-family: var(--current-font);
+    padding: 10px;
+    caret-color: #1877f2;
+}
+.editor-text-overlay[contenteditable]:empty:before {
+    content: attr(placeholder);
+    color: rgba(255, 255, 255, 0.65);
+    pointer-events: none;
+}
+
+/* ক্যানভাস গ্রেডিয়েন্ট মোড ক্লাস */
+.editor-preview-area.canvas-mode {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important; /* স্ক্রিনশটের মতো পিঙ্ক ও অরেঞ্জ ক্যানভাস */
+    transition: background 0.3s ease;
+    width: 100%;
+    height: 100%;
+}
+.story-editor-container.active {
+    display: flex;
+    animation: editorFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes editorFadeIn {
+    from { opacity: 0; transform: scale(1.04); }
+    to   { opacity: 1; transform: scale(1);    }
+}
+
+.editor-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 16px;
+    position: relative;
+    z-index: 10;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+}
+.editor-close-btn, .editor-menu-btn {
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+
+/* ইন্টারেক্টিভ মিউজিক ইনফো পিল স্টাইল */
+.editor-music-info-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.55);
+    border-radius: 24px;
+    padding: 6px 14px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    max-width: 60%;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    animation: musicPillSlideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+@keyframes musicPillSlideIn {
+    from { transform: translateY(-15px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+.music-pill-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    object-fit: cover;
+    animation: recordSpin 4s linear infinite;
+}
+@keyframes recordSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.music-pill-text-wrap {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+.music-pill-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+}
+.music-pill-subtitle {
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.7);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
+}
+.music-pill-close-btn {
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 14px;
+    cursor: pointer;
+    padding-left: 2px;
+    display: flex;
+    align-items: center;
+}
+
+/* প্রিভিউ ইমেজ উইন্ডো */
+.editor-preview-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    margin-top: -60px; /* যাতে ইমেজ পুরো স্ক্রিন কাভার করে */
+}
+.editor-preview-img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 4px;
+    z-index: 2;
+    position: relative;
+}
+
+/* বটম প্যানেল লেআউট */
+.editor-bottom-controls-wrap {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.4) 75%, transparent 100%);
+    padding: 20px 16px calc(env(safe-area-inset-bottom, 16px) + 12px) 16px;
+    box-sizing: border-box;
+    z-index: 10;
+}
+
+.editor-horizontal-tools {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding-bottom: 20px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+.editor-horizontal-tools::-webkit-scrollbar {
+    display: none;
+}
+
+.editor-tool-item-circle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+.tool-circle-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.16);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    transition: background-color 0.15s ease, transform 0.1s ease;
+}
+.editor-tool-item-circle:active .tool-circle-icon {
+    background-color: rgba(255, 255, 255, 0.3);
+    transform: scale(0.92);
+}
+.tool-circle-label {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: 600;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+/* বটম বাটন পিল রো */
+.editor-action-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 4px;
+}
+.footer-pills-left {
+    display: flex;
+    gap: 8px;
+}
+.editor-footer-pill {
+    background: rgba(255, 255, 255, 0.16);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1.5px solid rgba(255, 255, 255, 0.12);
+    border-radius: 24px;
+    padding: 8px 14px;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s ease;
+}
+.editor-footer-pill:active {
+    background: rgba(255, 255, 255, 0.28);
+}
+.editor-share-btn-fb {
+    background: #1877f2;
+    border: none;
+    border-radius: 20px;
+    padding: 11px 34px;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(24, 119, 242, 0.4);
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s ease, background 0.15s ease;
+}
+.editor-share-btn-fb:active {
+    transform: scale(0.95);
+    background: #1565c0;
+}
+
+/* Preview image */
+.editor-preview-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+.editor-preview-img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+    z-index: 2;
+    position: relative;
+}
+
+/* Bottom — For You audience selector + Share button */
+.editor-bottom-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px calc(env(safe-area-inset-bottom, 0px) + 16px) 16px;
+    background: linear-gradient(to top, rgba(0,0,0,0.80), transparent);
+    position: relative;
+    z-index: 10;
+}
+.editor-audience-btn {
+    background: rgba(255,255,255,0.15);
+    border: 1.5px solid rgba(255,255,255,0.25);
+    border-radius: 22px;
+    padding: 9px 16px;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    -webkit-tap-highlight-color: transparent;
+}
+.editor-share-btn {
+    background: var(--story-blue);
+    border: none;
+    border-radius: 22px;
+    padding: 11px 28px;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(24,119,242,0.50);
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s ease;
+}
+.editor-share-btn:active { transform: scale(0.95); }
+
+/* Music Strip at bottom of editor */
+.editor-music-strip {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 0 16px 10px 16px;
+    scrollbar-width: none;
+}
+.editor-music-strip::-webkit-scrollbar { display: none; }
+.music-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    padding: 8px 12px;
+    cursor: pointer;
+    flex-shrink: 0;
+    min-width: 140px;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s ease;
+}
+.music-chip:active { background: rgba(255,255,255,0.22); }
+.music-chip-thumb {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    object-fit: cover;
+    background: #3a3b3c;
+    flex-shrink: 0;
+}
+.music-chip-info {
+    flex: 1;
+    min-width: 0;
+}
+.music-chip-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.music-chip-artist {
+    font-size: 10px;
+    color: rgba(255,255,255,0.55);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.music-chip-note {
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+}
+
+/* ======================================================
+   ✏️ TEXT STORY EDITOR PANEL
+   (fixed overlay, hidden by default — BUG FIX)
+   ====================================================== */
+#textStoryEditor {
+    /* Override at top of file ensures display:none!important default */
+    background: #000000;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+}
+.text-editor-canvas {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    box-sizing: border-box;
+}
+.text-editor-input {
+    background: none;
+    border: none;
+    outline: none;
+    color: #ffffff;
+    font-size: 28px;
+    font-weight: 700;
+    text-align: center;
+    width: 100%;
+    resize: none;
+    font-family: inherit;
+    caret-color: var(--story-blue);
+    line-height: 1.4;
+}
+.text-editor-input::placeholder { color: rgba(255,255,255,0.40); }
+.text-editor-bottom {
+    width: 100%;
+    padding: 16px 20px calc(env(safe-area-inset-bottom, 0px) + 16px) 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-sizing: border-box;
+}
+
+/* ======================================================
+   🔔 UPLOAD PROGRESS / TOAST NOTIFICATIONS
+   ====================================================== */
+.story-toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(24,25,26,0.92);
+    color: #ffffff;
+    padding: 10px 20px;
+    border-radius: 22px;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 999999995;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+    white-space: nowrap;
+    border: 1px solid rgba(255,255,255,0.12);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+.story-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+.story-upload-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: transparent;
+    z-index: 999999996;
+}
+.story-upload-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--story-blue), #a855f7);
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 0 2px 2px 0;
+}
+
+/* ======================================================
+   📱 MOBILE SAFE AREA & RESPONSIVE TWEAKS
+   ====================================================== */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .viewer-footer {
+        padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
+    }
+    .story-bottom-sheet {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    .editor-bottom-bar {
+        padding-bottom: calc(env(safe-area-inset-bottom) + 14px);
+    }
+}
+
+/* Prevent iOS rubber-band scroll on viewer */
+.story-viewer,
+.story-bottom-sheet,
+.story-editor-container {
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ======================================================
+   🌗 LIGHT THEME OVERRIDES
+   ====================================================== */
+@media (prefers-color-scheme: light) {
+    .story-bottom-sheet {
+        background: #ffffff;
+    }
+    .sheet-handle { background: rgba(0,0,0,0.18); }
+    .sheet-title  { color: #050505; border-bottom-color: rgba(0,0,0,0.08); }
+    .sheet-action-item:active { background: rgba(0,0,0,0.05); }
+    .sheet-action-icon { background: rgba(0,0,0,0.08); color: #050505; }
+    .sheet-action-label { color: #050505; }
+    .sheet-action-desc  { color: rgba(0,0,0,0.45); }
+    .sheet-action-cancel { border-top-color: rgba(0,0,0,0.08); }
+    .views-sheet-count  { color: #050505; }
+    .viewer-list-name   { color: #050505; }
+    .viewer-list-time   { color: rgba(0,0,0,0.45); }
+    .viewer-list-item:active { background: rgba(0,0,0,0.04); }
+    .skeleton-avatar,
+    .skeleton-line { background: rgba(0,0,0,0.08); }
+    .views-sheet-close { background: rgba(0,0,0,0.08); color: #050505; }
+    .sheet-action-item.destructive .sheet-action-icon { background: rgba(255,60,60,0.10); }
+}
+
+/* ======================================================
+   ♿ ACCESSIBILITY — Reduced Motion
+   ====================================================== */
+@media (prefers-reduced-motion: reduce) {
+    .story-card,
+    .story-bottom-sheet,
+    .quick-reaction-pill,
+    .flying-emoji,
+    .progress-bar-fill,
+    .story-modal.active,
+    .story-editor-container.active {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+/* প্রফেশনাল ফেসবুক শিমার স্কেলিটন ইফেক্ট */
+.story-skeleton-card {
+    position: relative;
+    width: 108px;
+    height: 186px;
+    border-radius: var(--story-radius, 10px);
+    background: #e4e6eb;
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: var(--story-shadow);
+}
+body.dark-theme .story-skeleton-card {
+    background: #242526;
+}
+.story-skeleton-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.25) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: storyShimmer 1.5s infinite linear;
+    z-index: 2;
+}
+body.dark-theme .story-skeleton-card::before {
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.05) 50%, transparent 100%);
+}
+@keyframes storyShimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.story-skeleton-avatar {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.08);
+    z-index: 1;
+}
+body.dark-theme .story-skeleton-avatar {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.story-skeleton-name {
+    position: absolute;
+    bottom: 12px;
+    left: 8px;
+    width: 65%;
+    height: 10px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.08);
+    z-index: 1;
+}
+body.dark-theme .story-skeleton-name {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* ======================================================
+   iOS Style SweetAlert2 Overrides & Z-Index fix
+   ====================================================== */
+/* সুইটঅ্যালার্ট২-এর কন্টেইনারকে স্টোরি ভিউয়ার (৯৯৯৯৯৯৯৯) এর উপরে রাখার ফিক্স */
+.swal2-container {
+    z-index: 1000000000 !important;
+}
+
+/* iOS Alert Box Layout */
+.ios-alert-popup {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", sans-serif !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-radius: 14px !important;
+    width: 270px !important;
+    padding: 18px 0 0 0 !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+    box-sizing: border-box !important;
+}
+body.dark-theme .ios-alert-popup {
+    background: rgba(30, 30, 30, 0.9) !important;
+}
+
+/* iOS Alert Title */
+.ios-alert-title {
+    font-size: 17px !important;
+    font-weight: 600 !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 16px 4px 16px !important;
+    text-align: center !important;
+}
+body.dark-theme .ios-alert-title {
+    color: #ffffff !important;
+}
+
+/* iOS Alert Body Text */
+.ios-alert-text {
+    font-size: 13px !important;
+    color: #555555 !important;
+    margin: 0 !important;
+    padding: 0 16px 16px 16px !important;
+    text-align: center !important;
+    border-bottom: 0.5px solid rgba(0, 0, 0, 0.15) !important;
+}
+body.dark-theme .ios-alert-text {
+    color: #aaaaaa !important;
+    border-bottom-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Actions Row Layout */
+.swal2-actions {
+    display: flex !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    border-top: none !important;
+}
+
+/* iOS Alert Buttons */
+.ios-alert-btn-confirm, 
+.ios-alert-btn-cancel {
+    flex: 1 !important;
+    border: none !important;
+    background: transparent !important;
+    padding: 12px !important;
+    font-size: 17px !important;
+    font-weight: 500 !important;
+    text-align: center !important;
+    cursor: pointer !important;
+    outline: none !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+/* Cancel Button Style (Left side) */
+.ios-alert-btn-cancel {
+    color: #007aff !important; /* iOS Standard System Blue */
+    border-right: 0.5px solid rgba(0, 0, 0, 0.15) !important;
+}
+body.dark-theme .ios-alert-btn-cancel {
+    color: #0a84ff !important;
+    border-right-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Confirm Delete Button Style (Right side) */
+.ios-alert-btn-confirm {
+    color: #ff3b30 !important; /* iOS Destructive Standard Red */
+    font-weight: 600 !important;
+}

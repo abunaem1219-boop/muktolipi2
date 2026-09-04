@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>মেসেঞ্জার - মুক্তলিপি</title>
+
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+/* মেসেঞ্জারের মতো চ্যাটের মাঝখানের সময় বিভাজক */
+.chat-time-separator {
+    align-self: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--secondary-text);
+    margin: 18px 0 8px 0;
+    text-align: center;
+    user-select: none;
+    width: 100%;
+    font-family: var(--current-font);
+}
+
+/* মেসেজে ক্লিক করলে নিচে স্লাইড হয়ে আসা সময় */
+.bubble-time-label {
+    font-size: 10px;
+    color: var(--secondary-text);
+    margin-top: 3px;
+    display: none;
+    user-select: none;
+    animation: timeSlide 0.18s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+.sent .bubble-time-label {
+    align-self: flex-end;
+    padding-right: 8px;
+}
+.received .bubble-time-label {
+    align-self: flex-start;
+    padding-left: 8px;
+}
+@keyframes timeSlide {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+/* টোস্ট মেসেজ স্ক্রিনের ওপরের অংশে সেট করা হলো */
+.toast-box {
+    position: fixed;
+    top: 20px; /* কিবোর্ড এবং ইনপুটের ঝামেলা এড়াতে উপরে সেট করা হলো */
+    bottom: auto !important; 
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-size: 13.5px;
+    font-weight: 600;
+    z-index: 9999999 !important; /* যেকোনো মডাল বা লেয়ারের ওপর ভেসে থাকার জন্য */
+    opacity: 0;
+    transition: opacity 0.3s, top 0.3s;
+    pointer-events: none;
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+.toast-box.show {
+    opacity: 1;
+    top: 30px; /* এনিমেশন ডাউন ইফেক্ট */
+}
+/* SweetAlert পপআপ চ্যাট রুম স্ক্রিনের ওপরে ভেসে ওঠার জন্য */
+div.swal2-container {
+    z-index: 99999999 !important;
+}
+/* Skeleton Loader Styles */
+.skeleton-box {
+    background-color: var(--surface-color);
+    border-radius: 4px;
+    display: inline-block;
+    height: 12px;
+    animation: pulse 1.5s infinite ease-in-out;
+}
+@keyframes pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+      :root { 
+    --bg-color: #ffffff; 
+    --surface-color: #f0f2f5;
+    --text-color: #1c1e21; 
+    --primary-color: #0084ff;
+    --secondary-text: #65676b; 
+    --border-color: rgba(0,0,0,0.08); 
+    --msg-sent-bg: linear-gradient(135deg, #0084ff 0%, #00c6ff 100%);
+    --msg-sent-text: #ffffff;
+    --msg-rcv-bg: #e4e6eb;
+    --msg-rcv-text: #050505;
+    --current-font: 'Inter', 'Hind Siliguri', sans-serif;
+}
+
+/* ডার্ক থিম ডাইনামিক বডি কালার সংশোধন */
+body.dark-theme {
+    background-color: var(--bg-color) !important;
+    color: var(--text-color) !important;
+}
+
+/* ফেসবুক স্টাইল সফট চারকোল গ্রে ডার্ক থিম (কালো ভাব মুক্ত) */
+.dark-theme { 
+    --bg-color: #242526; /* ফেসবুকের মূল সফট গ্রে কালার (কুচকুচে কালো নয়) */
+    --surface-color: #303134; /* ইনপুট ও সার্চ বারের জন্য আরও এলিভেটেড গ্রে */
+    --text-color: #e4e6eb; /* চমৎকার সফট হোয়াইট টেক্সট */
+    --primary-color: #4595ff; 
+    --border-color: rgba(255, 255, 255, 0.08); 
+    --secondary-text: #b0b3b8; 
+    --msg-sent-bg: linear-gradient(135deg, #0084ff 0%, #0099ff 100%);
+    --msg-rcv-bg: #3a3b3c; /* রিসিভড মেসেজের জন্য সফট বাবল গ্রে */
+    --msg-rcv-text: #e4e6eb;
+}
+
+      body { 
+    font-family: var(--current-font); 
+    background: var(--bg-color); 
+    color: var(--text-color); 
+    margin: 0; 
+    padding-top: 60px !important; /* অতিরিক্ত ফাঁকা অংশ দূর করতে প্যাডিং কমানো হলো */
+    overflow-x: hidden; 
+}
+
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            padding: 0 16px; 
+        }
+
+        /* --- Header Styles --- */
+        .messenger-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: var(--bg-color);
+            z-index: 999;
+            box-sizing: border-box;
+        }
+        .header-title {
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        /* --- Notes & Active Status Bar --- */
+        .active-users-bar {
+            display: flex;
+            gap: 14px;
+            overflow-x: auto;
+            padding: 10px 0;
+            margin-bottom: 10px;
+            scrollbar-width: none;
+        }
+        .active-users-bar::-webkit-scrollbar { display: none; }
+
+        .active-user-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            width: 64px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .active-avatar-wrapper {
+            position: relative;
+            width: 52px;
+            height: 52px;
+        }
+        .active-avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary-color);
+        }
+        .status-dot {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 12px;
+            height: 12px;
+            background: #31a24c;
+            border: 2px solid var(--bg-color);
+            border-radius: 50%;
+        }
+        .active-user-name {
+            font-size: 11px;
+            color: var(--secondary-text);
+            margin-top: 5px;
+            text-align: center;
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Notes Pill */
+        .note-bubble {
+            position: absolute;
+            top: -15px;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 4px 8px;
+            font-size: 9px;
+            max-width: 70px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            color: var(--text-color);
+            z-index: 2;
+        }
+
+        /* --- Search Bar --- */
+        .search-container {
+            background: var(--surface-color);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            padding: 8px 14px;
+            margin-bottom: 15px;
+        }
+        .search-container input {
+            border: none;
+            background: transparent;
+            outline: none;
+            color: var(--text-color);
+            width: 100%;
+            font-size: 14px;
+            margin-left: 8px;
+        }
+
+        /* --- Chat List --- */
+        .chat-list { display: flex; flex-direction: column; gap: 4px; }
+        .chat-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .chat-item:hover { background: var(--surface-color); }
+        .chat-item.unread { font-weight: bold; }
+        .chat-item.unread .chat-msg { color: var(--text-color); font-weight: bold; }
+
+        /* --- Chat Room CSS --- */
+        #chatRoomView {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-color);
+            z-index: 100002;
+            display: none;
+            flex-direction: column;
+        }
+        .chat-room-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-color);
+        }
+        .chat-room-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Messages */
+        .msg-wrapper {
+            display: flex;
+            flex-direction: column;
+            max-width: 70%;
+            width: fit-content;
+            position: relative;
+        }
+        .msg-wrapper.sent { align-self: flex-end; align-items: flex-end; }
+        .msg-wrapper.received { align-self: flex-start; align-items: flex-start; }
+        
+        .msg-bubble {
+            padding: 10px 14px;
+            border-radius: 18px;
+            font-size: 14px;
+            cursor: pointer;
+            position: relative;
+        }
+        .sent .msg-bubble { background: var(--msg-sent-bg); color: var(--msg-sent-text); }
+        .received .msg-bubble { background: var(--msg-rcv-bg); color: var(--msg-rcv-text); }
+        .msg-unsent { font-style: italic; color: var(--secondary-text) !important; background: transparent !important; border: 1px solid var(--border-color) !important; }
+
+        /* Reaction Container on bubble */
+        .msg-reaction-display {
+            position: absolute;
+            bottom: -8px;
+            right: 10px;
+            background: var(--surface-color);
+            border-radius: 10px;
+            padding: 1px 4px;
+            font-size: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            display: flex;
+            gap: 2px;
+        }
+
+       /* মেসেঞ্জার স্টাইল রিঅ্যাকশন প্যানেল */
+.reaction-popover {
+    position: absolute;
+    top: -46px;
+    left: 10px;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 30px;
+    padding: 4px 8px;
+    display: flex;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    z-index: 1000;
+    animation: reactPop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+@keyframes reactPop {
+    0% { transform: scale(0.5) translateY(10px); opacity: 0; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.react-emoji {
+    font-size: 22px;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+    display: inline-block;
+}
+.react-emoji:hover {
+    transform: scale(1.3) translateY(-4px);
+}
+
+/* ইমোজি উড়ে যাওয়ার অ্যানিমেশন ক্লাস */
+.flying-reaction-emoji {
+    position: fixed;
+    z-index: 99999;
+    font-size: 26px;
+    pointer-events: none;
+    transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+/* মেসেজ বাবল রিঅ্যাকশন ব্যাজ */
+.msg-reaction-display {
+    position: absolute;
+    bottom: -10px;
+    right: 12px;
+    background: var(--surface-color);
+    border: 1.5px solid var(--bg-color);
+    border-radius: 12px;
+    padding: 1px 6px;
+    font-size: 11px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.12);
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    z-index: 2;
+    user-select: none;
+}
+/* প্রিমিয়াম সুইটঅ্যালার্ট২ কাস্টম থিমিং */
+.premium-popup {
+    background: var(--bg-color) !important;
+    border-radius: 24px !important;
+    padding: 24px !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15) !important;
+    font-family: var(--current-font) !important;
+}
+.premium-title {
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    color: var(--text-color) !important;
+    margin-bottom: 5px !important;
+}
+.premium-confirm-btn {
+    background: var(--primary-color) !important;
+    color: white !important;
+    border-radius: 14px !important;
+    padding: 12px 24px !important;
+    font-weight: 700 !important;
+    font-size: 13.5px !important;
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(0, 132, 255, 0.2) !important;
+    transition: transform 0.1s !important;
+    outline: none !important;
+}
+.premium-confirm-btn:active { transform: scale(0.95) !important; }
+
+.premium-danger-btn {
+    background: #ffebe9 !important;
+    color: #e74c3c !important;
+    border-radius: 14px !important;
+    padding: 12px 24px !important;
+    font-weight: 700 !important;
+    font-size: 13.5px !important;
+    border: 1px solid rgba(231, 76, 60, 0.2) !important;
+    transition: transform 0.1s !important;
+    outline: none !important;
+}
+.premium-danger-btn:active { transform: scale(0.95) !important; }
+
+.premium-confirm-danger-btn {
+    background: #e74c3c !important;
+    color: white !important;
+    border-radius: 14px !important;
+    padding: 12px 24px !important;
+    font-weight: 700 !important;
+    font-size: 13.5px !important;
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2) !important;
+    transition: transform 0.1s !important;
+    outline: none !important;
+}
+.premium-confirm-danger-btn:active { transform: scale(0.95) !important; }
+
+.premium-cancel-btn {
+    background: transparent !important;
+    color: var(--secondary-text) !important;
+    border-radius: 14px !important;
+    padding: 12px 24px !important;
+    font-weight: 700 !important;
+    font-size: 13.5px !important;
+    border: none !important;
+    outline: none !important;
+}
+
+/* পপআপ আসার প্রিমিয়াম বাউন্স অ্যানিমেশন */
+.premium-show-animation {
+    animation: alertSlideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
+}
+.premium-hide-animation {
+    animation: alertFadeOut 0.2s ease-in forwards !important;
+}
+@keyframes alertSlideUp {
+    0% { transform: scale(0.85) translateY(30px); opacity: 0; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+@keyframes alertFadeOut {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(0.9) opacity: 0; }
+}
+        /* Seen Indicators & Seen Pic */
+        .seen-indicator-avatar {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            margin-top: 2px;
+        }
+
+        /* Typing & Footer */
+        .chat-room-footer {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-color);
+        }
+        .chat-room-footer input {
+            flex: 1;
+            border: none;
+            background: var(--surface-color);
+            border-radius: 20px;
+            padding: 10px 16px;
+            color: var(--text-color);
+            outline: none;
+        }
+        .send-btn {
+            background: transparent;
+            border: none;
+            color: var(--primary-color);
+            font-size: 20px;
+            cursor: pointer;
+        }
+/* আইওএস স্টাইল মেনু হোভার ইফেক্ট */
+.menu-option-ios {
+    transition: background 0.15s ease, transform 0.1s ease !important;
+}
+.menu-option-ios:active {
+    background: var(--surface-color) !important;
+    transform: scale(0.97);
+}
+    </style>
+</head>
+<body>
+<div id="toast" class="toast-box"><i class="fas fa-info-circle"></i> <span id="toastMsg">Notification</span></div>
+<script>
+    // পেজ রেন্ডার হওয়ার আগেই থিম অ্যাপ্লাই করার জন্য
+    if (localStorage.getItem('userTheme') === 'dark') {
+        document.body.classList.add('dark-theme');
+    }
+</script>
+    <!-- Header -->
+    <div class="messenger-header">
+        <span class="header-title">Chats</span>
+        <button class="icon-btn" onclick="openNoteCreatorModal()" title="নোট লিখুন" style="background:none; border:none; color:var(--text-color); font-size:18px;"><i class="fa-solid fa-pen-to-square"></i></button>
+    </div>
+
+    <div class="container" id="mainInboxContainer">
+        <!-- Horizontal Scroll Bar (Notes & Active Users) -->
+        <div class="active-users-bar" id="activeUsersRow">
+            <!-- First Card: Your Profile & Note -->
+<div class="active-user-item" onclick="handleMyNoteTap()">
+                <div class="active-avatar-wrapper">
+                    <img id="myActiveAvatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="active-avatar">
+                    <div class="note-bubble" id="myNoteDisplay" style="display:none;">Note...</div>
+                </div>
+                <span class="active-user-name">Your Note</span>
+            </div>
+            <!-- Other Active Friends Injected Here -->
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-container">
+            <i class="fa-solid fa-magnifying-glass" style="color: var(--secondary-text);"></i>
+            <input type="text" id="messengerSearch" placeholder="খুঁজুন..." oninput="searchMessenger(this.value)">
+        </div>
+
+        <!-- Conversational Thread List -->
+       <div class="chat-list" id="chatListContainer">
+    <!-- ৩টি ডামি স্কেলেটন আইটেম -->
+    <div class="chat-item skeleton-loading-state" style="pointer-events: none;">
+        <div class="skeleton-box" style="width: 48px; height: 48px; border-radius: 50%;"></div>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+            <div class="skeleton-box" style="width: 40%; height: 14px;"></div>
+            <div class="skeleton-box" style="width: 80%; height: 11px;"></div>
+        </div>
+    </div>
+    <div class="chat-item skeleton-loading-state" style="pointer-events: none;">
+        <div class="skeleton-box" style="width: 48px; height: 48px; border-radius: 50%;"></div>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+            <div class="skeleton-box" style="width: 30%; height: 14px;"></div>
+            <div class="skeleton-box" style="width: 70%; height: 11px;"></div>
+        </div>
+    </div>
+    <div class="chat-item skeleton-loading-state" style="pointer-events: none;">
+        <div class="skeleton-box" style="width: 48px; height: 48px; border-radius: 50%;"></div>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+            <div class="skeleton-box" style="width: 50%; height: 14px;"></div>
+            <div class="skeleton-box" style="width: 60%; height: 11px;"></div>
+        </div>
+    </div>
+</div>
+
+    <!-- Real-time Active Chat Room Layer -->
+    <div id="chatRoomView">
+        <div class="chat-room-header">
+            <button onclick="closeActiveChatRoom()" style="background:none; border:none; font-size:18px; color:var(--text-color); cursor:pointer;"><i class="fa-solid fa-arrow-left"></i></button>
+            <img id="partnerHeaderAvatar" src="" style="width:36px; height:36px; border-radius:50%; object-fit:cover;">
+            <div style="flex:1;">
+                <div id="partnerHeaderName" style="font-weight:700; font-size:15px;">Name</div>
+                <div id="partnerHeaderStatus" style="font-size:11px; color:var(--secondary-text);">অফলাইন</div>
+            </div>
+<button onclick="openChatRoomMoreMenu(event)" style="background:none; border:none; color:var(--text-color); font-size:20px; cursor:pointer; padding:6px 12px; display:flex; align-items:center; justify-content:center;" title="অপশন"><i class="fa-solid fa-ellipsis"></i></button>
+        </div>
+
+        <div class="chat-room-body" id="messagesViewArea">
+            <!-- Messages, Statuses, and Reactions -->
+        </div>
+        
+        <div class="typing-indicator" id="typingLabel" style="display:none; padding:0 16px; font-size:12px; font-style:italic; color:var(--secondary-text);">টাইপ করছেন...</div>
+
+        <div class="chat-room-footer" id="chatFooterPanel">
+            <input type="text" id="chatInputMessage" placeholder="একটি বার্তা লিখুন..." oninput="typingEventTracker()" onkeydown="handleFooterEnter(event)">
+            <button class="send-btn" onclick="sendPrivateMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <!-- Firebase Script Architecture -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, push, onValue, update, remove, get, query, orderByKey, limitToLast, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBZtycgadrngON2WEwvIE7ERPYxdkDVfFM",
+            authDomain: "muktolipidiary.firebaseapp.com",
+            databaseURL: "https://muktolipidiary-default-rtdb.firebaseio.com",
+            projectId: "muktolipidiary",
+            storageBucket: "muktolipidiary.firebasestorage.app",
+            messagingSenderId: "639103995400",
+            appId: "1:639103995400:web:13528e51c0e86080770bbd"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+
+        let currentUser = null;
+        let activePartnerData = {};
+let unsubscribeMessages = null;
+let unsubscribePresence = null;
+let unsubscribeTyping = null;
+        let activeChatId = null;
+        let activePartnerUid = null;
+        let typingTimeout = null;
+        let inboxCache = [];
+        let blockList = [];
+
+        onAuthStateChanged(auth, async (user) => {
+            currentUser = user;
+            if (user) {
+                document.getElementById('myActiveAvatar').src = user.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+                fetchMyNote();
+                loadBlockList();
+                listenToActiveFriends();
+                initInboxLoader();
+
+                // Direct Chat Routing check from query parameter
+                const urlParams = new URLSearchParams(window.location.search);
+                const queryUid = urlParams.get('targetUid');
+                if (queryUid) {
+                    openChatWithPartner(queryUid);
+                }
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        // --- Note Actions ---
+        window.openNoteCreatorModal = async function() {
+            const { value: noteText } = await Swal.fire({
+                title: 'আজকের নোট',
+                input: 'text',
+                inputPlaceholder: 'আপনার মনের কথা শেয়ার করুন (২৪ ঘণ্টা থাকবে)...',
+                showCancelButton: true,
+                confirmButtonText: 'শেয়ার করুন',
+                cancelButtonText: 'বাতিল'
+            });
+
+            if (noteText) {
+                set(ref(db, `notes/${currentUser.uid}`), {
+                    text: noteText,
+                    timestamp: Date.now()
+                }).then(() => {
+                    showToast("নোট শেয়ার হয়েছে 📝");
+                    fetchMyNote();
+                });
+            }
+        };
+
+        function fetchMyNote() {
+            get(ref(db, `notes/${currentUser.uid}`)).then(snap => {
+                const note = snap.val();
+                const display = document.getElementById('myNoteDisplay');
+                if (note && (Date.now() - note.timestamp < 24 * 60 * 60 * 1000)) {
+                    display.innerText = note.text;
+                    display.style.display = 'block';
+                } else {
+                    display.style.display = 'none';
+                }
+            });
+        }
+
+        // --- Active Friends & Notes ---
+        function listenToActiveFriends() {
+            onValue(ref(db, 'presence'), (snap) => {
+                const presenceData = snap.val() || {};
+                const activeRow = document.getElementById('activeUsersRow');
+                
+                // Keep the first "Your Note" element
+                const yourNoteCard = activeRow.firstElementChild;
+                activeRow.innerHTML = '';
+                activeRow.appendChild(yourNoteCard);
+
+                Object.entries(presenceData).forEach(async ([uid, presence]) => {
+                    if (uid === currentUser.uid || !presence.online) return;
+                    if (blockList.includes(uid)) return;
+
+                    const uSnap = await get(ref(db, `users/${uid}`));
+                    const uData = uSnap.val() || {};
+
+                    const activeItem = document.createElement('div');
+                    activeItem.className = 'active-user-item';
+                    activeItem.onclick = () => {
+    if (note && (Date.now() - note.timestamp < 24 * 60 * 60 * 1000)) {
+        showFriendNoteDetail(uData.displayName, uData.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png', note.text, uid);
+    } else {
+        openChatWithPartner(uid);
+    }
+};
+
+                    // Fetch Friend Note
+                    const noteSnap = await get(ref(db, `notes/${uid}`));
+                    const note = noteSnap.val();
+                    let noteHtml = '';
+                    if (note && (Date.now() - note.timestamp < 24 * 60 * 60 * 1000)) {
+                        noteHtml = `<div class="note-bubble">${note.text}</div>`;
+                    }
+
+                    activeItem.innerHTML = `
+                        <div class="active-avatar-wrapper">
+                            ${noteHtml}
+                            <img src="${uData.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="active-avatar">
+                            <div class="status-dot"></div>
+                        </div>
+                        <span class="active-user-name">${uData.displayName ? uData.displayName.split(' ')[0] : 'ইউজার'}</span>
+                    `;
+                    activeRow.appendChild(activeItem);
+                });
+            });
+        }
+
+        // --- Inbox Engine ---
+        function initInboxLoader() {
+            onValue(ref(db, `user_chats/${currentUser.uid}`), async (snap) => {
+                const data = snap.val();
+                if (!data) {
+                    document.getElementById('chatListContainer').innerHTML = '<p style="text-align:center; color:var(--secondary-text); padding:40px;">কোনো চ্যাট হিস্টোরি নেই</p>';
+                    return;
+                }
+
+                const inboxArr = [];
+                for (const [pUid, meta] of Object.entries(data)) {
+                    if (blockList.includes(pUid)) continue;
+                    const uSnap = await get(ref(db, `users/${pUid}`));
+                    const uData = uSnap.val() || {};
+
+                    inboxArr.push({
+                        partnerUid: pUid,
+                        name: uData.displayName || 'ইউজার',
+                        photoURL: uData.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
+                        lastMsg: meta.lastMsg || '',
+                        timestamp: meta.timestamp || 0,
+                        unseenCount: meta.unseenCount || 0
+                    });
+                }
+
+                inboxArr.sort((a,b) => b.timestamp - a.timestamp);
+                inboxCache = inboxArr;
+                renderInbox(inboxCache);
+            });
+        }
+
+        function renderInbox(list) {
+            const container = document.getElementById('chatListContainer');
+            container.innerHTML = '';
+
+            list.forEach(item => {
+                const unreadClass = item.unseenCount > 0 ? 'unread' : '';
+                const timeStr = item.timestamp ? new Date(item.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
+                const unreadBadge = item.unseenCount > 0 ? `<div class="unread-badge" style="background:var(--primary-color); width:8px; height:8px; border-radius:50%;"></div>` : '';
+
+                const el = document.createElement('div');
+                el.className = `chat-item ${unreadClass}`;
+                el.onclick = () => openChatWithPartner(item.partnerUid);
+
+                el.innerHTML = `
+                    <img src="${item.photoURL}" style="width:48px; height:48px; border-radius:50%; object-fit:cover;">
+                    <div style="flex:1; min-width:0;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <span style="font-weight:700; font-size:14.5px;">${item.name}</span>
+                            <span style="font-size:11px; color:var(--secondary-text);">${timeStr}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span class="chat-msg" style="font-size:13px; color:var(--secondary-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:85%;">${item.lastMsg}</span>
+                            ${unreadBadge}
+                        </div>
+                    </div>
+                `;
+                container.appendChild(el);
+            });
+        }
+
+       // --- Private Chat Room Logic (সংশোধিত ও ডুপ্লিকেট মুক্ত) ---
+window.openChatWithPartner = async function(partnerUid) {
+    activePartnerUid = partnerUid;
+    activeChatId = getChatId(currentUser.uid, partnerUid);
+
+    document.getElementById('chatRoomView').style.display = 'flex';
+    document.getElementById('messagesViewArea').innerHTML = '<p style="text-align:center; padding:10px; color:var(--secondary-text);">লোড হচ্ছে...</p>';
+
+    // নতুন চ্যাট রুম খোলার আগে পুরাতন সকল লিসেনার আনসাবস্ক্রাইব করা হচ্ছে
+    if (unsubscribeMessages) unsubscribeMessages();
+    if (unsubscribePresence) unsubscribePresence();
+    if (unsubscribeTyping) unsubscribeTyping();
+
+    // Handle Unread State
+    update(ref(db, `user_chats/${currentUser.uid}/${partnerUid}`), { unseenCount: 0 });
+
+    // প্রোফাইল হেডার ডাটা একবার ফেচ করে গ্লোবাল ভেরিয়েবলে স্টোর করা হচ্ছে
+    const partnerSnap = await get(ref(db, `users/${partnerUid}`));
+    activePartnerData = partnerSnap.val() || {};
+    document.getElementById('partnerHeaderName').innerText = activePartnerData.displayName || 'ইউজার';
+    document.getElementById('partnerHeaderAvatar').src = activePartnerData.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+
+    // Online/Offline Status listener
+    unsubscribePresence = onValue(ref(db, `presence/${partnerUid}`), (snap) => {
+        const p = snap.val();
+        const statusLbl = document.getElementById('partnerHeaderStatus');
+        if (p && p.online) {
+            statusLbl.innerText = 'অনলাইন';
+            statusLbl.style.color = '#31a24c';
+        } else {
+            statusLbl.innerText = 'অফলাইন';
+            statusLbl.style.color = 'var(--secondary-text)';
+        }
+    });
+
+    // Typing Indicator Listener
+    unsubscribeTyping = onValue(ref(db, `chats/${activeChatId}/typing/${partnerUid}`), (snap) => {
+        const label = document.getElementById('typingLabel');
+        if (snap.val() === true) label.style.display = 'block';
+        else label.style.display = 'none';
+    });
+
+    // Sync Block Button State
+    checkBlockStatus();
+
+    // Load and Listen to Messages (সিনক্রোনাস লুপ ডুপ্লিকেশন দূর করার জন্য)
+    unsubscribeMessages = onValue(ref(db, `chats/${activeChatId}/messages`), (snap) => {
+        const msgView = document.getElementById('messagesViewArea');
+        msgView.innerHTML = '';
+        const data = snap.val();
+
+        if (!data) {
+            msgView.innerHTML = '<p style="text-align:center; color:var(--secondary-text); padding:20px;">কোনো চ্যাট হিস্টোরি পাওয়া যায়নি। একটি বার্তা পাঠিয়ে শুরু করুন!</p>';
+            return;
+        }
+
+        const msgList = Object.entries(data);
+let lastTimestamp = 0; // পূর্বের বার্তার সময় ট্র্যাকিং
+
+msgList.forEach(([msgId, msg], index) => {
+    // ১৫ মিনিটের বেশি ব্যবধান থাকলে চ্যাটের মাঝখানে বড় টাইম হেডার বসবে
+    if (index === 0 || (msg.timestamp - lastTimestamp > 15 * 60 * 1000)) {
+        const separator = document.createElement('div');
+        separator.className = 'chat-time-separator';
+        separator.innerText = formatMessengerTime(msg.timestamp);
+        msgView.appendChild(separator);
+    }
+    lastTimestamp = msg.timestamp;
+
+    const isMe = msg.sender === currentUser.uid;
+    const wrapper = document.createElement('div');
+    wrapper.className = `msg-wrapper ${isMe ? 'sent' : 'received'}`;
+    wrapper.id = `msg-${msgId}`;
+
+            // Handle Unsent State
+            let msgContent = msg.text;
+            let bubbleClass = 'msg-bubble';
+            if (msg.unsent) {
+                msgContent = 'This message was unsent';
+                bubbleClass += ' msg-unsent';
+            }
+
+            // Build Reactions HTML
+            let reactionsHtml = '';
+            if (msg.reactions) {
+                const uniqueEmojis = [...new Set(Object.values(msg.reactions))];
+                reactionsHtml = `<div class="msg-reaction-display" onclick="handleReactionBadgeClick('${msgId}', event)">${uniqueEmojis.join('')}</div>`;
+            }
+
+            // Seen Avatar Logic (গ্লোবাল ভেরিয়েবল থেকে ইমেজ ব্যবহার করা হচ্ছে)
+            let seenAvatar = '';
+            if (isMe && index === msgList.length - 1 && msg.seen) {
+                seenAvatar = `<img src="${activePartnerData.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="seen-indicator-avatar">`;
+            }
+
+            // Click Actions
+            let clickAction = '';
+            if (!msg.unsent) {
+                if (isMe) {
+                    const safeText = msg.text.replace(/'/g, "\\'").replace(/\n/g, "\\n");
+                    clickAction = `onclick="showOwnMessageMenu('${msgId}', '${safeText}', ${msg.timestamp}, event)"`;
+                } else {
+                    clickAction = `onclick="toggleReactionPanel('${msgId}', event)"`;
+                }
+            }
+
+            // শুধুমাত্র সময় ফরম্যাট (যেমন: ১০:৪৫ AM)
+const timeOnly = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('bn-BD', {hour: '2-digit', minute:'2-digit', hour12: true}) : '';
+
+wrapper.innerHTML = `
+    <div class="${bubbleClass}" ${clickAction} style="position:relative;">
+        ${msgContent}
+        ${reactionsHtml}
+    </div>
+    <div id="react-panel-holder-${msgId}" style="position:relative; width:0; height:0;"></div>
+    <span class="bubble-time-label" id="time-${msgId}">${timeOnly}</span>
+    ${seenAvatar}
+`;
+            msgView.appendChild(wrapper);
+        });
+
+        // Update seen status of received messages
+        msgList.forEach(([msgId, msg]) => {
+            if (msg.sender === partnerUid && !msg.seen) {
+                update(ref(db, `chats/${activeChatId}/messages/${msgId}`), { seen: true });
+            }
+        });
+
+        msgView.scrollTop = msgView.scrollHeight;
+    });
+};
+
+        window.closeActiveChatRoom = function() {
+    document.getElementById('chatRoomView').style.display = 'none';
+    if (activeChatId) {
+        set(ref(db, `chats/${activeChatId}/typing/${currentUser.uid}`), false);
+    }
+    
+    // সক্রিয় ট্র্যাকিং রিমুভ করা (চ্যাট বন্ধ করার সাথে সাথে)
+    if (window.AndroidInterface) {
+        window.AndroidInterface.setActiveChatPartner("");
+    }
+
+    // চ্যাট রুম বন্ধ করার সাথে সাথে সকল ফায়ারবেস লিসেনার রিমুভ করা হচ্ছে
+    if (unsubscribeMessages) unsubscribeMessages();
+    if (unsubscribePresence) unsubscribePresence();
+    if (unsubscribeTyping) unsubscribeTyping();
+    
+    activeChatId = null;
+    activePartnerUid = null;
+};
+
+        // --- Private Message Operations ---
+        window.sendPrivateMessage = function() {
+            const input = document.getElementById('chatInputMessage');
+            const txt = input.value.trim();
+            if (!txt || !activeChatId) return;
+
+            // Check block status before sending
+            get(ref(db, `blocks/${activePartnerUid}/${currentUser.uid}`)).then(snap => {
+                if (snap.exists()) {
+                    Swal.fire("ব্যর্থ", "আপনি ব্লকড আছেন, বার্তা পাঠানো যাবে না।", "error");
+                    return;
+                }
+
+                const msgData = {
+                    text: txt,
+                    sender: currentUser.uid,
+                    timestamp: Date.now(),
+                    seen: false
+                };
+
+                push(ref(db, `chats/${activeChatId}/messages`), msgData);
+
+                // Update User Chats Recency Nodes
+                update(ref(db, `user_chats/${currentUser.uid}/${activePartnerUid}`), { lastMsg: `আপনি: ${txt}`, timestamp: Date.now() });
+                
+                // Track Unread Count for Partner
+                const partnerChatRef = ref(db, `user_chats/${activePartnerUid}/${currentUser.uid}`);
+                get(partnerChatRef).then(metaSnap => {
+                    let unseen = 0;
+                    if (metaSnap.exists() && metaSnap.val().unseenCount) {
+                        unseen = metaSnap.val().unseenCount;
+                    }
+                    update(partnerChatRef, {
+                        lastMsg: txt,
+                        timestamp: Date.now(),
+                        unseenCount: unseen + 1
+                    });
+                });
+
+                // অপর প্রান্তের ব্যবহারকারীকে ওয়ানসিগন্যাল/এফসিএম এর মাধ্যমে নোটিফিকেশন পাঠানো
+                if (window.AndroidInterface) {
+                    window.AndroidInterface.sendChatNotification(activePartnerUid, txt, currentUser.displayName, activeChatId);
+                }
+
+                input.value = '';
+                set(ref(db, `chats/${activeChatId}/typing/${currentUser.uid}`), false);
+            });
+        };
+
+        // --- Typing Mechanics ---
+        window.typingEventTracker = function() {
+            if (!activeChatId) return;
+            set(ref(db, `chats/${activeChatId}/typing/${currentUser.uid}`), true);
+
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                set(ref(db, `chats/${activeChatId}/typing/${currentUser.uid}`), false);
+            }, 2000);
+        };
+
+        window.handleFooterEnter = function(e) {
+            if (e.key === 'Enter') sendPrivateMessage();
+        };
+        // --- Message Context Actions (Reactions & Unsend) ---
+        window.showMessageMenu = function(msgId, senderUid, event) {
+            const isMe = senderUid === currentUser.uid;
+            
+            // Render reaction overlay inside SweetAlert or context UI
+            let htmlContent = `
+                <div class="reaction-popover" style="position:static; margin-bottom: 15px;">
+                    <span class="react-emoji" onclick="submitMessageReaction('${msgId}', '👍')">👍</span>
+                    <span class="react-emoji" onclick="submitMessageReaction('${msgId}', '❤️')">❤️</span>
+                    <span class="react-emoji" onclick="submitMessageReaction('${msgId}', '😂')">😂</span>
+                    <span class="react-emoji" onclick="submitMessageReaction('${msgId}', '😮')">😮</span>
+                    <span class="react-emoji" onclick="submitMessageReaction('${msgId}', '😢')">😢</span>
+                    <span class="react-emoji" onclick="submitMessageReaction('${msgId}', '😡')">😡</span>
+                </div>
+            `;
+
+            Swal.fire({
+                title: 'মেসেজ একশন',
+                html: htmlContent,
+                showCancelButton: true,
+                showConfirmButton: isMe,
+                confirmButtonText: 'Unsend (সবার জন্য ডিলিট)',
+                confirmButtonColor: '#e74c3c',
+                cancelButtonText: 'বাতিল'
+            }).then((res) => {
+                if (res.isConfirmed && isMe) {
+                    unsendMessage(msgId);
+                }
+            });
+        };
+
+        window.submitMessageReaction = function(msgId, emoji) {
+            set(ref(db, `chats/${activeChatId}/messages/${msgId}/reactions/${currentUser.uid}`), emoji).then(() => {
+                Swal.close();
+            });
+        };
+
+        function unsendMessage(msgId) {
+            update(ref(db, `chats/${activeChatId}/messages/${msgId}`), {
+                unsent: true,
+                text: 'This message was unsent'
+            }).then(() => {
+                showToast("বার্তা আনসেন্ড করা হয়েছে");
+            });
+        }
+
+    // --- Block / Unblock System ---
+window.toggleBlockState = function() {
+    const blockRef = ref(db, `blocks/${currentUser.uid}/${activePartnerUid}`);
+    get(blockRef).then(snap => {
+        if (snap.exists()) {
+            // Unblock
+            remove(blockRef).then(() => {
+                showToast("ব্যবহারকারীকে আনব্লক করা হয়েছে 🔓");
+                loadBlockList();
+                checkBlockStatus();
+            });
+        } else {
+            // Block Warning Alert
+            Swal.fire({
+                html: `
+                    <div style="text-align: center; padding: 10px 0;">
+                        <div style="width: 60px; height: 60px; background: #ffebe9; color: #e74c3c; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 15px;">
+                            <i class="fa-solid fa-ban"></i>
+                        </div>
+                        <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 8px; color: var(--text-color);">ইউজারকে ব্লক করবেন?</h3>
+                        <p style="font-size: 13.5px; color: var(--secondary-text); margin: 0; line-height: 1.5; font-family: 'Hind Siliguri', sans-serif;">ব্লক করলে কেউ কাউকে চ্যাট মেসেজ পাঠাতে পারবেন না। আপনি কি নিশ্চিত?</p>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'হ্যাঁ, ব্লক করুন',
+                cancelButtonText: 'বাতিল',
+                customClass: {
+                    popup: 'premium-popup',
+                    confirmButton: 'premium-confirm-danger-btn',
+                    cancelButton: 'premium-cancel-btn'
+                },
+                showClass: { popup: 'premium-show-animation' },
+                hideClass: { popup: 'premium-hide-animation' }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    set(blockRef, true).then(() => {
+                        showToast("ব্যবহারকারীকে ব্লক করা হয়েছে 🚫");
+                        loadBlockList();
+                        checkBlockStatus();
+                    });
+                }
+            });
+        }
+    });
+};
+
+        function checkBlockStatus() {
+    if (!currentUser || !activePartnerUid) return;
+    get(ref(db, `blocks/${currentUser.uid}/${activePartnerUid}`)).then(snap => {
+        const btn = document.getElementById('blockActionButton');
+        if (btn) {
+            btn.innerText = snap.exists() ? 'Unblock' : 'Block';
+        }
+        const footer = document.getElementById('chatFooterPanel');
+        if (snap.exists()) {
+            footer.innerHTML = `
+                <div style="width: 100%; text-align: center; padding: 12px 16px; background: rgba(231, 76, 60, 0.1); border-radius: 20px; color: #e74c3c; font-weight: 700; font-size: 13px; border: 1px solid rgba(231, 76, 60, 0.2); box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i class="fa-solid fa-ban"></i> আপনি এই ইউজারকে ব্লক করেছেন
+                </div>
+            `;
+        } else {
+            footer.innerHTML = `
+                <input type="text" id="chatInputMessage" placeholder="একটি বার্তা লিখুন..." oninput="typingEventTracker()" onkeydown="handleFooterEnter(event)">
+                <button class="send-btn" onclick="sendPrivateMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+            `;
+        }
+    });
+}
+
+        function loadBlockList() {
+            get(ref(db, `blocks/${currentUser.uid}`)).then(snap => {
+                if (snap.exists()) {
+                    blockList = Object.keys(snap.val());
+                } else {
+                    blockList = [];
+                }
+            });
+        }
+
+        // Helper calculations
+        function getChatId(u1, u2) {
+            return u1 < u2 ? `${u1}_${u2}` : `${u2}_${u1}`;
+        }
+
+        window.showToast = (msg) => {
+    const t = document.getElementById('toast');
+    if (t) {
+        document.getElementById('toastMsg').innerText = msg;
+        t.classList.add('show');
+        
+        // চ্যাট স্ক্রিন এবং SweetAlert উভয়ের ওপরে যেন টোস্টটি থাকে
+        t.style.zIndex = "99999999"; 
+        
+        setTimeout(() => {
+            t.classList.remove('show');
+        }, 2500);
+    } else {
+        console.log(msg);
+    }
+};
+
+        window.searchMessenger = function(queryStr) {
+            const q = queryStr.toLowerCase();
+            const filtered = inboxCache.filter(item => item.name.toLowerCase().includes(q));
+            renderInbox(filtered);
+        };
+// ১. নিজের নোটের ওপর ক্লিক করলে বিস্তারিত দেখা এবং পরিবর্তন করার লজিক
+window.handleMyNoteTap = async function() {
+    get(ref(db, `notes/${currentUser.uid}`)).then(async (snap) => {
+        const note = snap.val();
+        const hasActiveNote = note && (Date.now() - note.timestamp < 24 * 60 * 60 * 1000);
+
+        if (hasActiveNote) {
+            Swal.fire({
+                title: currentUser.displayName,
+                html: `
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 10px;">
+                        <img src="${currentUser.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2.5px solid var(--primary-color); box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                        <div style="background: var(--surface-color); color: var(--text-color); border: 1px solid var(--border-color); padding: 12px 20px; border-radius: 20px; font-size: 14.5px; max-width: 85%; box-shadow: 0 4px 12px rgba(0,0,0,0.05); word-break: break-word; font-weight: 500; font-family: 'Hind Siliguri', sans-serif;">
+                            "${note.text}"
+                        </div>
+                    </div>
+                `,
+                showDenyButton: true,
+                showCancelButton: true,
+                confirmButtonText: '<i class="fa-solid fa-pen-nib"></i> নতুন নোট',
+                denyButtonText: '<i class="fa-solid fa-trash"></i> নোট মুছুন',
+                cancelButtonText: 'বন্ধ করুন',
+                customClass: {
+                    popup: 'premium-popup',
+                    title: 'premium-title',
+                    confirmButton: 'premium-confirm-btn',
+                    denyButton: 'premium-danger-btn',
+                    cancelButton: 'premium-cancel-btn'
+                },
+                showClass: { popup: 'premium-show-animation' },
+                hideClass: { popup: 'premium-hide-animation' }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    openNoteCreatorModal();
+                } else if (result.isDenied) {
+                    deleteMyNote();
+                }
+            });
+        } else {
+            openNoteCreatorModal();
+        }
+    });
+};
+
+// ২. নিজের নোট ডিলিট করার ফাংশন
+window.deleteMyNote = function() {
+    remove(ref(db, `notes/${currentUser.uid}`)).then(() => {
+        showToast("নোট মুছে ফেলা হয়েছে 🗑️");
+        fetchMyNote();
+    });
+};
+// ১. ক্লিক করলে মেসেজের নিচের সময় টগল (দেখা/লুকানো) করার ফাংশন
+window.toggleBubbleTime = function(msgId) {
+    const timeLabel = document.getElementById(`time-${msgId}`);
+    if (timeLabel) {
+        const isHidden = window.getComputedStyle(timeLabel).display === 'none';
+        timeLabel.style.display = isHidden ? 'block' : 'none';
+    }
+};
+
+// পূর্বের কাস্টম ক্লিক ফাংশনগুলোর ভেতর টাইম টগল কল করা হচ্ছে
+const originalToggleReactionPanel = window.toggleReactionPanel;
+window.toggleReactionPanel = function(msgId, event) {
+    originalToggleReactionPanel(msgId, event);
+    toggleBubbleTime(msgId);
+};
+
+const originalShowOwnMessageMenu = window.showOwnMessageMenu;
+window.showOwnMessageMenu = function(msgId, originalText, timestamp, event) {
+    originalShowOwnMessageMenu(msgId, originalText, timestamp, event);
+    toggleBubbleTime(msgId);
+};
+// ১. আইওএস-স্টাইল থ্রি-ডট চ্যাট অপশন শিট
+window.openChatRoomMoreMenu = function(event) {
+    event.stopPropagation();
+    
+    get(ref(db, `blocks/${currentUser.uid}/${activePartnerUid}`)).then(snap => {
+        const isBlocked = snap.exists();
+        const blockLabel = isBlocked ? 'আনব্লক করুন' : 'ব্লক করুন';
+        const blockIcon = isBlocked ? 'fa-unlock' : 'fa-ban';
+        const blockColor = isBlocked ? '#2ecc71' : '#e74c3c';
+
+        Swal.fire({
+            html: `
+                <div style="text-align: left; padding: 5px 0;">
+                    <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 18px; color: var(--text-color); border-bottom: 1px solid var(--border-color); padding-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-circle-info" style="color: var(--secondary-text);"></i> চ্যাট অপশন
+                    </h3>
+                    
+                    <!-- চ্যাট ডিলিট বাটন -->
+                    <div class="menu-option-ios" onclick="Swal.close(); handleChatDeletionProcess();" style="display: flex; align-items: center; gap: 14px; padding: 12px; cursor: pointer; border-radius: 16px; margin-bottom: 8px;">
+                        <div style="width: 40px; height: 40px; background: #ffebe9; color: #e74c3c; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </div>
+                        <div>
+                            <div style="font-size: 14px; font-weight: 700; color: #e74c3c;">চ্যাট মুছে ফেলুন</div>
+                            <div style="font-size: 11px; color: var(--secondary-text); margin-top: 1px; font-family: 'Hind Siliguri', sans-serif;">কথোপকথনের সমস্ত বার্তা ডিলিট করুন</div>
+                        </div>
+                    </div>
+
+                    <!-- ব্লক/আনব্লক বাটন -->
+                    <div class="menu-option-ios" onclick="Swal.close(); toggleBlockState();" style="display: flex; align-items: center; gap: 14px; padding: 12px; cursor: pointer; border-radius: 16px;">
+                        <div style="width: 40px; height: 40px; background: ${isBlocked ? 'rgba(46, 204, 113, 0.15)' : 'rgba(0,0,0,0.05)'}; color: ${blockColor}; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;">
+                            <i class="fa-solid ${blockIcon}"></i>
+                        </div>
+                        <div>
+                            <div style="font-size: 14px; font-weight: 700; color: var(--text-color);">${blockLabel}</div>
+                            <div style="font-size: 11px; color: var(--secondary-text); margin-top: 1px; font-family: 'Hind Siliguri', sans-serif;">এই ব্যবহারকারীকে ব্লক/আনব্লক করুন</div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            showConfirmButton: false,
+            showCancelButton: true,
+            cancelButtonText: 'বন্ধ করুন',
+            customClass: {
+                popup: 'premium-popup',
+                cancelButton: 'premium-cancel-btn'
+            },
+            showClass: { popup: 'premium-show-animation' },
+            hideClass: { popup: 'premium-hide-animation' }
+        });
+    });
+};
+
+// ২. চ্যাটের সম্পূর্ণ ডেটাবেজ চিরতরে মুছে ফেলার লজিক
+window.handleChatDeletionProcess = function() {
+    Swal.fire({
+        html: `
+            <div style="text-align: center; padding: 10px 0;">
+                <div style="width: 60px; height: 60px; background: #ffebe9; color: #e74c3c; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 15px;">
+                    <i class="fa-solid fa-trash-can"></i>
+                </div>
+                <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 8px; color: var(--text-color);">চ্যাট ডিলিট করবেন?</h3>
+                <p style="font-size: 13.5px; color: var(--secondary-text); margin: 0; line-height: 1.5; font-family: 'Hind Siliguri', sans-serif;">ডিলিট করলে এই কথোপকথনের সকল বার্তা চিরতরে মুছে যাবে। এটি আর ফিরিয়ে আনা সম্ভব নয়।</p>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'হ্যাঁ, ডিলিট করুন',
+        cancelButtonText: 'বাতিল',
+        customClass: {
+            popup: 'premium-popup',
+            confirmButton: 'premium-confirm-danger-btn',
+            cancelButton: 'premium-cancel-btn'
+        },
+        showClass: { popup: 'premium-show-animation' },
+        hideClass: { popup: 'premium-hide-animation' }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // ক) চ্যাটের মূল মেসেজ নোড ডিলিট
+            remove(ref(db, `chats/${activeChatId}`)).then(() => {
+                // খ) নিজের ইনবক্স রিসেন্ট কন্টাক্ট নোড ডিলিট
+                remove(ref(db, `user_chats/${currentUser.uid}/${activePartnerUid}`)).then(() => {
+                    showToast("চ্যাট মুছে ফেলা হয়েছে 🗑️");
+// সক্রিয় ট্র্যাকিং রিমুভ করা
+if (window.AndroidInterface) {
+    window.AndroidInterface.setActiveChatPartner("");
+}
+                    closeActiveChatRoom();
+                });
+            });
+        }
+    });
+};
+// ২. চ্যাটের মাঝখানের বড় সময়কে বাংলায় প্রফেশনাল রূপান্তর করার ফরম্যাটার
+window.formatMessengerTime = function(timestamp) {
+    const date = new Date(timestamp);
+    const now = new Date();
+    
+    const diffMs = now - date;
+    const diffDays = Math.floor(diffMs / (24 * 60 * 60 * 1000));
+    
+    const timeString = date.toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', hour12: true });
+    
+    if (diffDays === 0 && date.getDate() === now.getDate()) {
+        return `আজ ${timeString}`;
+    } else if (diffDays === 1 || (diffDays === 0 && date.getDate() !== now.getDate())) {
+        return `গতকাল ${timeString}`;
+    } else if (diffDays < 7) {
+        const weekdays = ["রবিবার", "সোমবার", "মঙ্গলবার", "বুধবার", "বৃহস্পতিবার", "শুক্রবার", "শনিবার"];
+        return `${weekdays[date.getDay()]} ${timeString}`;
+    } else {
+        const months = ["জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর"];
+        return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}, ${timeString}`;
+    }
+};
+// ৩. বন্ধুদের নোটের ওপর ক্লিক করলে বিস্তারিত বাবল দেখানোর ফাংশন
+window.showFriendNoteDetail = function(name, avatar, noteText, partnerUid) {
+    Swal.fire({
+        title: name,
+        html: `
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 10px;">
+                <img src="${avatar}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2.5px solid #31a24c; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <div style="background: var(--msg-rcv-bg); color: var(--msg-rcv-text); padding: 12px 20px; border-radius: 20px; font-size: 14.5px; max-width: 85%; box-shadow: 0 4px 12px rgba(0,0,0,0.05); word-break: break-word; font-weight: 500; font-family: 'Hind Siliguri', sans-serif;">
+                    "${noteText}"
+                </div>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: '<i class="fa-solid fa-paper-plane"></i> মেসেজ পাঠান',
+        cancelButtonText: 'বন্ধ করুন',
+        customClass: {
+            popup: 'premium-popup',
+            title: 'premium-title',
+            confirmButton: 'premium-confirm-btn',
+            cancelButton: 'premium-cancel-btn'
+        },
+        showClass: { popup: 'premium-show-animation' },
+        hideClass: { popup: 'premium-hide-animation' }
+    }).then((result) => {
+        if (result.isConfirmed) {
+// চ্যাট পার্টনারকে সক্রিয় ট্র্যাকিংয়ে রাখা (যাতে এই ইউজারের ডাবল নোটিফিকেশন না আসে)
+if (window.AndroidInterface) {
+    window.AndroidInterface.setActiveChatPartner(partnerUid);
+}
+            openChatWithPartner(partnerUid);
+        }
+    });
+};
+// ১. মেসেজে ক্লিক করলে রিঅ্যাকশন প্যানেল টগল হবে
+window.toggleReactionPanel = function(msgId, event) {
+    event.stopPropagation();
+    const existingPanel = document.getElementById(`panel-${msgId}`);
+    
+    // পূর্বের খোলা প্যানেলগুলো বন্ধ করা
+    document.querySelectorAll('.reaction-popover').forEach(p => p.remove());
+
+    if (existingPanel) {
+        existingPanel.remove();
+        return;
+    }
+
+    const holder = document.getElementById(`react-panel-holder-${msgId}`);
+    if (!holder) return;
+
+    const panel = document.createElement('div');
+    panel.className = 'reaction-popover';
+    panel.id = `panel-${msgId}`;
+    panel.innerHTML = `
+        <span class="react-emoji" onclick="triggerReactionFlyAnimation('${msgId}', '👍', event)">👍</span>
+        <span class="react-emoji" onclick="triggerReactionFlyAnimation('${msgId}', '❤️', event)">❤️</span>
+        <span class="react-emoji" onclick="triggerReactionFlyAnimation('${msgId}', '😂', event)">😂</span>
+        <span class="react-emoji" onclick="triggerReactionFlyAnimation('${msgId}', '😮', event)">😮</span>
+        <span class="react-emoji" onclick="triggerReactionFlyAnimation('${msgId}', '😢', event)">😢</span>
+        <span class="react-emoji" onclick="triggerReactionFlyAnimation('${msgId}', '😡', event)">😡</span>
+    `;
+    holder.appendChild(panel);
+};
+
+// ২. ইমোজি নির্বাচন করলে চমৎকার উড়ার অ্যানিমেশন ও ডেটাবেজে সেভ হওয়া
+window.triggerReactionFlyAnimation = function(msgId, emoji, event) {
+    event.stopPropagation();
+    const clickTarget = event.currentTarget;
+    const startRect = clickTarget.getBoundingClientRect();
+    
+    // টার্গেট মেসেজ বাবল
+    const bubble = document.querySelector(`#msg-${msgId} .msg-bubble`);
+    if (!bubble) return;
+    const endRect = bubble.getBoundingClientRect();
+
+    // উড়ার জন্য একটি ডামি ইমোজি এলিমেন্ট তৈরি
+    const flyer = document.createElement('div');
+    flyer.className = 'flying-reaction-emoji';
+    flyer.innerText = emoji;
+    flyer.style.left = `${startRect.left}px`;
+    flyer.style.top = `${startRect.top}px`;
+    document.body.appendChild(flyer);
+
+    // রিঅ্যাকশন প্যানেলটি সাথে সাথে বন্ধ করা
+    const panel = document.getElementById(`panel-${msgId}`);
+    if (panel) panel.remove();
+
+    // উড়ার অ্যানিমেশন ট্র্যান্সিশন ট্রিকস
+    requestAnimationFrame(() => {
+        flyer.style.left = `${endRect.left + (endRect.width / 2) - 10}px`;
+        flyer.style.top = `${endRect.bottom - 10}px`;
+        flyer.style.transform = 'scale(1.5)';
+    });
+
+    // অ্যানিমেশন শেষে ডেটাবেজে সেভ এবং বাবল হালকা কাঁপানো
+    setTimeout(() => {
+        flyer.remove();
+        
+        // ফায়ারবেসে রিঅ্যাকশন আপডেট করা
+        set(ref(db, `chats/${activeChatId}/messages/${msgId}/reactions/${currentUser.uid}`), emoji);
+        
+        // বাবল বাউন্স অ্যানিমেশন
+        bubble.style.transform = 'scale(0.95)';
+        setTimeout(() => bubble.style.transform = 'scale(1)', 150);
+    }, 550);
+};
+
+// ৩. নিজের রিঅ্যাকশন ব্যাজে আবার ক্লিক করলে তা রিমুভ করার ফাংশন
+window.handleReactionBadgeClick = function(msgId, event) {
+    event.stopPropagation();
+    
+    const reactionPath = `chats/${activeChatId}/messages/${msgId}/reactions/${currentUser.uid}`;
+    get(ref(db, reactionPath)).then(snap => {
+        if (snap.exists()) {
+            // নিজের রিঅ্যাকশন থাকলে রিমুভ হবে
+            remove(ref(db, reactionPath)).then(() => {
+                showToast("রিঅ্যাকশন তুলে নেওয়া হয়েছে ↩️");
+            });
+        }
+    });
+};
+
+// ৪. চ্যাটের বাইরে টাচ বা ক্লিক করলে ইমোজি প্যানেল বন্ধ হওয়া
+document.addEventListener('click', () => {
+    document.querySelectorAll('.reaction-popover').forEach(p => p.remove());
+});
+// ১. নিজের পাঠানো মেসেজের জন্য অপশন মেনু (আনসেন্ড ও এডিট)
+window.showOwnMessageMenu = function(msgId, originalText, timestamp, event) {
+    event.stopPropagation();
+    
+    const fiveMinutes = 5 * 60 * 1000;
+    const canEdit = (Date.now() - timestamp) < fiveMinutes;
+
+    Swal.fire({
+        html: `
+            <div style="text-align: center; padding: 10px 0;">
+                <div style="width: 60px; height: 60px; background: rgba(0, 132, 255, 0.1); color: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 15px;">
+                    <i class="fa-solid fa-message"></i>
+                </div>
+                <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 8px; color: var(--text-color);">বার্তা ব্যবস্থাপনা</h3>
+                <p style="font-size: 13.5px; color: var(--secondary-text); margin: 0; line-height: 1.5; font-family: 'Hind Siliguri', sans-serif;">বার্তাটি আপনি এডিট অথবা সবার জন্য আনসেন্ড করতে পারেন।</p>
+            </div>
+        `,
+        showDenyButton: canEdit,
+        showCancelButton: true,
+        confirmButtonText: '<i class="fa-solid fa-trash-can"></i> Unsend করুন',
+        denyButtonText: '<i class="fa-solid fa-pen"></i> এডিট করুন',
+        cancelButtonText: 'বাতিল',
+        customClass: {
+            popup: 'premium-popup',
+            confirmButton: 'premium-confirm-danger-btn',
+            denyButton: 'premium-confirm-btn',
+            cancelButton: 'premium-cancel-btn'
+        },
+        showClass: { popup: 'premium-show-animation' },
+        hideClass: { popup: 'premium-hide-animation' }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            unsendMessage(msgId);
+        } else if (result.isDenied) {
+            openMessageEditor(msgId, originalText);
+        }
+    });
+};
+
+// ২. মেসেজ এডিট করার জন্য ইনপুট বক্স প্রম্পট
+window.openMessageEditor = async function(msgId, originalText) {
+    const { value: editText } = await Swal.fire({
+        title: 'বার্তা এডিট করুন',
+        input: 'text',
+        inputValue: originalText,
+        inputPlaceholder: 'সংশোধিত বার্তা লিখুন...',
+        showCancelButton: true,
+        confirmButtonText: 'আপডেট',
+        cancelButtonText: 'বাতিল'
+    });
+
+    if (editText && editText.trim() !== originalText) {
+        const updatedText = editText.trim();
+        
+        // ফায়ারবেসে মেসেজের মূল টেক্সট আপডেট
+        update(ref(db, `chats/${activeChatId}/messages/${msgId}`), {
+            text: updatedText
+        }).then(() => {
+            // ইনবক্সের লাস্ট মেসেজ রিসেন্ট টেক্সট আপডেট
+            update(ref(db, `user_chats/${currentUser.uid}/${activePartnerUid}`), {
+                lastMsg: `আপনি: ${updatedText}`
+            });
+            showToast("বার্তা আপডেট হয়েছে ✏️");
+        });
+    }
+};
+    </script>
+</body>
+</html>
