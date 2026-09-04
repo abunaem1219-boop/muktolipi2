@@ -1,0 +1,2252 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>মুক্তলিপি স্টোর - অ্যাপ মার্কেটপ্লেস</title>
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11">
+    </script>
+
+    <style>
+        /* ─────────── ROOT VARIABLES ─────────── */
+        :root {
+            --primary: #1a73e8;
+            --primary-dark: #1557b0;
+            --primary-light: #e8f0fe;
+            --green: #34a853;
+            --green-dark: #2d9249;
+            --red: #ea4335;
+            --orange: #fbbc04;
+            --bg: #f1f3f4;
+            --card: #ffffff;
+            --text: #202124;
+            --text-secondary: #5f6368;
+            --text-light: #9aa0a6;
+            --border: #dadce0;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.12);
+            --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.15);
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --radius-xl: 28px;
+            --nav-height: 68px;
+            --header-height: 60px;
+            --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --transition: 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        /* ─────────── RESET & BASE ─────────── */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html,
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: calc(var(--nav-height) + 24px);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 10px;
+        }
+
+        a,
+        button {
+            font-family: inherit;
+        }
+
+        /* ─────────── HEADER ─────────── */
+        .store-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: saturate(180%) blur(16px);
+            -webkit-backdrop-filter: saturate(180%) blur(16px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            padding: 0 16px;
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            color: var(--text);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+        .back-btn:active {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .store-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        .store-logo img {
+            height: 32px;
+            width: 32px;
+            border-radius: 8px;
+        }
+        .store-logo span {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.3px;
+        }
+        .store-logo span small {
+            font-weight: 400;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+        .header-btn:active {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .profile-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--border);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .profile-avatar:active {
+            transform: scale(0.92);
+        }
+
+        /* ─────────── SEARCH BAR ─────────── */
+        .search-wrapper {
+            padding: 12px 16px 8px;
+            background: var(--bg);
+            position: sticky;
+            top: var(--header-height);
+            z-index: 99;
+        }
+
+        .search-bar {
+            background: var(--card);
+            border-radius: 50px;
+            padding: 0 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            transition: var(--transition);
+            height: 46px;
+        }
+        .search-bar:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15);
+        }
+        .search-bar i {
+            color: var(--text-light);
+            font-size: 16px;
+        }
+        .search-bar input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--text);
+            font-family: var(--font);
+            height: 100%;
+        }
+        .search-bar input::placeholder {
+            color: var(--text-light);
+        }
+        .search-bar .clear-btn {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 4px;
+            display: none;
+            font-size: 14px;
+        }
+
+        /* ─────────── CATEGORIES (Play Store style chips) ─────────── */
+        .categories-scroll {
+            padding: 8px 16px 12px;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+            background: var(--bg);
+            position: sticky;
+            top: calc(var(--header-height) + 54px);
+            z-index: 98;
+        }
+        .categories-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .cat-chip {
+            flex-shrink: 0;
+            padding: 6px 16px;
+            border-radius: 50px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+            user-select: none;
+        }
+        .cat-chip:active {
+            transform: scale(0.94);
+        }
+        .cat-chip.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+            box-shadow: 0 2px 8px rgba(26, 115, 232, 0.25);
+        }
+        .cat-chip i {
+            margin-right: 6px;
+            font-size: 12px;
+        }
+
+        /* ─────────── MAIN LOADER ─────────── */
+        .main-loader {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            color: var(--text-light);
+            gap: 16px;
+        }
+        .main-loader .spinner {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        .main-loader p {
+            font-size: 14px;
+            font-weight: 400;
+        }
+
+        /* ─────────── SECTION HEADER ─────────── */
+        .section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 16px 6px;
+        }
+        .section-head h2 {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-head h2 i {
+            font-size: 16px;
+            color: var(--text-light);
+        }
+        .section-head .see-all {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--primary);
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 4px 8px;
+        }
+        .section-head .see-all:active {
+            opacity: 0.6;
+        }
+
+        /* ─────────── FEATURED SLIDER ─────────── */
+        .featured-slider {
+            padding: 4px 16px 12px;
+            display: flex;
+            gap: 14px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        .featured-slider::-webkit-scrollbar {
+            display: none;
+        }
+
+        .featured-card {
+            flex: 0 0 88%;
+            max-width: 360px;
+            scroll-snap-align: start;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            background: var(--card);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .featured-card:active {
+            transform: scale(0.97);
+        }
+
+        .featured-card .fc-banner {
+            width: 100%;
+            aspect-ratio: 16/9;
+            object-fit: cover;
+            background: var(--bg);
+        }
+
+        .featured-card .fc-body {
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .featured-card .fc-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-sm);
+            object-fit: cover;
+            box-shadow: var(--shadow-sm);
+            flex-shrink: 0;
+        }
+        .featured-card .fc-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .featured-card .fc-info h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0 0 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .featured-card .fc-info p {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .featured-card .fc-install {
+            flex-shrink: 0;
+            padding: 4px 16px;
+            border-radius: 50px;
+            border: none;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .featured-card .fc-install:active {
+            transform: scale(0.92);
+        }
+
+        /* ─────────── APP GRID / HORIZONTAL LIST ─────────── */
+        .app-horizontal {
+            display: flex;
+            gap: 14px;
+            padding: 4px 16px 16px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        .app-horizontal::-webkit-scrollbar {
+            display: none;
+        }
+
+        .app-card {
+            flex: 0 0 108px;
+            scroll-snap-align: start;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+        }
+        .app-card:active {
+            transform: scale(0.94);
+        }
+
+        .app-card .ac-icon {
+            width: 108px;
+            height: 108px;
+            border-radius: var(--radius-md);
+            object-fit: cover;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            background: var(--card);
+            transition: var(--transition);
+            display: block;
+            margin: 0 auto;
+        }
+
+        .app-card .ac-name {
+            font-size: 13px;
+            font-weight: 600;
+            margin: 6px 0 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text);
+        }
+        .app-card .ac-dev {
+            font-size: 11px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin: 0;
+        }
+        .app-card .ac-rating {
+            font-size: 11px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            margin-top: 2px;
+        }
+        .app-card .ac-rating i {
+            color: var(--orange);
+            font-size: 10px;
+        }
+
+        /* ─────────── BOTTOM NAV ─────────── */
+        .bottom-nav {
+            position: fixed;
+            bottom: 14px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 94%;
+            max-width: 480px;
+            height: var(--nav-height);
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-radius: 40px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 0 6px;
+            z-index: 200;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 4px 12px;
+            transition: var(--transition);
+            font-family: var(--font);
+            position: relative;
+            min-width: 52px;
+        }
+        .nav-item i {
+            font-size: 20px;
+            transition: var(--transition);
+        }
+        .nav-item.active {
+            color: var(--primary);
+        }
+        .nav-item.active i {
+            transform: translateY(-2px);
+        }
+        .nav-item:active {
+            transform: scale(0.92);
+        }
+
+        .nav-center {
+            background: var(--primary);
+            color: #fff;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(26, 115, 232, 0.35);
+            transition: var(--transition);
+            transform: translateY(-10px);
+        }
+        .nav-center:active {
+            transform: translateY(-6px) scale(0.94);
+        }
+
+        /* ─────────── DETAIL MODAL (iOS style bottom sheet) ─────────── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 300;
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            animation: fadeIn 0.25s ease;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal-sheet {
+            background: var(--bg);
+            width: 100%;
+            max-width: 500px;
+            max-height: 92vh;
+            border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+            overflow-y: auto;
+            animation: slideUp 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+            padding: 0 0 24px;
+            position: relative;
+        }
+        @keyframes slideUp {
+            from {
+                transform: translateY(40px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-sheet .handle {
+            width: 40px;
+            height: 4px;
+            border-radius: 4px;
+            background: var(--border);
+            margin: 10px auto 4px;
+            flex-shrink: 0;
+        }
+
+        .modal-sheet .sheet-inner {
+            padding: 8px 20px 20px;
+        }
+
+        .modal-sheet .sheet-close {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(0, 0, 0, 0.06);
+            color: var(--text-secondary);
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+        .modal-sheet .sheet-close:active {
+            background: rgba(0, 0, 0, 0.12);
+        }
+
+        /* Detail Header */
+        .detail-top {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .detail-top .dt-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: var(--radius-md);
+            object-fit: cover;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .detail-top .dt-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .detail-top .dt-info h2 {
+            font-size: 19px;
+            font-weight: 700;
+            margin: 0 0 2px;
+        }
+        .detail-top .dt-info .dt-dev {
+            font-size: 14px;
+            color: var(--primary);
+            font-weight: 500;
+            margin: 0 0 4px;
+        }
+        .detail-top .dt-info .dt-meta {
+            font-size: 13px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .detail-top .dt-info .dt-meta i {
+            color: var(--orange);
+        }
+
+        .detail-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .detail-actions .btn-install {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 50px;
+            background: var(--primary);
+            color: #fff;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .detail-actions .btn-install:active {
+            transform: scale(0.96);
+        }
+        .detail-actions .btn-install.locked {
+            background: var(--red);
+        }
+        .detail-actions .btn-share {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 50px;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-size: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .detail-actions .btn-share:active {
+            transform: scale(0.92);
+        }
+
+        .detail-section-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin: 16px 0 6px;
+            color: var(--text);
+        }
+
+        .detail-desc {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        /* Screenshots gallery */
+        .ss-gallery {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 4px 0 12px;
+            scrollbar-width: none;
+        }
+        .ss-gallery::-webkit-scrollbar {
+            display: none;
+        }
+        .ss-gallery .ss-img {
+            height: 200px;
+            width: 100px;
+            border-radius: var(--radius-sm);
+            object-fit: cover;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+        .ss-gallery .ss-img:active {
+            transform: scale(0.94);
+        }
+
+        /* ─────────── FULLSCREEN VIEWER ─────────── */
+        #fsViewer {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.92);
+            z-index: 500;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 20px;
+        }
+        #fsViewer .fs-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            color: #fff;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            font-size: 22px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+        #fsViewer .fs-close:active {
+            background: rgba(255, 255, 255, 0.25);
+        }
+        #fsViewer #fsImg {
+            max-width: 95%;
+            max-height: 85vh;
+            object-fit: contain;
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-xl);
+        }
+
+        /* ─────────── ADMIN PANEL ─────────── */
+        #adminBtn {
+            position: fixed;
+            bottom: calc(var(--nav-height) + 24px);
+            right: 18px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: none;
+            background: #202124;
+            color: #fff;
+            font-size: 18px;
+            box-shadow: var(--shadow-lg);
+            z-index: 150;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+        #adminBtn:active {
+            transform: scale(0.9);
+        }
+
+        .admin-panel .admin-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        .admin-panel .admin-grid .stat-card {
+            background: var(--card);
+            padding: 14px;
+            border-radius: var(--radius-md);
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+        .admin-panel .admin-grid .stat-card h3 {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0;
+        }
+        .admin-panel .admin-grid .stat-card p {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin: 2px 0 0;
+        }
+
+        .admin-panel .form-group {
+            margin-bottom: 12px;
+        }
+        .admin-panel .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+        .admin-panel .form-group input,
+        .admin-panel .form-group textarea,
+        .admin-panel .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--card);
+            font-size: 14px;
+            font-family: var(--font);
+            color: var(--text);
+            transition: var(--transition);
+            outline: none;
+        }
+        .admin-panel .form-group input:focus,
+        .admin-panel .form-group textarea:focus,
+        .admin-panel .form-group select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.12);
+        }
+        .admin-panel .form-group textarea {
+            resize: vertical;
+            min-height: 70px;
+        }
+
+        .admin-panel .upload-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .admin-panel .upload-row input[type="text"] {
+            flex: 1;
+        }
+        .admin-panel .upload-row .upload-btn {
+            padding: 8px 14px;
+            border: none;
+            border-radius: var(--radius-sm);
+            background: var(--primary);
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .admin-panel .upload-row .upload-btn:active {
+            transform: scale(0.94);
+        }
+
+        .admin-panel .toggle-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: var(--card);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .admin-panel .toggle-row input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .admin-panel .btn-submit {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: var(--radius-sm);
+            background: #202124;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .admin-panel .btn-submit:active {
+            transform: scale(0.97);
+        }
+
+        .admin-panel .admin-app-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: var(--card);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            margin-bottom: 8px;
+        }
+        .admin-panel .admin-app-item .app-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+        .admin-panel .admin-app-item .app-info img {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        .admin-panel .admin-app-item .app-info .ai-text {
+            min-width: 0;
+        }
+        .admin-panel .admin-app-item .app-info .ai-text strong {
+            font-size: 14px;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .admin-panel .admin-app-item .app-info .ai-text span {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+        .admin-panel .admin-app-item .app-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        .admin-panel .admin-app-item .app-actions button {
+            padding: 4px 10px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .admin-panel .admin-app-item .app-actions button:active {
+            transform: scale(0.9);
+        }
+        .admin-panel .admin-app-item .app-actions .btn-edit {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+        .admin-panel .admin-app-item .app-actions .btn-del {
+            background: #fce8e6;
+            color: var(--red);
+        }
+
+        /* Pending app cards */
+        .pending-card {
+            background: #fff8e1;
+            border: 1px solid #ffe082;
+            padding: 12px 14px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .pending-card .pc-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+        .pending-card .pc-info img {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        .pending-card .pc-info .pc-text strong {
+            font-size: 14px;
+            display: block;
+        }
+        .pending-card .pc-info .pc-text span {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .pending-card .pc-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        .pending-card .pc-actions button {
+            padding: 4px 14px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .pending-card .pc-actions button:active {
+            transform: scale(0.92);
+        }
+        .pending-card .pc-actions .approve {
+            background: var(--green);
+            color: #fff;
+        }
+        .pending-card .pc-actions .reject {
+            background: var(--red);
+            color: #fff;
+        }
+
+        /* Screenshot preview in admin */
+        .ss-preview {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        .ss-preview img {
+            height: 50px;
+            width: 50px;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+        }
+
+        /* ─────────── EMPTY STATE ─────────── */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+        .empty-state i {
+            font-size: 48px;
+            color: var(--border);
+            margin-bottom: 12px;
+            display: block;
+        }
+        .empty-state p {
+            font-size: 15px;
+            margin: 0;
+        }
+
+        /* ─────────── RESPONSIVE ─────────── */
+        @media (min-width: 600px) {
+            .featured-card {
+                flex: 0 0 62%;
+                max-width: 420px;
+            }
+            .app-card {
+                flex: 0 0 120px;
+            }
+            .app-card .ac-icon {
+                width: 120px;
+                height: 120px;
+            }
+            .modal-sheet {
+                border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+                max-width: 480px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .store-logo span {
+                font-size: 15px;
+            }
+            .store-logo span small {
+                font-size: 11px;
+            }
+            .app-card {
+                flex: 0 0 92px;
+            }
+            .app-card .ac-icon {
+                width: 92px;
+                height: 92px;
+            }
+            .featured-card {
+                flex: 0 0 92%;
+            }
+            .detail-top .dt-icon {
+                width: 64px;
+                height: 64px;
+            }
+            .detail-top .dt-info h2 {
+                font-size: 17px;
+            }
+        }
+
+        /* ─────────── UTILITY ─────────── */
+        .hidden {
+            display: none !important;
+        }
+        .mt-8 {
+            margin-top: 8px;
+        }
+        .mb-8 {
+            margin-bottom: 8px;
+        }
+        .gap-8 {
+            gap: 8px;
+        }
+        .flex {
+            display: flex;
+        }
+        .flex-center {
+            align-items: center;
+        }
+        .flex-between {
+            justify-content: space-between;
+        }
+        .text-muted {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .w-full {
+            width: 100%;
+        }
+
+        /* highlight search */
+        .highlight {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        /* toast override */
+        .swal2-popup {
+            border-radius: var(--radius-md) !important;
+            font-family: var(--font) !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ─── HEADER ─── -->
+    <header class="store-header">
+        <div class="header-left">
+            <button class="back-btn" onclick="window.location.href='index.html'">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <a class="store-logo" href="#">
+                <img src="https://cdn-icons-png.flaticon.com/512/2991/2991149.png" alt="Store">
+                <span>স্টোর <small>মুক্তলিপি</small></span>
+            </a>
+        </div>
+        <div class="header-right">
+            <button class="header-btn" onclick="location.reload()">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+            <img id="userProfileImg" class="profile-avatar"
+            src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+            alt="Profile">
+        </div>
+    </header>
+
+    <!-- ─── SEARCH ─── -->
+    <div class="search-wrapper">
+        <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="অ্যাপ, গেম বা ডেভেলপার খুঁজুন..." autocomplete="off">
+            <button class="clear-btn" id="clearSearch" onclick="clearSearch()"><i class="fas fa-times-circle"></i></button>
+        </div>
+    </div>
+
+    <!-- ─── CATEGORIES ─── -->
+    <div class="categories-scroll" id="categoriesContainer">
+        <button class="cat-chip active" data-cat="all"><i class="fas fa-th-large"></i> সব</button>
+        <button class="cat-chip" data-cat="recommended"><i class="fas fa-fire"></i> পছন্দের</button>
+        <button class="cat-chip" data-cat="games"><i class="fas fa-gamepad"></i> গেমস</button>
+        <button class="cat-chip" data-cat="tools"><i class="fas fa-tools"></i> টুলস</button>
+        <button class="cat-chip" data-cat="education"><i class="fas fa-graduation-cap"></i> শিক্ষা</button>
+        <button class="cat-chip" data-cat="entertainment"><i class="fas fa-film"></i> বিনোদন</button>
+        <button class="cat-chip" data-cat="productivity"><i class="fas fa-briefcase"></i> প্রোডাক্টিভিটি</button>
+        <button class="cat-chip" data-cat="health"><i class="fas fa-heartbeat"></i> স্বাস্থ্য</button>
+    </div>
+
+    <!-- ─── MAIN CONTENT ─── -->
+    <div id="mainContent">
+
+        <!-- Loader -->
+        <div id="mainLoader" class="main-loader">
+            <div class="spinner"></div>
+            <p>অ্যাপ লোড হচ্ছে...</p>
+        </div>
+
+        <!-- Featured -->
+        <div class="section-head">
+            <h2><i class="fas fa-star" style="color:var(--orange);"></i> ফিচারড</h2>
+            <button class="see-all" onclick="scrollToSection('featuredSlider')">সব দেখুন</button>
+        </div>
+        <div class="featured-slider" id="featuredSlider"></div>
+
+        <!-- Recommended -->
+        <div class="section-head">
+            <h2><i class="fas fa-fire" style="color:#ea4335;"></i> জনপ্রিয় অ্যাপস</h2>
+            <button class="see-all" onclick="filterCategory('recommended')">সব দেখুন</button>
+        </div>
+        <div class="app-horizontal" id="recommendedContainer"></div>
+
+        <!-- Games -->
+        <div class="section-head">
+            <h2><i class="fas fa-gamepad" style="color:#8e44ad;"></i> গেমস</h2>
+            <button class="see-all" onclick="filterCategory('games')">সব দেখুন</button>
+        </div>
+        <div class="app-horizontal" id="gamesContainer"></div>
+
+        <!-- Tools -->
+        <div class="section-head">
+            <h2><i class="fas fa-tools" style="color:#2980b9;"></i> টুলস</h2>
+            <button class="see-all" onclick="filterCategory('tools')">সব দেখুন</button>
+        </div>
+        <div class="app-horizontal" id="toolsContainer"></div>
+
+        <!-- Education -->
+        <div class="section-head">
+            <h2><i class="fas fa-graduation-cap" style="color:#27ae60;"></i> শিক্ষা</h2>
+            <button class="see-all" onclick="filterCategory('education')">সব দেখুন</button>
+        </div>
+        <div class="app-horizontal" id="educationContainer"></div>
+
+        <!-- Entertainment -->
+        <div class="section-head">
+            <h2><i class="fas fa-film" style="color:#e67e22;"></i> বিনোদন</h2>
+            <button class="see-all" onclick="filterCategory('entertainment')">সব দেখুন</button>
+        </div>
+        <div class="app-horizontal" id="entertainmentContainer"></div>
+
+        <!-- Productivity -->
+        <div class="section-head">
+            <h2><i class="fas fa-briefcase" style="color:#2c3e50;"></i> প্রোডাক্টিভিটি</h2>
+            <button class="see-all" onclick="filterCategory('productivity')">সব দেখুন</button>
+        </div>
+        <div class="app-horizontal" id="productivityContainer"></div>
+
+    </div>
+
+    <!-- ─── BOTTOM NAV ─── -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="navTo('home')">
+            <i class="fas fa-home"></i>
+            <span>হোম</span>
+        </button>
+        <button class="nav-item" onclick="navTo('search')">
+            <i class="fas fa-search"></i>
+            <span>খুঁজুন</span>
+        </button>
+        <button class="nav-center" onclick="openUploadModal()">
+            <i class="fas fa-plus"></i>
+        </button>
+        <button class="nav-item" onclick="navTo('updates')">
+            <i class="fas fa-clock"></i>
+            <span>আপডেট</span>
+        </button>
+        <button class="nav-item" onclick="navTo('profile')">
+            <i class="fas fa-user"></i>
+            <span>প্রোফাইল</span>
+        </button>
+    </nav>
+
+    <!-- ─── ADMIN BUTTON ─── -->
+    <button id="adminBtn" onclick="openAdminPanel()"><i class="fas fa-cog"></i></button>
+
+    <!-- ─── APP DETAIL MODAL ─── -->
+    <div id="appDetailModal" class="modal-overlay" onclick="closeModal('appDetailModal')">
+        <div class="modal-sheet" onclick="event.stopPropagation()">
+            <div class="handle"></div>
+            <button class="sheet-close" onclick="closeModal('appDetailModal')"><i class="fas fa-times"></i></button>
+            <div class="sheet-inner">
+                <div class="detail-top">
+                    <img id="detIcon" class="dt-icon" src="" alt="icon">
+                    <div class="dt-info">
+                        <h2 id="detName">App Name</h2>
+                        <p class="dt-dev" id="detDev">Developer</p>
+                        <div class="dt-meta">
+                            <span id="detRating">4.5 <i class="fas fa-star"></i></span>
+                            <span>•</span>
+                            <span id="detSize">15 MB</span>
+                            <span>•</span>
+                            <span id="detDownloads">1K+ ডাউনলোড</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-actions">
+                    <button class="btn-install" id="detInstallBtn"><i class="fas fa-download"></i> ইনস্টল করুন</button>
+                    <button class="btn-share" onclick="shareApp()"><i class="fas fa-share-alt"></i></button>
+                </div>
+
+                <div class="detail-section-title">অ্যাপ সম্পর্কে</div>
+                <div class="detail-desc" id="detDesc"></div>
+
+                <div class="detail-section-title">স্ক্রিনশট</div>
+                <div class="ss-gallery" id="detScreenshots"></div>
+
+                <div class="detail-section-title">বিস্তারিত</div>
+                <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+                    <p><strong>ডেভেলপার:</strong> <span id="detDevDetail">—</span></p>
+                    <p><strong>ক্যাটাগরি:</strong> <span id="detCategory">—</span></p>
+                    <p><strong>সাইজ:</strong> <span id="detSizeDetail">—</span></p>
+                    <p><strong>ভার্সন:</strong> <span id="detVersion">1.0.0</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── FULLSCREEN VIEWER ─── -->
+    <div id="fsViewer" onclick="if(event.target===this)closeFS()">
+        <button class="fs-close" onclick="closeFS()"><i class="fas fa-times"></i></button>
+        <img id="fsImg" src="">
+    </div>
+
+    <!-- ─── ADMIN PANEL ─── -->
+    <div id="adminModal" class="modal-overlay" onclick="closeModal('adminModal')">
+        <div class="modal-sheet" style="max-height:94vh;" onclick="event.stopPropagation()">
+            <div class="handle"></div>
+            <button class="sheet-close" onclick="closeModal('adminModal')"><i class="fas fa-times"></i></button>
+            <div class="sheet-inner admin-panel">
+                <h2 style="margin:0 0 4px;font-size:20px;">⚙️ অ্যাডমিন ড্যাশবোর্ড</h2>
+                <p class="text-muted" style="margin-bottom:16px;">অ্যাপ ম্যানেজ করুন, পেন্ডিং অনুমোদন দিন</p>
+
+                <div class="admin-grid">
+                    <div class="stat-card"><h3 id="statTotal">0</h3><p>মোট অ্যাপ</p></div>
+                    <div class="stat-card"><h3 id="statLocked">0</h3><p>লক করা</p></div>
+                </div>
+
+                <input type="hidden" id="adminAppId">
+
+                <div class="form-group">
+                    <label>অ্যাপের নাম</label>
+                    <input type="text" id="adminAppName" placeholder="যেমন: আমার অ্যাপ">
+                </div>
+
+                <div class="form-group">
+                    <label>ডেভেলপারের নাম</label>
+                    <input type="text" id="adminAppDev" placeholder="যেমন: জন doe">
+                </div>
+
+                <div class="form-group">
+                    <label>অ্যাপ আইকন</label>
+                    <div class="upload-row">
+                        <input type="text" id="adminAppIcon" placeholder="Cloudinary URL">
+                        <input type="file" id="iconFile" style="display:none" accept="image/*" onchange="uploadToCloudinary(this,'adminAppIcon')">
+                        <button class="upload-btn" onclick="document.getElementById('iconFile').click()"><i class="fas fa-upload"></i></button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>ব্যানার ইমেজ (ফিচারডের জন্য)</label>
+                    <div class="upload-row">
+                        <input type="text" id="adminAppBanner" placeholder="Cloudinary URL">
+                        <input type="file" id="bannerFile" style="display:none" accept="image/*" onchange="uploadToCloudinary(this,'adminAppBanner')">
+                        <button class="upload-btn" onclick="document.getElementById('bannerFile').click()"><i class="fas fa-upload"></i></button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>স্ক্রিনশট (একাধিক)</label>
+                    <div class="upload-row">
+                        <input type="text" id="adminAppScreenshotsText" placeholder="আপলোড করলে এখানে URL আসবে" readonly style="background:#f5f5f5;font-size:12px;">
+                        <input type="file" id="adminSsFile" style="display:none" accept="image/*" multiple onchange="uploadMultipleScreenshots(this)">
+                        <button class="upload-btn" onclick="document.getElementById('adminSsFile').click()"><i class="fas fa-upload"></i></button>
+                    </div>
+                    <div class="ss-preview" id="adminSsPreview"></div>
+                    <button onclick="clearAdminScreenshots()" style="margin-top:6px;padding:4px 12px;border:none;border-radius:6px;background:var(--red);color:#fff;font-size:12px;cursor:pointer;">সব মুছুন</button>
+                </div>
+
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <div class="form-group" style="flex:1;min-width:100px;">
+                        <label>সাইজ</label>
+                        <input type="text" id="adminAppSize" placeholder="15 MB">
+                    </div>
+                    <div class="form-group" style="flex:1;min-width:100px;">
+                        <label>রেটিং</label>
+                        <input type="text" id="adminAppRating" placeholder="4.5">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>ডাউনলোড লিংক</label>
+                    <input type="text" id="adminAppLink" placeholder="https://example.com/download">
+                </div>
+
+                <div class="form-group">
+                    <label>ক্যাটাগরি</label>
+                    <select id="adminAppCat">
+                        <option value="recommended">পছন্দের (Recommended)</option>
+                        <option value="games">গেমস (Games)</option>
+                        <option value="tools">টুলস (Tools)</option>
+                        <option value="education">শিক্ষা (Education)</option>
+                        <option value="entertainment">বিনোদন (Entertainment)</option>
+                        <option value="productivity">প্রোডাক্টিভিটি (Productivity)</option>
+                        <option value="health">স্বাস্থ্য (Health)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>বর্ণনা</label>
+                    <textarea id="adminAppDesc" rows="3" placeholder="অ্যাপের বিস্তারিত বর্ণনা"></textarea>
+                </div>
+
+                <div class="toggle-row">
+                    <input type="checkbox" id="adminAppFeatured">
+                    <i class="fas fa-star" style="color:var(--orange);"></i> ফিচারড করুন
+                </div>
+
+                <div class="toggle-row">
+                    <input type="checkbox" id="adminAppLocked" onchange="toggleAdLink()">
+                    <i class="fas fa-lock" style="color:var(--red);"></i> অ্যাড দিয়ে লক করুন
+                </div>
+
+                <div class="form-group" id="adLinkGroup" style="display:none;">
+                    <label>অ্যাড লিংক (Adsterra ইত্যাদি)</label>
+                    <input type="text" id="adminAdLink" placeholder="https://example.com/ad">
+                </div>
+
+                <button class="btn-submit" onclick="saveApp()"><i class="fas fa-save"></i> অ্যাপ সেভ করুন</button>
+
+                <hr style="margin:20px 0;border:0;border-top:1px solid var(--border);">
+
+                <h3 style="font-size:16px;color:#e67e22;">⏳ পেন্ডিং অ্যাপস</h3>
+                <div id="pendingAppList"><p class="text-muted">লোড হচ্ছে...</p></div>
+
+                <hr style="margin:20px 0;border:0;border-top:1px solid var(--border);">
+
+                <h3 style="font-size:16px;">📱 অ্যাপ তালিকা</h3>
+                <div id="adminAppList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── UPLOAD APP MODAL (User upload) ─── -->
+    <div id="uploadModal" class="modal-overlay" onclick="closeModal('uploadModal')">
+        <div class="modal-sheet" style="max-height:94vh;" onclick="event.stopPropagation()">
+            <div class="handle"></div>
+            <button class="sheet-close" onclick="closeModal('uploadModal')"><i class="fas fa-times"></i></button>
+            <div class="sheet-inner">
+                <h2 style="margin:0 0 4px;font-size:20px;"><i class="fas fa-cloud-upload-alt" style="color:var(--primary);"></i> অ্যাপ আপলোড করুন</h2>
+                <p class="text-muted" style="margin-bottom:16px;">আপনার অ্যাপ আপলোড করুন, অ্যাডমিন অনুমোদন দিলে স্টোরে যুক্ত হবে।</p>
+
+                <div class="form-group">
+                    <label>অ্যাপের নাম *</label>
+                    <input type="text" id="uploadAppName" placeholder="আপনার অ্যাপের নাম">
+                </div>
+                <div class="form-group">
+                    <label>ডেভেলপারের নাম *</label>
+                    <input type="text" id="uploadAppDev" placeholder="আপনার নাম">
+                </div>
+                <div class="form-group">
+                    <label>অ্যাপ আইকন *</label>
+                    <div class="upload-row">
+                        <input type="text" id="uploadAppIcon" placeholder="Cloudinary URL">
+                        <input type="file" id="uploadIconFile" style="display:none" accept="image/*" onchange="uploadToCloudinary(this,'uploadAppIcon')">
+                        <button class="upload-btn" onclick="document.getElementById('uploadIconFile').click()"><i class="fas fa-upload"></i></button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>ব্যানার ইমেজ (ঐচ্ছিক)</label>
+                    <div class="upload-row">
+                        <input type="text" id="uploadAppBanner" placeholder="Cloudinary URL">
+                        <input type="file" id="uploadBannerFile" style="display:none" accept="image/*" onchange="uploadToCloudinary(this,'uploadAppBanner')">
+                        <button class="upload-btn" onclick="document.getElementById('uploadBannerFile').click()"><i class="fas fa-upload"></i></button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>স্ক্রিনশট (সর্বোচ্চ ৫টি)</label>
+                    <div class="upload-row">
+                        <input type="text" id="uploadAppScreenshotsText" placeholder="আপলোড করলে URL আসবে" readonly style="background:#f5f5f5;font-size:12px;">
+                        <input type="file" id="uploadSsFile" style="display:none" accept="image/*" multiple onchange="uploadMultipleScreenshotsUser(this)">
+                        <button class="upload-btn" onclick="document.getElementById('uploadSsFile').click()"><i class="fas fa-upload"></i></button>
+                    </div>
+                    <div class="ss-preview" id="uploadSsPreview"></div>
+                </div>
+                <div class="form-group">
+                    <label>অ্যাপ সাইজ</label>
+                    <input type="text" id="uploadAppSize" placeholder="15 MB">
+                </div>
+                <div class="form-group">
+                    <label>ডাউনলোড লিংক *</label>
+                    <input type="text" id="uploadAppLink" placeholder="https://example.com/download">
+                </div>
+                <div class="form-group">
+                    <label>ক্যাটাগরি</label>
+                    <select id="uploadAppCat">
+                        <option value="recommended">পছন্দের</option>
+                        <option value="games">গেমস</option>
+                        <option value="tools">টুলস</option>
+                        <option value="education">শিক্ষা</option>
+                        <option value="entertainment">বিনোদন</option>
+                        <option value="productivity">প্রোডাক্টিভিটি</option>
+                        <option value="health">স্বাস্থ্য</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>বর্ণনা</label>
+                    <textarea id="uploadAppDesc" rows="3" placeholder="অ্যাপ সম্পর্কে বিস্তারিত"></textarea>
+                </div>
+
+                <button class="btn-submit" style="background:var(--primary);" onclick="submitUserApp()">
+                    <i class="fas fa-paper-plane"></i> সাবমিট করুন (অ্যাডমিন অনুমোদন সাপেক্ষে)
+                </button>
+                <p class="text-muted text-center" style="margin-top:8px;font-size:12px;">আপনার অ্যাপ পেন্ডিং লিস্টে যাবে, অ্যাডমিন অনুমোদন দিলে স্টোরে প্রকাশ পাবে।</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── FIREBASE & LOGIC ─── -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, push, set, onValue, remove, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBZtycgadrngON2WEwvIE7ERPYxdkDVfFM",
+            authDomain: "muktolipidiary.firebaseapp.com",
+            databaseURL: "https://muktolipidiary-default-rtdb.firebaseio.com",
+            projectId: "muktolipidiary",
+            storageBucket: "muktolipidiary.firebasestorage.app",
+            messagingSenderId: "639103995400",
+            appId: "1:639103995400:web:13528e51c0e86080770bbd"
+        };
+
+        const fbApp = initializeApp(firebaseConfig);
+        const db = getDatabase(fbApp);
+        const auth = getAuth(fbApp);
+
+        // ─── CONFIG ───
+        const ADMIN_UID = "Pg5ko76Pu8Zf4ja9MMzEJRLDMYs1";
+        // Cloudinary config — CHANGE THESE TO YOUR OWN
+        const CLOUD_NAME = "dqm0lwqil";
+        const UPLOAD_PRESET = "ml_default";
+
+        window.allStoreApps = [];
+        let isAdmin = false;
+        let currentAppDetails = null;
+        let sliderInterval;
+        let currentCategory = 'all';
+
+        // ─── DOM REFS ───
+        const $ = id => document.getElementById(id);
+        const mainLoader = $('mainLoader');
+        const featuredSlider = $('featuredSlider');
+        const recContainer = $('recommendedContainer');
+        const gamesContainer = $('gamesContainer');
+        const toolsContainer = $('toolsContainer');
+        const eduContainer = $('educationContainer');
+        const entContainer = $('entertainmentContainer');
+        const prodContainer = $('productivityContainer');
+
+        // ─── TOAST ───
+        window.showToast = (msg, icon = 'info') => {
+            Swal.fire({ text: msg, icon, toast: true, position: 'bottom', showConfirmButton: false, timer: 2200,
+                background: '#fff', color: '#202124', iconColor: '#1a73e8' });
+        };
+
+        // ─── AUTH ───
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const img = $('userProfileImg');
+                if (img) img.src = user.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+                if (user.uid === ADMIN_UID) {
+                    isAdmin = true;
+                    $('adminBtn').style.display = 'flex';
+                }
+            }
+        });
+
+        // ─── LOAD APPS ───
+        function loadApps() {
+            onValue(ref(db, 'store_apps'), (snapshot) => {
+                mainLoader.style.display = 'none';
+                const data = snapshot.val();
+                window.allStoreApps = data ? Object.entries(data).map(([id, val]) => ({ id, ...val })) : [];
+                renderAll();
+                if (isAdmin) renderAdminAppList();
+            });
+        }
+        loadApps();
+
+        // ─── RENDER ALL ───
+        function renderAll(query = '', category = 'all') {
+            const apps = window.allStoreApps.filter(a => a.status !== 'pending');
+            let filtered = apps;
+            if (query) filtered = filtered.filter(a => a.name.toLowerCase().includes(query.toLowerCase()) ||
+                a.developer.toLowerCase().includes(query.toLowerCase()));
+            if (category !== 'all') filtered = filtered.filter(a => a.category === category);
+
+            renderFeatured(filtered, query);
+            renderCategory('recommended', filtered, recContainer, query);
+            renderCategory('games', filtered, gamesContainer, query);
+            renderCategory('tools', filtered, toolsContainer, query);
+            renderCategory('education', filtered, eduContainer, query);
+            renderCategory('entertainment', filtered, entContainer, query);
+            renderCategory('productivity', filtered, prodContainer, query);
+
+            startAutoSlider();
+        }
+
+        function renderFeatured(apps, query) {
+            const featured = apps.filter(a => a.isFeatured);
+            if (featured.length === 0) {
+                featuredSlider.innerHTML =
+                `<div class="empty-state" style="width:100%;"><i class="fas fa-star"></i><p>কোন ফিচারড অ্যাপ নেই</p></div>`;
+                return;
+            }
+            featuredSlider.innerHTML = featured.map(app => {
+                const nameHtml = query ? app.name.replace(new RegExp(query, 'gi'), m =>
+                    `<span class="highlight">${m}</span>`) : app.name;
+                return `
+                <div class="featured-card" onclick="openAppDetails('${app.id}')">
+                    <img src="${app.banner || app.icon}" class="fc-banner" loading="lazy" onerror="this.src='${app.icon}'">
+                    <div class="fc-body">
+                        <img src="${app.icon}" class="fc-icon" loading="lazy" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2991/2991149.png'">
+                        <div class="fc-info">
+                            <h4>${nameHtml}</h4>
+                            <p>${app.developer} • ${app.size}</p>
+                        </div>
+                        <button class="fc-install" onclick="event.stopPropagation();openAppDetails('${app.id}')">GET</button>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        function renderCategory(cat, apps, container, query) {
+            const filtered = apps.filter(a => a.category === cat);
+            if (filtered.length === 0) {
+                container.innerHTML =
+                    `<div class="empty-state" style="width:100%;padding:20px 0;"><i class="fas fa-folder-open"></i><p style="font-size:13px;">কোন অ্যাপ নেই</p></div>`;
+                return;
+            }
+            container.innerHTML = filtered.map(app => {
+                const nameHtml = query ? app.name.replace(new RegExp(query, 'gi'), m =>
+                    `<span class="highlight">${m}</span>`) : app.name;
+                return `
+                <div class="app-card" onclick="openAppDetails('${app.id}')">
+                    <img src="${app.icon}" class="ac-icon" loading="lazy" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2991/2991149.png'">
+                    <p class="ac-name">${nameHtml}</p>
+                    <p class="ac-dev">${app.developer}</p>
+                    <div class="ac-rating">${app.rating || '4.0'} <i class="fas fa-star"></i></div>
+                </div>
+            `}).join('');
+        }
+
+        // ─── AUTO SLIDER ───
+        function startAutoSlider() {
+            clearInterval(sliderInterval);
+            if (featuredSlider.children.length <= 1) return;
+            sliderInterval = setInterval(() => {
+                const el = featuredSlider;
+                if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 10) {
+                    el.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    el.scrollBy({ left: el.clientWidth * 0.7, behavior: 'smooth' });
+                }
+            }, 4000);
+        }
+
+        // ─── SEARCH ───
+        let searchTimeout;
+        $('searchInput').addEventListener('input', (e) => {
+            const val = e.target.value.trim();
+            $('clearSearch').style.display = val ? 'block' : 'none';
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                renderAll(val, currentCategory);
+            }, 300);
+        });
+
+        window.clearSearch = function() {
+            $('searchInput').value = '';
+            $('clearSearch').style.display = 'none';
+            renderAll('', currentCategory);
+            $('searchInput').focus();
+        };
+
+        // ─── CATEGORY FILTER ───
+        document.querySelectorAll('.cat-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                currentCategory = chip.dataset.cat;
+                const query = $('searchInput').value.trim();
+                renderAll(query, currentCategory);
+            });
+        });
+
+        window.filterCategory = function(cat) {
+            document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+            const target = document.querySelector(`.cat-chip[data-cat="${cat}"]`);
+            if (target) target.classList.add('active');
+            currentCategory = cat;
+            renderAll($('searchInput').value.trim(), cat);
+            document.querySelector('.search-wrapper').scrollIntoView({ behavior: 'smooth' });
+        };
+
+        function scrollToSection(id) {
+            const el = document.getElementById(id);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // ─── NAV ───
+        window.navTo = function(page) {
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            if (page === 'home') {
+                document.querySelector('.nav-item:first-child').classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                renderAll($('searchInput').value.trim(), currentCategory);
+            } else if (page === 'search') {
+                $('searchInput').focus();
+            } else if (page === 'updates') {
+                showToast('সব অ্যাপ আপডেট আছে ✅', 'success');
+            } else if (page === 'profile') {
+                if (isAdmin) {
+                    openAdminPanel();
+                } else {
+                    showToast('প্রোফাইল পেজ শিগগিরই আসছে 👤', 'info');
+                }
+            }
+        };
+
+        // ─── APP DETAIL ───
+        window.openAppDetails = function(appId) {
+            const app = window.allStoreApps.find(a => a.id === appId);
+            if (!app) return;
+            currentAppDetails = app;
+
+            $('detIcon').src = app.icon || 'https://cdn-icons-png.flaticon.com/512/2991/2991149.png';
+            $('detName').textContent = app.name;
+            $('detDev').textContent = app.developer || 'Unknown';
+            $('detRating').innerHTML = `${app.rating || '4.0'} <i class="fas fa-star"></i>`;
+            $('detSize').textContent = app.size || '—';
+            $('detDownloads').textContent = app.downloads || '1K+';
+            $('detDesc').textContent = app.desc || 'কোনো বর্ণনা দেওয়া নেই।';
+            $('detDevDetail').textContent = app.developer || '—';
+            $('detCategory').textContent = app.category || '—';
+            $('detSizeDetail').textContent = app.size || '—';
+            $('detVersion').textContent = app.version || '1.0.0';
+
+            // Screenshots
+            const ssContainer = $('detScreenshots');
+            ssContainer.innerHTML = '';
+            if (app.screenshots && app.screenshots.length > 0) {
+                app.screenshots.forEach(url => {
+                    ssContainer.innerHTML +=
+                        `<img src="${url}" class="ss-img" onclick="openFullscreen('${url}')" loading="lazy">`;
+                });
+            } else {
+                ssContainer.innerHTML = `<span class="text-muted" style="font-size:13px;">কোন স্ক্রিনশট নেই</span>`;
+            }
+
+            const btn = $('detInstallBtn');
+            if (app.isLocked) {
+                btn.innerHTML = `<i class="fas fa-lock"></i> অ্যাড দেখে আনলক করুন`;
+                btn.className = 'btn-install locked';
+            } else {
+                btn.innerHTML = `<i class="fas fa-download"></i> ইনস্টল করুন`;
+                btn.className = 'btn-install';
+            }
+
+            $('appDetailModal').style.display = 'flex';
+        };
+
+        window.closeModal = function(id) {
+            document.getElementById(id).style.display = 'none';
+        };
+
+        window.openFullscreen = function(url) {
+            $('fsImg').src = url;
+            $('fsViewer').style.display = 'flex';
+        };
+
+        window.closeFS = function() {
+            $('fsViewer').style.display = 'none';
+        };
+
+        // ─── INSTALL / UNLOCK ───
+        $('detInstallBtn').addEventListener('click', () => {
+            if (!currentAppDetails || !currentAppDetails.downloadLink) {
+                showToast('ডাউনলোড লিংক নেই!', 'error');
+                return;
+            }
+            const target = encodeURIComponent(currentAppDetails.downloadLink);
+            if (currentAppDetails.isLocked) {
+                const ad = encodeURIComponent(currentAppDetails.adLink || 'https://example.com/ad');
+                window.location.href = `ads.html?target=${target}&adLink=${ad}`;
+            } else {
+                window.location.href = `redirect.html?url=${target}`;
+            }
+        });
+
+        window.shareApp = function() {
+            if (!currentAppDetails) return;
+            const data = {
+                title: currentAppDetails.name,
+                text: `${currentAppDetails.name} — ডাউনলোড করুন মুক্তলিপি স্টোর থেকে!`,
+                url: currentAppDetails.downloadLink
+            };
+            if (navigator.share) {
+                navigator.share(data).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(`${data.text}\n${data.url}`).then(() => {
+                    showToast('লিংক কপি হয়েছে! 📋', 'success');
+                }).catch(() => {});
+            }
+        };
+
+        // ─── CLOUDINARY UPLOAD ───
+        window.uploadToCloudinary = async function(inputElem, targetInputId) {
+            const file = inputElem.files[0];
+            if (!file) return;
+            const btn = inputElem.nextElementSibling;
+            if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            Swal.fire({ title: 'আপলোড হচ্ছে...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', UPLOAD_PRESET);
+
+            try {
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.secure_url) {
+                    document.getElementById(targetInputId).value = data.secure_url;
+                    Swal.fire({ icon: 'success', title: 'আপলোড সম্পন্ন!', toast: true, timer: 1500,
+                        showConfirmButton: false });
+                } else {
+                    throw new Error('Upload failed');
+                }
+            } catch (e) {
+                Swal.fire({ icon: 'error', title: 'আপলোড ব্যর্থ!', text: e.message });
+            }
+            if (btn) btn.innerHTML = '<i class="fas fa-upload"></i>';
+            inputElem.value = '';
+        };
+
+        // ─── ADMIN: MULTIPLE SCREENSHOTS ───
+        window.adminCurrentScreenshots = [];
+
+        window.uploadMultipleScreenshots = async function(inputElem) {
+            const files = Array.from(inputElem.files);
+            if (files.length === 0) return;
+            if (files.length > 5) return showToast('সর্বোচ্চ ৫টি স্ক্রিনশট', 'warning');
+
+            const btn = inputElem.nextElementSibling;
+            if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            let urls = [];
+            for (let i = 0; i < files.length; i++) {
+                Swal.fire({ title: `আপলোড (${i+1}/${files.length})`, allowOutsideClick: false, didOpen: () => Swal
+                        .showLoading() });
+                const formData = new FormData();
+                formData.append('file', files[i]);
+                formData.append('upload_preset', UPLOAD_PRESET);
+                try {
+                    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await res.json();
+                    if (data.secure_url) urls.push(data.secure_url);
+                } catch (e) { console.error(e); }
+            }
+
+            window.adminCurrentScreenshots = urls;
+            $('adminAppScreenshotsText').value = urls.join(', ');
+            $('adminSsPreview').innerHTML = urls.map(u =>
+                `<img src="${u}" loading="lazy">`).join('');
+            if (btn) btn.innerHTML = '<i class="fas fa-upload"></i>';
+            inputElem.value = '';
+            Swal.fire({ icon: 'success', title: `${urls.length}টি স্ক্রিনশট আপলোড হয়েছে!`, toast: true, timer: 1800,
+                showConfirmButton: false });
+        };
+
+        window.clearAdminScreenshots = function() {
+            window.adminCurrentScreenshots = [];
+            $('adminAppScreenshotsText').value = '';
+            $('adminSsPreview').innerHTML = '';
+        };
+
+        // ─── USER: MULTIPLE SCREENSHOTS ───
+        window.userScreenshots = [];
+
+        window.uploadMultipleScreenshotsUser = async function(inputElem) {
+            const files = Array.from(inputElem.files);
+            if (files.length === 0) return;
+            if (files.length > 5) return showToast('সর্বোচ্চ ৫টি স্ক্রিনশট', 'warning');
+
+            const btn = inputElem.nextElementSibling;
+            if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            let urls = [];
+            for (let i = 0; i < files.length; i++) {
+                Swal.fire({ title: `আপলোড (${i+1}/${files.length})`, allowOutsideClick: false, didOpen: () => Swal
+                        .showLoading() });
+                const formData = new FormData();
+                formData.append('file', files[i]);
+                formData.append('upload_preset', UPLOAD_PRESET);
+                try {
+                    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await res.json();
+                    if (data.secure_url) urls.push(data.secure_url);
+                } catch (e) { console.error(e); }
+            }
+
+            window.userScreenshots = urls;
+            $('uploadAppScreenshotsText').value = urls.join(', ');
+            $('uploadSsPreview').innerHTML = urls.map(u => `<img src="${u}" loading="lazy">`).join('');
+            if (btn) btn.innerHTML = '<i class="fas fa-upload"></i>';
+            inputElem.value = '';
+            Swal.fire({ icon: 'success', title: `${urls.length}টি স্ক্রিনশট আপলোড হয়েছে!`, toast: true, timer: 1800,
+                showConfirmButton: false });
+        };
+
+        // ─── ADMIN PANEL ───
+        window.openAdminPanel = function() {
+            if (!isAdmin) return showToast('অ্যাডমিন এক্সেস নেই', 'error');
+            $('adminModal').style.display = 'flex';
+            resetAdminForm();
+            $('statTotal').textContent = window.allStoreApps.length;
+            $('statLocked').textContent = window.allStoreApps.filter(a => a.isLocked).length;
+            loadPendingApps();
+        };
+
+        window.toggleAdLink = function() {
+            $('adLinkGroup').style.display = $('adminAppLocked').checked ? 'block' : 'none';
+        };
+
+        window.saveApp = function() {
+            const id = $('adminAppId').value;
+            const data = {
+                name: $('adminAppName').value.trim(),
+                developer: $('adminAppDev').value.trim() || 'Muktolipi Devs',
+                icon: $('adminAppIcon').value.trim() || 'https://cdn-icons-png.flaticon.com/512/2991/2991149.png',
+                banner: $('adminAppBanner').value.trim() || '',
+                size: $('adminAppSize').value.trim() || '15 MB',
+                rating: $('adminAppRating').value.trim() || '4.0',
+                downloadLink: $('adminAppLink').value.trim(),
+                category: $('adminAppCat').value,
+                desc: $('adminAppDesc').value.trim() || 'বর্ণনা নেই',
+                screenshots: window.adminCurrentScreenshots || [],
+                isFeatured: $('adminAppFeatured').checked,
+                isLocked: $('adminAppLocked').checked,
+                adLink: $('adminAdLink').value.trim() || '',
+                status: 'approved',
+                downloads: '1K+',
+                version: '1.0.0',
+                timestamp: Date.now()
+            };
+
+            if (!data.name || !data.downloadLink) return showToast('নাম ও ডাউনলোড লিংক দিতে হবে', 'error');
+
+            Swal.fire({ title: 'সেভ হচ্ছে...', didOpen: () => Swal.showLoading() });
+
+            if (id) {
+                update(ref(db, `store_apps/${id}`), data).then(() => {
+                    Swal.close();
+                    resetAdminForm();
+                    showToast('অ্যাপ আপডেট হয়েছে ✅', 'success');
+                });
+            } else {
+                push(ref(db, 'store_apps'), data).then(() => {
+                    Swal.close();
+                    resetAdminForm();
+                    showToast('অ্যাপ যুক্ত হয়েছে ✅', 'success');
+                });
+            }
+        };
+
+        window.renderAdminAppList = function() {
+            const container = $('adminAppList');
+            const apps = window.allStoreApps.filter(a => a.status !== 'pending');
+            if (apps.length === 0) {
+                container.innerHTML = `<p class="text-muted">কোন অ্যাপ নেই</p>`;
+                return;
+            }
+            container.innerHTML = apps.map(app => `
+                <div class="admin-app-item">
+                    <div class="app-info">
+                        <img src="${app.icon || 'https://cdn-icons-png.flaticon.com/512/2991/2991149.png'}" loading="lazy">
+                        <div class="ai-text">
+                            <strong>${app.name}</strong>
+                            <span>${app.developer} • ${app.isLocked ? '🔒 লক' : '✅ ফ্রি'}</span>
+                        </div>
+                    </div>
+                    <div class="app-actions">
+                        <button class="btn-edit" onclick="editApp('${app.id}')"><i class="fas fa-pen"></i></button>
+                        <button class="btn-del" onclick="deleteApp('${app.id}')"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        window.editApp = function(id) {
+            const app = window.allStoreApps.find(a => a.id === id);
+            if (!app) return;
+            $('adminAppId').value = app.id;
+            $('adminAppName').value = app.name || '';
+            $('adminAppDev').value = app.developer || '';
+            $('adminAppIcon').value = app.icon || '';
+            $('adminAppBanner').value = app.banner || '';
+            $('adminAppSize').value = app.size || '';
+            $('adminAppRating').value = app.rating || '';
+            $('adminAppLink').value = app.downloadLink || '';
+            $('adminAppCat').value = app.category || 'recommended';
+            $('adminAppDesc').value = app.desc || '';
+            $('adminAppFeatured').checked = app.isFeatured || false;
+            $('adminAppLocked').checked = app.isLocked || false;
+            $('adminAdLink').value = app.adLink || '';
+            window.adminCurrentScreenshots = app.screenshots || [];
+            $('adminAppScreenshotsText').value = window.adminCurrentScreenshots.join(', ');
+            $('adminSsPreview').innerHTML = window.adminCurrentScreenshots.map(u =>
+                `<img src="${u}" loading="lazy">`).join('');
+            window.toggleAdLink();
+        };
+
+        window.deleteApp = function(id) {
+            Swal.fire({
+                title: 'নিশ্চিত?',
+                text: 'এই অ্যাপ মুছে ফেলা হবে!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ea4335',
+                cancelButtonColor: '#5f6368',
+                confirmButtonText: 'হ্যাঁ, মুছুন',
+                cancelButtonText: 'বাতিল'
+            }).then(result => {
+                if (result.isConfirmed) {
+                    remove(ref(db, `store_apps/${id}`));
+                    showToast('অ্যাপ মুছে ফেলা হয়েছে', 'success');
+                }
+            });
+        };
+
+        function resetAdminForm() {
+            $('adminAppId').value = '';
+            document.querySelectorAll('.admin-panel .form-group input, .admin-panel .form-group textarea').forEach(el => {
+                if (el.type !== 'file' && el.type !== 'hidden' && el.id !== 'adminAppScreenshotsText') el.value = '';
+            });
+            document.querySelectorAll('.admin-panel .form-group input[type="checkbox"]').forEach(el => el.checked = false);
+            window.clearAdminScreenshots();
+            window.toggleAdLink();
+        }
+
+        // ─── PENDING APPS ───
+        function loadPendingApps() {
+            onValue(ref(db, 'pending_apps'), (snapshot) => {
+                const data = snapshot.val();
+                const container = $('pendingAppList');
+                if (!data) {
+                    container.innerHTML = '<p class="text-muted">কোন পেন্ডিং অ্যাপ নেই</p>';
+                    return;
+                }
+                const apps = Object.entries(data).map(([id, val]) => ({ id, ...val }));
+                container.innerHTML = apps.map(app => `
+                    <div class="pending-card">
+                        <div class="pc-info">
+                            <img src="${app.icon || 'https://cdn-icons-png.flaticon.com/512/2991/2991149.png'}" loading="lazy">
+                            <div class="pc-text">
+                                <strong>${app.name}</strong>
+                                <span>${app.developer}</span>
+                            </div>
+                        </div>
+                        <div class="pc-actions">
+                            <button class="approve" onclick="approveApp('${app.id}')"><i class="fas fa-check"></i> অনুমোদন</button>
+                            <button class="reject" onclick="rejectApp('${app.id}')"><i class="fas fa-times"></i> বাতিল</button>
+                        </div>
+                    </div>
+                `).join('');
+            });
+        }
+
+        window.approveApp = async function(id) {
+            Swal.fire({ title: 'অনুমোদন হচ্ছে...', didOpen: () => Swal.showLoading() });
+            try {
+                const snap = await get(ref(db, `pending_apps/${id}`));
+                const data = snap.val();
+                if (!data) return Swal.fire('Error', 'ডেটা পাওয়া যায়নি', 'error');
+                data.status = 'approved';
+                data.timestamp = Date.now();
+                await push(ref(db, 'store_apps'), data);
+                await remove(ref(db, `pending_apps/${id}`));
+                Swal.close();
+                showToast('অ্যাপ অনুমোদিত হয়েছে! 🎉', 'success');
+            } catch (e) {
+                Swal.fire('Error', 'অনুমোদন ব্যর্থ', 'error');
+            }
+        };
+
+        window.rejectApp = function(id) {
+            Swal.fire({
+                title: 'বাতিল করবেন?',
+                text: 'এই অ্যাপ পেন্ডিং থেকে মুছে যাবে',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#ea4335',
+                cancelButtonColor: '#5f6368',
+                confirmButtonText: 'হ্যাঁ, বাতিল',
+                cancelButtonText: 'না'
+            }).then(result => {
+                if (result.isConfirmed) {
+                    remove(ref(db, `pending_apps/${id}`));
+                    showToast('অ্যাপ বাতিল করা হয়েছে', 'info');
+                }
+            });
+        };
+
+        // ─── USER APP UPLOAD ───
+        window.openUploadModal = function() {
+            $('uploadModal').style.display = 'flex';
+            resetUploadForm();
+        };
+
+        function resetUploadForm() {
+            ['uploadAppName', 'uploadAppDev', 'uploadAppIcon', 'uploadAppBanner', 'uploadAppSize', 'uploadAppLink',
+                'uploadAppDesc'
+            ].forEach(id => $(id).value = '');
+            $('uploadAppScreenshotsText').value = '';
+            $('uploadSsPreview').innerHTML = '';
+            window.userScreenshots = [];
+            $('uploadAppCat').value = 'recommended';
+        }
+
+        window.submitUserApp = function() {
+            const name = $('uploadAppName').value.trim();
+            const dev = $('uploadAppDev').value.trim();
+            const icon = $('uploadAppIcon').value.trim();
+            const link = $('uploadAppLink').value.trim();
+
+            if (!name || !dev || !icon || !link) {
+                return showToast('নাম, ডেভেলপার, আইকন ও ডাউনলোড লিংক দিতে হবে', 'error');
+            }
+
+            const data = {
+                name,
+                developer: dev,
+                icon: icon || 'https://cdn-icons-png.flaticon.com/512/2991/2991149.png',
+                banner: $('uploadAppBanner').value.trim() || '',
+                size: $('uploadAppSize').value.trim() || '—',
+                rating: '4.0',
+                downloadLink: link,
+                category: $('uploadAppCat').value,
+                desc: $('uploadAppDesc').value.trim() || 'বর্ণনা নেই',
+                screenshots: window.userScreenshots || [],
+                isFeatured: false,
+                isLocked: false,
+                status: 'pending',
+                downloads: '0',
+                version: '1.0.0',
+                timestamp: Date.now(),
+                submittedBy: 'user'
+            };
+
+            Swal.fire({ title: 'সাবমিট হচ্ছে...', didOpen: () => Swal.showLoading() });
+
+            push(ref(db, 'pending_apps'), data).then(() => {
+                Swal.close();
+                resetUploadForm();
+                closeModal('uploadModal');
+                showToast('অ্যাপ সাবমিট হয়েছে! অ্যাডমিন অনুমোদন দিলে প্রকাশ পাবে ✅', 'success');
+            }).catch(() => {
+                Swal.fire('Error', 'সাবমিট ব্যর্থ', 'error');
+            });
+        };
+
+        // ─── KEYBOARD SHORTCUT: ESC to close modals ───
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+                closeFS();
+            }
+        });
+
+        // ─── INIT ───
+        console.log('📱 মুক্তলিপি স্টোর লোড হয়েছে');
+        console.log('🔑 অ্যাডমিন UID:', ADMIN_UID);
+        console.log('☁️ Cloudinary:', CLOUD_NAME);
+    </script>
+
+</body>
+</html>
