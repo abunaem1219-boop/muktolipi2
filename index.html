@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firebase.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://api.cloudinary.com" crossorigin>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>মুক্তলিপি ডায়েরি</title>
+
+    <!-- PWA Manifest & Meta Tags -->
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="apple-touchicon" href="icon.png">
+    <link rel="manifest" href="manifest.json">    
+    <meta name="theme-color" content="#1877f2">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="description" content="মনের কথা, মুক্ত ভাষায়- মুক্তলিপি ডায়েরি">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Galada&family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Serif+Bengali:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Libraries -->
+     <!-- Cropper.js for Image Editing -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <!-- Stories System Stylesheet -->
+<link rel="stylesheet" href="stories.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<!-- OneSignal SDK -->
+<script src="https://cdn-onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(function(OneSignal) {
+    OneSignal.init({
+      appId: "d2470015-4ed1-4274-96bd-1654f86cb54a",
+      allowLocalhostAsSecureOrigin: true,
+      notifyButton: { enable: true },
+      prompts: [{ type: "slidedown", autoPrompt: true, text: { actionMessage: "আপনি কি নতুন পোস্টের নোটিফিকেশন পেতে চান?", accepButton: "হ্যাঁ", cancelButton: "পরে" } }]
+    });
+  });
+</script>
+
+</head>
+<body>
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Side Drawer -->
+    <div id="drawerOverlay" class="drawer-overlay" onclick="closeDrawer()"></div>
+    <div id="sideDrawer" class="side-drawer">
+        <div class="drawer-header">
+            <span class="drawer-logo"><i class="fas fa-feather-alt"></i> মুক্তলিপি</span>
+            <button class="icon-btn" onclick="closeDrawer()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="drawer-menu">
+        <div class="drawer-item" id="drawerLogoutBtn" onclick="logoutFunc(); closeDrawer();" style="display:none; color:#e74c3c;">
+                <i class="fas fa-sign-out-alt"></i> লগআউট
+            </div>
+            <div class="drawer-item" id="themeToggleBtn" onclick="toggleTheme(); closeDrawer();">
+    <i class="fas fa-moon"></i> ডার্ক মোড
+</div>
+            <div class="drawer-item" onclick="toggleFont(); closeDrawer();">
+                <i class="fas fa-font"></i> ফন্ট পরিবর্তন
+            </div>
+            <div class="drawer-item" onclick="showToast('শীঘ্রই আসছে...'); closeDrawer();">
+                <i class="fas fa-shield-alt"></i> গোপনীয়তা নীতি
+            </div>
+            <div class="drawer-item" onclick="showToast('শীঘ্রই আসছে...'); closeDrawer();">
+                <i class="fas fa-info-circle"></i> আমাদের সম্পর্কে
+            </div>
+        </div>
+        <div class="drawer-footer">
+            Version 1.2
+        </div>
+    </div>
+
+    <!-- Reading Progress -->
+    <div id="readingProgress"></div>
+    <div id="toast" class="toast-box"><i class="fas fa-info-circle"></i> <span id="toastMsg">Notification</span></div>
+    <div id="offlineBanner"><i class="fas fa-wifi"></i> ইন্টারনেট সংযোগ নেই। অফলাইন মোড চলছে।</div>
+
+    <!-- Who Reacted Modal -->
+    <div id="whoReactedModal" class="who-reacted-modal" onclick="document.getElementById('whoReactedModal').style.display='none'">
+        <div class="who-reacted-content" onclick="event.stopPropagation()">
+            <div class="who-reacted-header">
+                <h3 style="margin:0; font-size:16px;">Who Reacted</h3>
+                <button onclick="document.getElementById('whoReactedModal').style.display='none'" style="background:none; border:none; font-size:20px; color:var(--text-color); cursor:pointer;"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="whoReactedList" class="who-reacted-list">
+                <!-- User items injected here -->
+                <div style="text-align:center; padding:20px; color:var(--secondary-text);">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Structure -->
+<!-- পুরনো 'Top Sticky Header' পরিবর্তন করে শুধুমাত্র নিচের কোডটুকু বসান -->
+    <div id="mainHeader" style="position: relative; z-index: 100000;">
+        <!-- ক্রিয়েট মেনু ড্রপডাউন (প্লাস বাটনে ক্লিক করলে এটি ওপেন হবে) -->
+        <div id="createMenuDropdown" class="create-menu-dropdown" style="position: fixed; top: 54px; right: 16px; display: none; z-index: 100002;">
+            <button class="create-menu-item" onclick="toggleCreateMenu(); openWriteModal();">
+                <div class="create-icon-circle"><i class="fas fa-pen-nib"></i></div> Post
+            </button>
+            <button class="create-menu-item" onclick="toggleCreateMenu(); openStoryCreator();">
+                <div class="create-icon-circle"><i class="fas fa-book-open"></i></div> Story
+            </button>
+            <button class="create-menu-item" onclick="toggleCreateMenu(); showToast('Reel অপশন শীঘ্রই আসছে!');">
+                <div class="create-icon-circle" style="color:#e74c3c;"><i class="fas fa-play"></i></div> Reel
+            </button>
+        </div>
+
+        <!-- সার্চ হেডার (সার্চ আইকনে ক্লিক করলে এটি উপর থেকে স্লাইড ডাউন হবে) -->
+        <div id="searchHeader" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 54px; background: var(--glass-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); align-items:center; gap:10px; padding: 0 16px; box-sizing: border-box; z-index: 100003; border-bottom: 1px solid var(--border-color);">
+            <button class="icon-btn" onclick="toggleHeaderSearch(false)">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <input type="text" id="headerSearchBar" placeholder="এখানে খুঁজুন..." 
+                   style="flex:1; margin:0; border-radius:20px; background:rgba(0,0,0,0.05); border:none; height:40px; padding-left:15px; color: var(--text-color); outline: none;" 
+                   oninput="filterPosts(this.value)">
+            <button class="icon-btn" id="headerSearchClearBtn" onclick="clearSearchHeader()" style="display:none;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- ব্যাকওয়ার্ড জাভাস্ক্রিপ্ট কম্প্যাটিবিলিটির জন্য একটি অদৃশ্য ডিভ -->
+        <div id="defaultHeader" style="display:none;"></div>
+    </div>
+
+    <!-- LOGIN MODAL (Gatekeeper) -->
+   <!-- LOGIN MODAL (Ultra Premium Design) -->
+    <div id="loginModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="auth-header">
+                <div class="auth-icon-circle login-icon-bg">
+                    <i class="fa-solid fa-fingerprint"></i>
+                </div>
+                <h2 class="auth-title">স্বাগতম!</h2>
+                <p class="auth-subtitle">লগিন করে আপনার ডায়েরিতে ফিরে আসুন</p>
+            </div>
+
+            <button class="google-btn-modern" onclick="performLogin()">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
+                গুগল দিয়ে চালিয়ে যান
+            </button>
+
+            <div class="auth-divider"><span>অথবা ইমেইল দিয়ে</span></div>
+
+            <div class="auth-form">
+                <label class="input-label">ইমেইল</label>
+                <div class="modern-input-group">
+                    <input type="text" id="loginEmailUsername" placeholder="username" class="modern-input" autocomplete="off">
+                    <span class="input-suffix">@gmail.com</span>
+                </div>
+
+                <label class="input-label">পাসওয়ার্ড</label>
+                <div class="modern-input-group">
+                    <input type="password" id="loginPassword" placeholder="••••••••" class="modern-input">
+                    <button type="button" class="password-toggle" onclick="togglePasswordVisibility('loginPassword')">
+                        <i class="fa-regular fa-eye"></i>
+                    </button>
+                </div>
+
+                <span class="forgot-pass" onclick="handleForgotPassword()">পাসওয়ার্ড ভুলে গেছেন?</span>
+
+                <button class="auth-submit-btn" onclick="handleEmailLogin()">
+                    লগইন করুন <i class="fa-solid fa-arrow-right-long"></i>
+                </button>
+            </div>
+
+            <div class="auth-footer">
+                কোনো একাউন্ট নেই?<span class="auth-link" onclick="showSignupModal()">নতুন একাউন্ট খুলুন</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- SIGNUP MODAL (Ultra Premium Design) -->
+    <div id="signupModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <button class="modal-close-btn" onclick="closeSignupModal()"><i class="fa-solid fa-xmark"></i></button>
+
+            <div class="auth-header">
+                <div class="auth-icon-circle">
+                    <i class="fa-solid fa-user-astronaut"></i>
+                </div>
+                <h2 class="auth-title">একাউন্ট তৈরি</h2>
+                <p class="auth-subtitle">মুক্তলিপি ডায়েরিতে যুক্ত হোন</p>
+            </div>
+
+            <button class="google-btn-modern" onclick="handleGoogleSignup()">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
+                গুগল দিয়ে সাইনআপ করুন
+            </button>
+
+            <div class="auth-divider"><span>অথবা ফর্ম পূরণ করুন</span></div>
+
+            <div class="auth-form">
+                <label class="input-label">আপনার নাম</label>
+                <div class="modern-input-group">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" id="signupName" placeholder="যেমন: আবু নাঈম" class="modern-input" autocomplete="off">
+                </div>
+
+                <label class="input-label">ইমেইল ইউজারনেম</label>
+                <div class="modern-input-group">
+                    <input type="text" id="signupEmailUsername" placeholder="username" class="modern-input" autocomplete="off">
+                    <span class="input-suffix">@gmail.com</span>
+                </div>
+
+                <label class="input-label">পাসওয়ার্ড</label>
+                <div class="modern-input-group">
+                    <input type="password" id="signupPassword" placeholder="কমপক্ষে ৬ অক্ষর" class="modern-input">
+                    <button type="button" class="password-toggle" onclick="togglePasswordVisibility('signupPassword')">
+                        <i class="fa-regular fa-eye"></i>
+                    </button>
+                </div>
+
+                <label class="input-label">পাসওয়ার্ড নিশ্চিত করুন</label>
+                <div class="modern-input-group" style="margin-bottom: 24px;">
+                    <input type="password" id="signupConfirmPassword" placeholder="পুনরায় লিখুন" class="modern-input">
+                    <button type="button" class="password-toggle" onclick="togglePasswordVisibility('signupConfirmPassword')">
+                        <i class="fa-regular fa-eye"></i>
+                    </button>
+                </div>
+
+                <button class="auth-submit-btn" onclick="handleEmailSignup()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);">
+                    রেজিস্ট্রেশন করুন
+                </button>
+            </div>
+
+            <div class="auth-footer">
+                ইতিমধ্যে একাউন্ট আছে?<span class="auth-link" onclick="showLoginModal()">লগইন করুন</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROFILE EDIT MODAL -->
+    <div id="profileEditModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content glass-panel" style="width:100%; max-width:550px; padding:0;">
+            <button class="modal-close-btn" onclick="closeProfileEdit()"><i class="fas fa-times"></i></button>
+            <div class="modal-header" style="padding-top:20px;">
+                <h2>প্রোফাইল সম্পাদনা করুন</h2>
+                <p class="modal-subtitle">আপনার তথ্য আপডেট করুন</p>
+            </div>
+
+            <div class="modal-body profile-edit-body" style="padding: 20px;">
+                <!-- Cover Photo -->
+                <div class="edit-section">
+                    <label class="section-label"><i class="fas fa-image"></i> কভার ফটো</label>
+                    <div class="cover-photo-preview" id="coverPhotoPreview">
+                        <img src="" id="coverPhotoImg" alt="কভার ফটো" onerror="this.src=''">
+                        <div class="cover-photo-overlay">
+                            <button class="change-cover-btn" onclick="triggerCoverUpload()"><i class="fas fa-camera"></i> পরিবর্তন করুন</button>
+                        </div>
+                    </div>
+                    <input type="file" id="coverPhotoInput" accept="image/*" style="display: none;" onchange="handleCoverPhotoSelect(event)">
+                </div>
+
+                <!-- Profile Photo -->
+                <div class="edit-section">
+                    <label class="section-label"><i class="fas fa-user-circle"></i> প্রোফাইল ছবি</label>
+                    <div class="profile-photo-preview-container">
+                        <img src="" id="profilePhotoPreview" alt="প্রোফাইল ছবি" class="profile-photo-preview" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+                        <button class="change-profile-btn" onclick="triggerProfileUpload()"><i class="fas fa-camera"></i></button>
+                    </div>
+                    <input type="file" id="profilePhotoInput" accept="image/*" style="display: none;" onchange="handleProfilePhotoSelect(event)">
+                </div>
+
+                <!-- Name -->
+                <div class="edit-section">
+                    <label class="section-label"><i class="fas fa-signature"></i> নাম</label>
+                    <input type="text" id="editName" class="form-input" placeholder="আপনার নাম লিখুন">
+                </div>
+
+                <!-- Bio -->
+                <div class="edit-section">
+                    <label class="section-label"><i class="fas fa-align-left"></i> বায়ো</label>
+                    <textarea id="editBio" class="form-textarea" rows="4" placeholder="নিজের সম্পর্কে কিছু লিখুন..."></textarea>
+                    <span class="char-counter" id="bioCharCounter">0/150</span>
+                </div>
+
+                <!-- Social Links -->
+                <div class="edit-section">
+                    <label class="section-label"><i class="fas fa-share-alt"></i> সোশ্যাল মিডিয়া লিংক</label>
+                    <div class="social-input-group"><i class="fab fa-facebook social-icon" style="color: #1877f2;"></i><input type="url" id="editFacebook" class="form-input" placeholder="Facebook লিংক"></div>
+                    <div class="social-input-group"><i class="fab fa-youtube social-icon" style="color: #ff0000;"></i><input type="url" id="editYoutube" class="form-input" placeholder="YouTube লিংক"></div>
+                    <div class="social-input-group"><i class="fab fa-tiktok social-icon" style="color: #000000;"></i><input type="url" id="editTiktok" class="form-input" placeholder="TikTok লিংক"></div>
+                    <div class="social-input-group"><i class="fab fa-whatsapp social-icon" style="color: #25d366;"></i><input type="url" id="editWhatsapp" class="form-input" placeholder="WhatsApp লিংক"></div>
+                </div>
+
+                <button class="save-profile-btn" onclick="saveProfileChanges()"><i class="fas fa-save"></i> পরিবর্তন সংরক্ষণ করুন</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- POST DETAIL VIEW (Full Screen Modal) -->
+    <div id="detailView">
+        <div class="detail-header">
+            <button onclick="closeDetailView()" style="background:none; border:none; font-size:20px; color:var(--text-color); cursor:pointer;"><i class="fas fa-arrow-left"></i></button>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div class="avatar-circle" style="width:30px; height:30px;"><img id="detailAuthorImg" src="" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'"></div>
+                <div style="font-size:14px; font-weight:700; display:flex; align-items:center;" id="detailAuthorName">Author</div>
+            </div>
+        </div>
+
+        <div class="detail-content">
+            <img id="detailMainImg" class="detail-img" src="" style="display:none;">
+            <h1 id="detailTitle" class="detail-title">Title</h1>
+            <div style="font-size:12px; color:var(--secondary-text); margin-bottom:15px;" id="detailDate">Date</div>
+            <div id="detailBody" class="detail-text"></div>
+        </div>
+
+        <div class="detail-bottom-bar">
+            <button class="detail-action" id="detailLikeBtn" onclick="">
+                <i class="far fa-heart"></i> <span id="detailLikeCount">0</span>
+            </button>
+            <button class="detail-action" id="detailCommentBtn" onclick="">
+                <i class="far fa-comment"></i> <span>মন্তব্য</span>
+            </button>
+            <button class="detail-action" id="detailSaveBtn" onclick="">
+                <i class="far fa-bookmark"></i> <span>সেভ</span>
+            </button>
+            <button class="detail-action" id="detailShareBtn" onclick="">
+                <i class="fas fa-share-nodes"></i> <span>শেয়ার</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <!-- Home View -->
+        <div id="feedView" class="view-section active-view">
+<!-- ফেসবুক অফিশিয়াল ফ্ল্যাট রাইট বক্স লেআউট -->
+<div class="fb-write-box">
+    <img id="writeBoxAvatar" src="https://www.gstatic.com/images/branding/product/1x/avatar_circle_blue_512dp.png" class="write-box-avatar" onclick="goToMyProfile()" title="প্রোফাইল দেখুন">
+    <div class="write-box-input" onclick="openWriteModal()">
+        <span>আপনার মনের কথা বলুন...</span>
+    </div>
+    <div class="write-box-photo-btn" onclick="openWriteModal()" title="ছবি পোস্ট করুন">
+        <i class="fa-solid fa-images" style="color: #45bd62; font-size: 18px;"></i>
+        <span style="font-size: 11px; color: var(--secondary-text); font-weight: 700; margin-top: 3px;">Photo</span>
+    </div>
+</div>
+
+            <!-- ==========================================================================
+                 🎯 FACEBOOK-STYLE STORY SYSTEM HTML (START)
+                 ========================================================================== -->
+
+<div id="storiesBar" class="fb-stories-wrapper">
+    <!-- This section will be populated dynamically by JS -->
+    <div class="story-card create-story-card" onclick="openStoryCreator()">
+        <div class="create-story-bg" id="yourStoryBg" style="background-image: url('https://cdn-icons-png.flaticon.com/512/149/149071.png')"></div>
+        <div class="create-story-plus-btn">
+            <i class="fas fa-plus"></i>
+        </div>
+        <div class="create-story-bottom">
+            <span class="story-label-text">Create story</span>
+        </div>
+    </div>
+    <!-- Friend stories will be injected here -->
+</div>
+
+            <!-- Story Creator Modal -->
+            <div id="storyCreatorModal" class="story-modal">
+                <div class="story-modal-header">
+                    <h3 style="margin:0;">Create Story</h3>
+                    <button onclick="closeStoryCreator()" style="border:none; background:none; font-size:24px; color:var(--text-color);">&times;</button>
+                </div>
+                <div class="story-options-grid">
+                    <div class="story-option-card" onclick="openTextStoryEditor()">
+                        <span class="story-option-icon text-icon"><i class="fas fa-font"></i></span>
+                        <span style="font-weight:600;">Text</span>
+                    </div>
+                    <div class="story-option-card" onclick="triggerMediaUpload('image')">
+                        <span class="story-option-icon media-icon"><i class="fas fa-image"></i></span>
+                        <span style="font-weight:600;">Photo</span>
+                    </div>
+                    <div class="story-option-card" onclick="triggerMediaUpload('video')">
+                        <span class="story-option-icon media-icon" style="color:#e74c3c;"><i class="fas fa-video"></i></span>
+                        <span style="font-weight:600;">Video</span>
+                    </div>
+                </div>
+                <input type="file" id="storyMediaInput" hidden>
+                <div class="story-loader" id="storyLoader">
+                    <i class="fas fa-spinner fa-spin" style="font-size:30px;"></i><br>Uploading...
+                </div>
+            </div>
+
+            <!-- Text Story Editor -->
+            <div id="textStoryEditor">
+                <button onclick="closeTextStoryEditor()" style="position:absolute; top:20px; left:20px; background:rgba(0,0,0,0.3); color:white; border:none; border-radius:50%; width:40px; height:40px; font-size:20px;">&times;</button>
+                <button onclick="postTextStory()" style="position:absolute; top:20px; right:20px; background:white; color:black; border:none; border-radius:20px; padding:10px 20px; font-weight:bold;">Share</button>
+
+                <textarea id="storyTextInputField" class="story-text-input" placeholder="Start typing..." maxlength="200"></textarea>
+
+                <div class="color-picker">
+                    <div class="color-dot" style="background:#1877f2" onclick="setStoryBg('#1877f2')"></div>
+                    <div class="color-dot" style="background:#e74c3c" onclick="setStoryBg('#e74c3c')"></div>
+                    <div class="color-dot" style="background:#9b59b6" onclick="setStoryBg('#9b59b6')"></div>
+                    <div class="color-dot" style="background:#2ecc71" onclick="setStoryBg('#2ecc71')"></div>
+                    <div class="color-dot" style="background:#f39c12" onclick="setStoryBg('#f39c12')"></div>
+                    <div class="color-dot" style="background:#34495e" onclick="setStoryBg('#34495e')"></div>
+                    <div class="color-dot" style="background:linear-gradient(45deg, #ff00cc, #333399)" onclick="setStoryBg('linear-gradient(45deg, #ff00cc, #333399)')"></div>
+                </div>
+            </div>
+
+            <!-- Story Viewer -->
+            <div id="storyViewerModal" class="story-viewer">
+                <div class="viewer-progress-container" id="viewerProgressBars"></div>
+
+                <div class="viewer-header">
+                    <img id="viewerAuthorImg" src="" style="width:40px; height:40px; border-radius:50%; margin-right:10px; border:1px solid rgba(255,255,255,0.5);">
+                    <div style="flex:1;">
+                        <div id="viewerAuthorName" style="font-weight:bold; font-size:14px;"></div>
+                        <div id="viewerTime" style="font-size:11px; opacity:0.8;"></div>
+                    </div>
+                    <button onclick="closeStoryViewer()" style="background:none; border:none; color:white; font-size:24px;">&times;</button>
+                </div>
+
+                <div class="viewer-content" id="viewerContentArea">
+                    <!-- Media or Text injected here -->
+                    <div class="nav-tap-area left-tap" onclick="prevStorySegment()"></div>
+                    <div class="nav-tap-area right-tap" onclick="nextStorySegment()"></div>
+                </div>
+
+                <div class="viewer-footer">
+                    <input type="text" id="storyReplyInput" class="story-reply-input" placeholder="Send message...">
+                    <button onclick="sendStoryReply()" style="background:none; border:none; color:white; font-size:20px;"><i class="fas fa-paper-plane"></i></button>
+                    <button class="story-reaction-btn" onclick="reactToStory('love')">❤️</button>
+                    <button class="story-reaction-btn" onclick="reactToStory('haha')">😂</button>
+                    <button class="story-reaction-btn" onclick="reactToStory('wow')">😮</button>
+                </div>
+            </div>
+
+<!-- Story Media Editor Modal (Premium Facebook Style) -->
+        <div id="storyMediaEditorModal" class="story-editor-container">
+            <!-- Top Bar -->
+            <div class="editor-top-bar">
+                <button class="editor-close-btn" onclick="closeMediaEditor()"><i class="fas fa-chevron-left"></i></button>
+                
+                <!-- স্ক্রিনশট অনুযায়ী মিউজিক পিল ওভারলে -->
+                <div class="editor-music-info-pill" id="editorMusicPill" style="display:none;">
+                    <img src="https://www.gstatic.com/images/branding/product/1x/avatar_circle_blue_512dp.png" class="music-pill-avatar" id="musicPillImg">
+                    <div class="music-pill-text-wrap">
+                        <div class="music-pill-title" id="musicPillTitle">Beloved Naasheds</div>
+                        <div class="music-pill-subtitle">Voice of Iman</div>
+                    </div>
+                    <button class="music-pill-close-btn" onclick="removeStoryMusic()"><i class="fas fa-times-circle"></i></button>
+                </div>
+                
+                <button class="editor-menu-btn" onclick="showStoryToast('অপশন শীঘ্রই আসছে ⋯')"><i class="fas fa-ellipsis-h"></i></button>
+            </div>
+
+            <!-- Image/Photo/Canvas Area (সরাসরি লেখার ক্যানভাস ওভারলেসহ) -->
+            <div class="editor-preview-area">
+                <!-- সরাসরি স্ক্রিনে টাইপ করে লেখার টেক্সট ডিভ -->
+                <div id="editorTextOverlay" class="editor-text-overlay" contenteditable="true" placeholder="এখানে কিছু লিখুন... ✍️"></div>
+                <img id="editorImagePreview" class="editor-preview-img" src="" style="display:none;">
+                <div id="editorBlurBg" class="viewer-media-blur-bg" style="display:none;"></div>
+            </div>
+
+            <!-- Bottom Floating Controls (টুলস ও শেয়ার বাটনসমূহ) -->
+            <div class="editor-bottom-controls-wrap">
+                <!-- হরিজন্টাল স্ক্রল টুলস সার্কেল বার (স্ক্রিনশটের মতো) -->
+                <div class="editor-horizontal-tools">
+                    <!-- Photo বাটন - গ্যালারি থেকে ছবি সিলেক্টের সুবিধা -->
+                    <div class="editor-tool-item-circle" onclick="document.getElementById('storyMediaInput').click()">
+                        <div class="tool-circle-icon"><i class="far fa-image"></i></div>
+                        <span class="tool-circle-label">Photo</span>
+                    </div>
+                    <div class="editor-tool-item-circle" onclick="triggerStoryMusicMock()">
+                        <div class="tool-circle-icon"><i class="fas fa-music"></i></div>
+                        <span class="tool-circle-label">Music</span>
+                    </div>
+                    <div class="editor-tool-item-circle" onclick="showStoryToast('Stickers শীঘ্রই আসছে 🎭')">
+                        <div class="tool-circle-icon"><i class="far fa-smile"></i></div>
+                        <span class="tool-circle-label">Stickers</span>
+                    </div>
+                    <div class="editor-tool-item-circle" onclick="triggerStoryTextPrompt()">
+                        <div class="tool-circle-icon" style="font-weight: bold; font-family: serif; font-size: 20px;">Aa</div>
+                        <span class="tool-circle-label">Text</span>
+                    </div>
+                    <!-- Canvas বাটন - গ্রেডিয়েন্ট কালার পরিবর্তনের সুবিধা -->
+                    <div class="editor-tool-item-circle" onclick="cycleStoryCanvasBackground()">
+                        <div class="tool-circle-icon"><i class="fas fa-palette"></i></div>
+                        <span class="tool-circle-label">Canvas</span>
+                    </div>
+                    <div class="editor-tool-item-circle" onclick="triggerRotateImage()">
+                        <div class="tool-circle-icon"><i class="fas fa-rotate"></i></div>
+                        <span class="tool-circle-label">Rotate</span>
+                    </div>
+                    <div class="editor-tool-item-circle" onclick="triggerStoryEffectMock()">
+                        <div class="tool-circle-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
+                        <span class="tool-circle-label">Effects</span>
+                    </div>
+                </div>
+
+                <!-- বটম সেটিংস এবং শেয়ার বাটন রো -->
+                <div class="editor-action-footer">
+                    <div class="footer-pills-left">
+                        <button class="editor-footer-pill" onclick="showStoryToast('অডিয়েন্স সেটিংস 👥')">
+                            <i class="fas fa-users" style="font-size: 11px;"></i> Friends
+                        </button>
+                        <button class="editor-footer-pill" onclick="showStoryToast('কমেন্ট সেটিংস 💬')">
+                            <i class="far fa-comment-alt" style="font-size: 11px;"></i> Off
+                        </button>
+                    </div>
+                    <button class="editor-share-btn-fb" onclick="uploadEditedStory()">Share</button>
+                </div>
+            </div>
+        </div>
+            <!-- Tabs -->
+            <div class="category-tabs">
+                <button class="cat-btn active" onclick="filterCategory('সব', this)">সব</button>
+                <button class="cat-btn" onclick="filterCategory('জনপ্রিয়', this)"><i class="fas fa-fire"></i> জনপ্রিয়</button>
+                <button class="cat-btn" onclick="filterCategory('গল্প', this)">গল্প</button>                <button class="cat-btn" onclick="filterCategory('কবিতা', this)">কবিতা</button>
+                <button class="cat-btn" onclick="filterCategory('ডায়েরি', this)">ডায়েরি</button>
+                <button class="cat-btn" onclick="filterCategory('ইসলামিক', this)">ইসলামিক</button>
+                <button class="cat-btn" onclick="filterCategory('অন্যান্য', this)">অন্যান্য</button>
+            </div>
+
+            <!-- Masonry Feed -->
+            <div id="feed" class="masonry-feed"></div>
+            <div id="loadingSpinner" class="loading-spinner-area"><i class="fas fa-spinner fa-spin"></i> লোড হচ্ছে...</div>
+        </div>
+
+
+    <!-- Sticky Player -->
+    <div id="stickyPlayer">
+        <div style="display:flex; align-items:center; width:70%;">
+            <div id="audioViz" class="visualizer">
+                <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+            </div>
+            <div style="overflow:hidden;">
+                <div id="playerTitle" style="font-weight:bold; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Title</div>
+                <div id="playerAuthor" style="font-size:11px; color:var(--secondary-text);">Author</div>
+            </div>
+        </div>
+        <div style="display:flex; gap:15px; align-items:center;">
+            <button onclick="toggleAudio()" style="background:none; border:none; font-size:24px; color:var(--primary-color);"><i id="playIcon" class="fas fa-play"></i></button>
+            <button onclick="closePlayer()" style="background:none; border:none; font-size:18px; color:var(--secondary-text);"><i class="fas fa-times"></i></button>
+        </div>
+        <audio id="globalAudio" onended="audioEnded()"></audio>
+    </div>
+
+    <!-- Floating Dock -->
+
+
+    <!-- Generic Bottom Sheet (Reused for Comments, Notifications, Menu) -->
+    <div id="universalBottomSheet" class="bottom-sheet-overlay" onclick="closeBottomSheet(event)">
+        <div class="sheet-content" onclick="event.stopPropagation()">
+            <div class="sheet-drag-handle"></div>
+            <h3 id="sheetTitle" style="text-align:center; margin:10px 0; font-size:16px;">Title</h3>
+
+            <!-- Mention Dropdown (Positioned inside content) -->
+            <div id="mentionList" class="mention-dropdown"></div> 
+
+            <div id="sheetBody" class="sheet-body"></div>
+
+            <!-- Footer with Input (Used for Comments) -->
+            <div id="sheetFooter" style="padding:10px 15px; border-top:1px solid var(--border-color); display:none; gap:10px; position:relative;">
+                <input type="text" id="sheetInput" placeholder="মন্তব্য লিখুন...">
+                <i id="cancelReplyBtn" class="fas fa-times cancel-reply" onclick="cancelReply()"></i>
+                <button id="sheetSendBtn" style="background:var(--primary-color); color:white; border:none; border-radius:8px; width:40px;"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Write/Admin Modal (Premium Canvas Style) -->
+    <div id="adminModalWrapper" class="modal-overlay create-post-modal" style="z-index: 2500;">
+        <div class="modal-content">
+            <!-- Top Header -->
+            <div class="cp-header">
+                <button class="cp-close-btn" onclick="closeAdminModal()"><i class="fas fa-times"></i></button>
+                <span class="cp-title">নতুন পোস্ট তৈরি করুন</span>
+                <button class="cp-submit-btn" id="submitBtn" onclick="handleSubmission()">পোস্ট</button>
+            </div>
+
+            <!-- Body (Scrollable Canvas) -->
+            <div class="cp-body">
+                <!-- User Profile & Dropdown selectors -->
+                <div class="cp-user-area">
+                    <img id="userAvatar" src="" class="cp-avatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+                    <div class="cp-user-info">
+                        <span id="userName" class="cp-user-name">Name</span>
+                        <div class="cp-select-group">
+                            <!-- ক্যাটাগরি সিলেক্টর -->
+                            <select id="postCategory" class="cp-category-select">
+                                <option value="অন্যান্য">🌐 অন্যান্য</option>
+                                <option value="গল্প">📖 গল্প</option>
+                                <option value="কবিতা">✒️ কবিতা</option>
+                                <option value="ডায়েরি">📓 ডায়েরি</option>
+                                <option value="ইসলামিক">🕌 ইসলামিক</option>
+                            </select>
+
+                            <!-- প্রাইভেসি সিলেক্টর (নতুন সংযোজন) -->
+                            <select id="postPrivacy" class="cp-privacy-select">
+                                <option value="public">🌐 পাবলিক</option>
+                                <option value="private">🔒 শুধুমাত্র আমি</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Panel (Toggled via Gear Icon) -->
+                <div id="adminFields" style="display:none; margin-bottom:15px; padding:12px; background:rgba(231, 76, 60, 0.05); border-radius:12px; border:1px solid rgba(231, 76, 60, 0.15);">
+                    <div style="font-weight:700; font-size:12px; margin-bottom:8px; color:#e74c3c;"><i class="fas fa-shield-alt"></i> এডমিন কন্ট্রোল</div>
+                    <input type="text" id="voiceUrl" placeholder="অডিও লিংক যোগ করুন (MP3)" style="padding:10px; font-size:13px; margin-bottom:8px; border-radius:8px;">
+                    <label style="display:flex; align-items:center; font-size:13px; gap:8px; cursor:pointer; color:var(--text-color);"><input type="checkbox" id="isPinned" style="width:auto; cursor:pointer;"> পিন পোস্ট হিসেবে সেট করুন</label>
+                </div>
+
+                <!-- Input Canvas -->
+                <input type="text" id="postTitle" class="cp-title-input" placeholder="শিরোনাম...">
+                <div id="richEditor" class="cp-editor" contenteditable="true" placeholder="আপনার মনের কথা বিস্তারিত লিখুন..."></div>
+
+                <!-- Image Preview Area -->
+                <div id="cpImagePreviewContainer" class="cp-image-preview-box">
+                    <img id="cpImagePreview" src="">
+                    <button class="cp-img-action-btn cp-img-edit" onclick="openCropperAgain()" title="এডিট/ক্রপ"><i class="fas fa-crop-alt"></i></button>
+                    <button class="cp-img-action-btn cp-img-remove" onclick="removeSelectedImage()" title="মুছে ফেলুন"><i class="fas fa-trash-alt"></i></button>
+                </div>
+            </div>
+
+            <!-- Bottom Toolbar -->
+            <div class="cp-toolbar">
+                <button class="cp-tool-btn img-btn" onclick="document.getElementById('imgInput').click()" title="ছবি যোগ করুন"><i class="fas fa-image"></i></button>
+                <button class="cp-tool-btn" onclick="execCmd('bold')" title="বোল্ড"><i class="fas fa-bold"></i></button>
+                <button class="cp-tool-btn" onclick="execCmd('italic')" title="ইটালিক"><i class="fas fa-italic"></i></button>
+                <button class="cp-tool-btn" onclick="addLink()" title="লিংক যোগ করুন"><i class="fas fa-link"></i></button>
+                <!-- Admin Gear Icon -->
+                <button id="adminGearBtn" class="cp-tool-btn" style="display:none; margin-left:auto; color:#e74c3c;" onclick="toggleAdminFields()"><i class="fas fa-cog"></i></button>
+            </div>
+
+            <input type="file" id="imgInput" hidden accept="image/*">
+        </div>
+    </div>
+
+    <!-- Full Screen Image Cropper Modal -->
+    <div id="cropperModalOverlay">
+        <div class="cropper-header">
+            <button onclick="cancelCrop()">বাতিল</button>
+            <button onclick="confirmCrop()" style="color:#2ecc71;">সম্পন্ন</button>
+        </div>
+        <div class="cropper-container-box">
+            <img id="cropperImageSource" src="">
+        </div>
+        <div class="cropper-footer">
+            <button onclick="rotateCropperImage(-90)"><i class="fas fa-undo"></i></button>
+            <button onclick="rotateCropperImage(90)"><i class="fas fa-redo"></i></button>
+        </div>
+    </div>
+
+             <!-- Reports List (NEW) -->
+             <div id="reportListContainer" style="display:none; margin-top:10px; max-height:400px; overflow-y:auto;">
+                <div id="reportFeed"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Capture Area for Image Generation -->
+    <div id="quote-capture-area">
+        <div style="background:rgba(0,0,0,0.6); width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; padding:80px; text-align:center; color:white;">
+            <div id="q-text" style="font-family:'Galada'; font-size:55px; line-height:1.6; margin-bottom:40px;"></div>
+            <div id="q-author" style="font-family:'Noto Serif Bengali'; font-size:35px; font-weight:bold; color:#f1c40f;"></div>
+            <div style="margin-top:60px; border-top:2px solid rgba(255,255,255,0.4); padding-top:20px; font-size:25px; opacity:0.8;">
+                <i class="fas fa-feather-alt"></i> মুক্তলিপি ডায়েরি
+            </div>
+        </div>
+    </div>
+
+<script src="navbar.js"></script>
+    <script type="module" src="script.js"></script>
+</body>
+</html>
