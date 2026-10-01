@@ -1,0 +1,6 @@
+{
+  "name": "KitabKhana - Digital Library & Author Publishing Platform",
+  "description": "Premium digital library, immersive book reader, offline-first author writing studio, and publishing platform.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,94 @@
+{
+  "rules": {
+    "users": {
+      ".read": "auth != null && auth.uid === '4TLEoLWD29NdiiN2LiOrrURLtMw1'",
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || auth.uid === '4TLEoLWD29NdiiN2LiOrrURLtMw1')",
+        ".write": "auth != null && (auth.uid === '4TLEoLWD29NdiiN2LiOrrURLtMw1' || (auth.uid === $uid && (!data.exists() ? (newData.child('role').val() === 'user' && newData.child('status').val() === 'active') : (newData.child('role').val() === data.child('role').val() && newData.child('status').val() === data.child('status').val() && newData.child('createdAt').val() === data.child('createdAt').val()))))"
+      }
+    },
+    "publicBooks": {
+      ".read": true,
+      ".write": "auth != null && auth.uid === '4TLEoLWD29NdiiN2LiOrrURLtMw1'",
+      ".indexOn": ["categoryId", "featured", "publishedAt", "createdAt"]
+    },
+    "books": {
+      ".read": "auth != null && auth.uid === '4TLEoLWD29NdiiN2LiOrrURLtMw1'",
+      "$bookId": {
+        ".read": "auth != null && (auth.uid === '4TLEoLWD29NdiiN2LiOrrURLtMw1' || (data.exists() && data.child('createdBy').val() === auth.uid))",
+        ".write": "auth != null && (auth.uid === '4TLEoLWD29NdiiN2LiOrrURLtMw1' || (!data.exists() && newData.child('createdBy').val() === auth.uid && newData.child('status').val() !== 'published') || (data.exists() && data.child('createdBy').val() === auth.uid && newData.child('createdBy').val() === auth.uid && newData.child('status').val() !== 'published'))"
+      },
+      ".indexOn": ["authorId", "status", "visibility", "categoryId", "publishedAt", "createdBy"]
+    },
+    "userBooks": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || auth.uid === '4TLEoLWD29NdiiN2LiOrrURLtMw1')",
+        ".write": "auth != null && (auth.uid === $uid || auth.uid === '4TLEoLWD29NdiiN2LiOrrURLtMw1')"
+      }
+    },
+    "publicBookContent": {
+      "$bookId": {
+        ".read": true,
+        ".write": "auth != null && auth.uid === '4TLEoLWD29NdiiN2LiOrrURLtMw1'"
+      }
+    },
+    "bookContent": {
+      "$bookId": {
+        ".read": "auth != null && (auth.uid === '4TLEoLWD29NdiiN2LiOrrURLtMw1' || root.child('books').child($bookId).child('createdBy').val() === auth.uid)",
+        ".write": "auth != null && (auth.uid === '4TLEoLWD29NdiiN2LiOrrURLtMw1' || root.child('books').child($bookId).child('createdBy').val() === auth.uid)"
+      }
+    },
+    "categories": {
+      ".read": true,
+      ".write": "auth != null && auth.uid === '4TLEoLWD29NdiiN2LiOrrURLtMw1'",
+      ".indexOn": ["order", "active", "slug"]
+    },
+    "favorites": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+    "readingProgress": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+    "bookmarks": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+    "adminLogs": {
+      ".read": "auth != null && auth.uid === '4TLEoLWD29NdiiN2LiOrrURLtMw1'",
+      ".write": "auth != null && auth.uid === '4TLEoLWD29NdiiN2LiOrrURLtMw1'"
+    },
+    "submissions": {
+      ".read": "auth != null && auth.uid === '4TLEoLWD29NdiiN2LiOrrURLtMw1'",
+      "$submissionId": {
+        ".read": "auth != null && (auth.uid === '4TLEoLWD29NdiiN2LiOrrURLtMw1' || (data.exists() && data.child('ownerUid').val() === auth.uid))",
+        ".write": "auth != null && (auth.uid === '4TLEoLWD29NdiiN2LiOrrURLtMw1' || (!data.exists() && newData.child('ownerUid').val() === auth.uid && newData.child('status').val() === 'pending_review') || (data.exists() && data.child('ownerUid').val() === auth.uid && newData.child('ownerUid').val() === auth.uid && newData.child('status').val() === 'pending_review'))"
+      },
+      ".indexOn": ["status", "ownerUid", "submittedAt", "bookId"]
+    },
+    "adminAuditLogs": {
+      ".read": "auth != null && auth.uid === '4TLEoLWD29NdiiN2LiOrrURLtMw1'",
+      ".write": "auth != null && auth.uid === '4TLEoLWD29NdiiN2LiOrrURLtMw1'",
+      ".indexOn": ["timestamp", "action", "bookId"]
+    },
+    "userNotifications": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || auth.uid === '4TLEoLWD29NdiiN2LiOrrURLtMw1')",
+        ".write": "auth != null && (auth.uid === $uid || auth.uid === '4TLEoLWD29NdiiN2LiOrrURLtMw1')"
+      }
+    },
+    "publicAuthors": {
+      ".read": true,
+      "$uid": {
+        ".write": "auth != null && (auth.uid === $uid || auth.uid === '4TLEoLWD29NdiiN2LiOrrURLtMw1')"
+      }
+    }
+  }
+}
